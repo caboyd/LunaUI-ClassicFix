@@ -1,7 +1,7 @@
 ## Interface: 11500
-## Title: LunaUnitFrames-ClassicFix
+## Title: LunaUnitFrames
 ## Notes: 
-## Author: Aviana, Pile
+## Author: Aviana
 ## Version: 4349
 ## SavedVariables: LunaUFDB
 ## OptionalDeps: Ace3, LibSharedMedia-3.0, AceGUI-3.0-SharedMediaWidgets, Clique
