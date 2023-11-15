@@ -29,9 +29,6 @@ externals:
   libs/LibTargeted:
     url: https://github.com/rgd87/LibTargeted.git
     tag: master
-  libs/oUF:
-    url: https://github.com/oUF-wow/oUF.git
-    tag: master
 
 ignore:
   - README.md
