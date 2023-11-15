@@ -4,3 +4,7 @@ libs/**
 !libs/LibVexation-1.0/**
 !libs/oUF_Plugins
 !libs/oUF_Plugins/**
+!libs/oUF
+!libs/oUF/elements
+!libs/oUF/elements/happinessindicator.lua
+!libs/oUF/elements/masterlooterindicator.lua
