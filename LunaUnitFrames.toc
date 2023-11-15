@@ -1,8 +1,8 @@
 ## Interface: 11403
-## Title: Luna Unit Frames
+## Title: LunaUnitFrames-ClassicFix
 ## Notes: 
-## Author: Aviana
-## Version: 4330
+## Author: Aviana, Pile
+## Version: 4347
 ## SavedVariables: LunaUFDB
 ## OptionalDeps: Ace3, LibSharedMedia-3.0, AceGUI-3.0-SharedMediaWidgets, Clique
 ## X-License: WTFPL (http://www.wtfpl.net/about/)

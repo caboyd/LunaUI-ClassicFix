@@ -1,4 +1,4 @@
-package-as: LunaUnitFrames
+package-as: LunaUnitFrames-ClassicFix
 
 enable-nolib-creation: no
 
@@ -28,6 +28,12 @@ externals:
     tag: master
   libs/LibAuraTypes:
     url: https://github.com/rgd87/LibAuraTypes.git
+    tag: master
+  libs/LibTargeted:
+    url: https://github.com/rgd87/LibTargeted.git
+    tag: master
+  libs/oUF:
+    url: https://github.com/oUF-wow/oUF.git
     tag: master
 
 ignore:
