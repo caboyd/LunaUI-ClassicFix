@@ -119,7 +119,12 @@ local function Update(self, event, unit)
 	end
 
 	if(element.otherBeforeBar) then
-		element.otherBeforeBar:SetMinMaxValues(0, maxHealth)
+		-- Bug introduced to Classic as of 1.15.0.52146
+		-- BUG: As of 10.2, when the current value matches the min value the status bar texture
+		-- despite not being visible is actually set to the max which is the opposite of what we
+		-- want, and it breaks all the anchors on top of that. Setting the min value slightly below
+		-- 0 allows us to imitate the original pre-10.2 behaviour.
+		element.otherBeforeBar:SetMinMaxValues(-0.001, maxHealth)
 		element.otherBeforeBar:SetValue(preHeal*mod)
 		if totalHeal > 0 then -- This needs to be totalHeal because only shown bars are size updated and bars might depend on another like in the example
 			element.otherBeforeBar:Show()
@@ -129,7 +134,7 @@ local function Update(self, event, unit)
 	end
 
 	if(element.myBar) then
-		element.myBar:SetMinMaxValues(0, maxHealth)
+		element.myBar:SetMinMaxValues(-0.001, maxHealth)
 		element.myBar:SetValue(myHeal*mod)
 		if totalHeal > 0 then
 			element.myBar:Show()
@@ -139,7 +144,7 @@ local function Update(self, event, unit)
 	end
 
 	if(element.otherAfterBar) then
-		element.otherAfterBar:SetMinMaxValues(0, maxHealth)
+		element.otherAfterBar:SetMinMaxValues(-0.001, maxHealth)
 		element.otherAfterBar:SetValue(afterHeal*mod)
 		if totalHeal > 0 then
 			element.otherAfterBar:Show()
@@ -149,7 +154,7 @@ local function Update(self, event, unit)
 	end
 
 	if(element.hotBar) then
-		element.hotBar:SetMinMaxValues(0, maxHealth)
+		element.hotBar:SetMinMaxValues(-0.001, maxHealth)
 		element.hotBar:SetValue(hotHeal*mod)
 		if totalHeal > 0 then
 			element.hotBar:Show()
