@@ -1,4 +1,8 @@
-# LunaUnitFrames
+# LunaUnitFrames-ClassicFix
+
+Original addon development has halted at https://github.com/Aviana/LunaUnitFrames.
+LunaUnitFrames-ClassicFix exists to maintain LunaUnitFrames for Classic Only.
+
 Unit Frames for WoW Classic
 
 LunaUnitFrames supports/recommends WowUp.io for automatic updates: https://wowup.io/
