@@ -17,9 +17,6 @@ externals:
   libs/LibClassicCasterino:
     url: https://github.com/rgd87/LibClassicCasterino.git
     tag: master
-  libs/LibVexation-1.0:
-    url: https://github.com/Aviana/LibVexation-1.0.git
-    tag: master
   libs/LibHealComm-4.0:
     url: https://github.com/Azilroka/LibHealComm-4.0.git
     tag: master
@@ -28,6 +25,9 @@ externals:
     tag: master
   libs/LibAuraTypes:
     url: https://github.com/rgd87/LibAuraTypes.git
+    tag: master
+  libs/LibTargeted:
+    url: https://github.com/rgd87/LibTargeted.git
     tag: master
 
 ignore:
