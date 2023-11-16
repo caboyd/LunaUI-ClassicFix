@@ -229,7 +229,7 @@ local function Update(self, event, unit)
 						end
 						if indicator.count then
 							indicator.count:Show()
-							indicator.count:SetText(count > 1 and count)
+							indicator.count:SetText(count > 1 and count or "")
 						else
 							indicator.count:Hide()
 						end
@@ -300,7 +300,7 @@ local function Update(self, event, unit)
 						end
 						if indicator.count then
 							indicator.count:Show()
-							indicator.count:SetText(count > 1 and count)
+							indicator.count:SetText(count > 1 and count or "")
 						else
 							indicator.count:Hide()
 						end
