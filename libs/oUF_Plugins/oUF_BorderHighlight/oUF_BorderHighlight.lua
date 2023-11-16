@@ -67,7 +67,13 @@ local function Update(self, event)
 		element.center.size = element.size
 		OnSizeChanged(element.center)
 	end
-
+	
+	if element.ontop then
+		element.center:SetFrameStrata("HIGH")
+	else
+		element.center:SetFrameStrata("MEDIUM")
+	end
+	
 	--[[ Callback: BorderHighlight:PreUpdate()
 	Called before the element has been updated.
 

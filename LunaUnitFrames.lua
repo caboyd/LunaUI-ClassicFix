@@ -904,6 +904,7 @@ function LUF.ApplySettings(frame)
 			frame.BorderHighlight.mouseoverColor = {LUF.db.profile.colors.mouseover.r, LUF.db.profile.colors.mouseover.g, LUF.db.profile.colors.mouseover.b}
 			frame.BorderHighlight.targetColor = {LUF.db.profile.colors.target.r, LUF.db.profile.colors.target.g, LUF.db.profile.colors.target.b}
 			frame.BorderHighlight.size = config.borders.size
+			frame.BorderHighlight.ontop = config.borders.ontop
 		else
 			frame:DisableElement("BorderHighlight")
 		end

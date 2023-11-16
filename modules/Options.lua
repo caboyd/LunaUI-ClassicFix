@@ -1260,6 +1260,12 @@ function LUF:CreateConfig()
 					max = 10,
 					step = 1,
 				},
+				ontop = {
+					name = L["Always on Top"],
+					desc = L["Border will always be on top of Frames"],
+					type = "toggle",
+					order = 6,
+				},
 			},
 		},
 		["highlight"] = {

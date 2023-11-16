@@ -419,6 +419,8 @@ local L = {
 ["Enable the sound when switching target"] = "Enable the sound when switching target",
 ["Right click to focus"] = "Right click to focus",
 ["Focus the unit upon right clicking"] = "Focus the unit upon right clicking",
+["Always on Top"] = "Always on Top",
+["Border will always be on top of Frames"] = "Border will always be on top of Frames",
 }
 
 LUF.L = L
