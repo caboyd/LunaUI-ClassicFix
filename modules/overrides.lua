@@ -2,9 +2,6 @@ LUF = select(2, ...)
 
 local oUF = LUF.oUF
 
-local LibClassicCasterino = LibStub('LibClassicCasterino', true)
-local UnitCastingInfo = CastingInfo
-
 LUF.overrides = {}
 
 local Spells = {
@@ -213,6 +210,7 @@ end
 
 LUF.overrides["CastBar"] = {}
 LUF.overrides["CastBar"].PostCastStart = function(self, unit)
+
 	if UnitCastingInfo(unit) then
 		local castColor = LUF.db.profile.colors.cast
 		self:SetStatusBarColor(castColor.r, castColor.g, castColor.b)
@@ -220,6 +218,10 @@ LUF.overrides["CastBar"].PostCastStart = function(self, unit)
 		local chanColor = LUF.db.profile.colors.channel
 		self:SetStatusBarColor(chanColor.r, chanColor.g, chanColor.b)
 	end
+
+	--Only turn shield on if necessary
+	self.Shield:SetShown(self.Shield.showshield and self.notInterruptible)
+
 end
 
 LUF.overrides["Totems"] = {}
@@ -334,11 +336,5 @@ LUF.overrides["Target"].PostUpdate = function(self, event)
 		end
 	else
 		currentTargetGUID = nil
-	end
-end
-
-if LibClassicCasterino then
-	UnitCastingInfo = function(unit)
-		return LibClassicCasterino:UnitCastingInfo(unit)
 	end
 end

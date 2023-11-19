@@ -102,7 +102,7 @@ function LUF:LoadDefaults()
 			manaPrediction = { enabled = false, color = {r = 1, g = 1, b = 1, a = 0.5 } },
 			reckStacks = { enabled = true, autoHide = true, growth = "RIGHT", order = 70, height = 2, background = true, backgroundAlpha = 0.2 },
 			portrait = {enabled = true, type = "3D", alignment = "LEFT", width = 0.22, height = 4, order = 15, posSlot = "CENTER"},
-			castBar = { enabled = true, background = true, backgroundAlpha = 0.2, height = 3, icon = "HIDE", autoHide = true, order = 60, posSlot = "CENTER"},
+			castBar = { enabled = true, background = true, backgroundAlpha = 0.2, height = 3, icon = "HIDE", shield = true, autoHide = true, order = 60, posSlot = "CENTER"},
 			xpBar = { enabled = false, height = 2, order = 80, background = false, backgroundAlpha = 0.2, alpha = 1, autoHide = true, posSlot = "CENTER" },
 			emptyBar = { enabled = false, height = 3, order = 50, reactionType="npc", class = true, alpha = 0.2, posSlot = "CENTER"},
 			druidBar = {enabled = false, autoHide = true, order = 70, height = 3, background = true, backgroundAlpha = 0.2, posSlot = "CENTER" },
@@ -196,7 +196,7 @@ function LUF:LoadDefaults()
 				["castBar"] = {
 					size = 10,
 					["left"] = {
-						tagline = "[castname]",
+						tagline = "[castnameinterrupt]",
 						size = 100,
 					},
 					["center"] = {
@@ -748,7 +748,7 @@ function LUF:LoadDefaults()
 			healthBar = { enabled = true, background = true, backgroundAlpha = 0.2, colorType = "class", reactionType="npc", height = 6, order = 10, posSlot = "CENTER"},
 			portrait = { enabled = true, type = "3D", alignment = "RIGHT", width = 0.22, height = 4, order = 15, posSlot = "CENTER"},
 			powerBar = { enabled = true, background = true, backgroundAlpha = 0.2, height = 4.5, order = 20, colorType = "type", posSlot = "CENTER" },
-			castBar = { enabled = true, background = true, backgroundAlpha = 0.2, height = 3, icon = "HIDE", autoHide = true, order = 60, posSlot = "CENTER"},
+			castBar = { enabled = true, background = true, backgroundAlpha = 0.2, height = 3, icon = "HIDE", shield = true, autoHide = true, order = 60, posSlot = "CENTER"},
 			emptyBar = { enabled = false, height = 3, order = 50, reactionType="npc", class = true, alpha = 0.2, posSlot = "CENTER"},
 			comboPoints = {enabled = true, background = true, backgroundAlpha = 0.2, autoHide = true, order = 70, growth = "RIGHT", height = 2, posSlot = "CENTER"},
 			range = { enabled = false },
@@ -839,7 +839,7 @@ function LUF:LoadDefaults()
 				["castBar"] = {
 					size = 10,
 					["left"] = {
-						tagline = "[castname]",
+						tagline = "[castnameinterrupt]",
 						size = 100,
 					},
 					["center"] = {
@@ -1208,7 +1208,7 @@ function LUF:LoadDefaults()
 			enabled = true,
 			healthBar = { enabled = true, background = true, backgroundAlpha = 0.2, colorType = "class", reactionType="npc", height = 6, order = 10, posSlot = "CENTER"},
 			portrait = { enabled = true, type = "3D", alignment = "LEFT", width = 0.22, height = 4, order = 15, posSlot = "CENTER"},
-			castBar = { enabled = false, background = true, backgroundAlpha = 0.2, height = 3, icon = "HIDE", autoHide = true, order = 60, posSlot = "CENTER"},
+			castBar = { enabled = false, background = true, backgroundAlpha = 0.2, height = 3, icon = "HIDE", shield = true, autoHide = true, order = 60, posSlot = "CENTER"},
 			powerBar = { enabled = true, background = true, backgroundAlpha = 0.2, height = 4.5, order = 20, colorType = "type", posSlot = "CENTER" },
 			emptyBar = { enabled = false, height = 3, order = 50, reactionType="npc", class = true, alpha = 0.2, posSlot = "CENTER"},
 			range = { enabled = false },
@@ -1299,7 +1299,7 @@ function LUF:LoadDefaults()
 				["castBar"] = {
 					size = 10,
 					["left"] = {
-						tagline = "[castname]",
+						tagline = "[castnameinterrupt]",
 						size = 100,
 					},
 					["center"] = {
@@ -1686,7 +1686,7 @@ function LUF:LoadDefaults()
 			enabled = true,
 			healthBar = { enabled = true, background = true, backgroundAlpha = 0.2, colorType = "class", reactionType="npc", height = 10, order = 10, vertical = true, posSlot = "CENTER"},
 			portrait = {enabled = false, type = "3D", alignment = "LEFT", width = 0.22, height = 4, order = 15, posSlot = "CENTER"},
-			castBar = { enabled = false, background = true, backgroundAlpha = 0.2, height = 3, icon = "HIDE", autoHide = true, order = 60, posSlot = "CENTER"},
+			castBar = { enabled = false, background = true, backgroundAlpha = 0.2, height = 3, icon = "HIDE", shield = true, autoHide = true, order = 60, posSlot = "CENTER"},
 			powerBar = { enabled = true, background = true, backgroundAlpha = 0.2, height = 1, order = 20, colorType = "type", vertical = true, posSlot = "right", posSlot = "RIGHT" },
 			emptyBar = { enabled = false, height = 3, order = 50, reactionType="npc", class = true, alpha = 0.2, posSlot = "CENTER"},
 			range = { enabled = false },
@@ -1777,7 +1777,7 @@ function LUF:LoadDefaults()
 				["castBar"] = {
 					size = 10,
 					["left"] = {
-						tagline = "[castname]",
+						tagline = "[castnameinterrupt]",
 						size = 100,
 					},
 					["center"] = {
@@ -2031,7 +2031,7 @@ function LUF:LoadDefaults()
 			enabled = false,
 			healthBar = { enabled = true, background = true, backgroundAlpha = 0.2, colorType = "class", reactionType="npc", height = 6, order = 10, posSlot = "CENTER"},
 			portrait = {enabled = false, type = "3D", alignment = "LEFT", width = 0.22, height = 4, order = 15, posSlot = "CENTER"},
-			castBar = { enabled = false, background = true, backgroundAlpha = 0.2, height = 3, icon = "HIDE", autoHide = true, order = 60, posSlot = "CENTER"},
+			castBar = { enabled = false, background = true, backgroundAlpha = 0.2, height = 3, icon = "HIDE", shield = true,autoHide = true, order = 60, posSlot = "CENTER"},
 			powerBar = { enabled = false, background = true, backgroundAlpha = 0.2, height = 4.5, order = 20, colorType = "type", posSlot = "CENTER" },
 			emptyBar = { enabled = false, height = 3, order = 50, reactionType="npc", class = true, alpha = 0.2, posSlot = "CENTER"},
 			range = { enabled = false },
@@ -2122,7 +2122,7 @@ function LUF:LoadDefaults()
 				["castBar"] = {
 					size = 10,
 					["left"] = {
-						tagline = "[castname]",
+						tagline = "[castnameinterrupt]",
 						size = 100,
 					},
 					["center"] = {
@@ -2525,7 +2525,7 @@ function LUF:LoadDefaults()
 			enabled = false,
 			healthBar = { enabled = true, background = true, backgroundAlpha = 0.2, colorType = "class", reactionType="npc", height = 6, order = 10, posSlot = "CENTER"},
 			portrait = {enabled = false, type = "3D", alignment = "LEFT", width = 0.22, height = 4, order = 15, posSlot = "CENTER"},
-			castBar = { enabled = false, background = true, backgroundAlpha = 0.2, height = 3, icon = "HIDE", autoHide = true, order = 60, posSlot = "CENTER"},
+			castBar = { enabled = false, background = true, backgroundAlpha = 0.2, height = 3, icon = "HIDE", shield = true,autoHide = true, order = 60, posSlot = "CENTER"},
 			powerBar = { enabled = false, background = true, backgroundAlpha = 0.2, height = 4.5, order = 20, colorType = "type", posSlot = "CENTER" },
 			emptyBar = { enabled = false, height = 3, order = 50, reactionType="npc", class = true, alpha = 0.2, posSlot = "CENTER"},
 			range = { enabled = false },
@@ -2616,7 +2616,7 @@ function LUF:LoadDefaults()
 				["castBar"] = {
 					size = 10,
 					["left"] = {
-						tagline = "[castname]",
+						tagline = "[castnameinterrupt]",
 						size = 100,
 					},
 					["center"] = {

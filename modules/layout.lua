@@ -93,6 +93,10 @@ local UnitSpecific = {
 
 		local SafeZone = Castbar:CreateTexture(nil, "OVERLAY")
 
+		local Shield = Castbar:CreateTexture(nil, 'OVERLAY', nil, 1)
+		Shield:SetTexture([[Interface\CastingBar\UI-CastingBar-Arena-Shield]])
+
+		Castbar.Shield = Shield
 		Castbar.bg = Background
 		Castbar.Icon = Icon
 		Castbar.SafeZone = SafeZone
@@ -253,7 +257,10 @@ local UnitSpecific = {
 		Icon:SetPoint("TOPLEFT", Castbar, "TOPLEFT")
 
 		local SafeZone = Castbar:CreateTexture(nil, "OVERLAY")
+		local Shield = Castbar:CreateTexture(nil, 'OVERLAY', nil, -1)
+		Shield:SetTexture([[Interface\CastingBar\UI-CastingBar-Arena-Shield]])
 
+		Castbar.Shield = Shield
 		Castbar.bg = Background
 		Castbar.Icon = Icon
 		Castbar.SafeZone = SafeZone
@@ -299,7 +306,10 @@ local UnitSpecific = {
 		Icon:SetPoint("TOPLEFT", Castbar, "TOPLEFT")
 
 		local SafeZone = Castbar:CreateTexture(nil, "OVERLAY")
+		local Shield = Castbar:CreateTexture(nil, 'OVERLAY', nil, -1)
+		Shield:SetTexture([[Interface\CastingBar\UI-CastingBar-Arena-Shield]])
 
+		Castbar.Shield = Shield
 		Castbar.bg = Background
 		Castbar.Icon = Icon
 		Castbar.SafeZone = SafeZone
@@ -330,7 +340,10 @@ local UnitSpecific = {
 		Icon:SetPoint("TOPLEFT", Castbar, "TOPLEFT")
 
 		local SafeZone = Castbar:CreateTexture(nil, "OVERLAY")
+		local Shield = Castbar:CreateTexture(nil, 'OVERLAY', nil, -1)
+		Shield:SetTexture([[Interface\CastingBar\UI-CastingBar-Arena-Shield]])
 
+		Castbar.Shield = Shield
 		Castbar.bg = Background
 		Castbar.Icon = Icon
 		Castbar.SafeZone = SafeZone
@@ -357,7 +370,10 @@ local UnitSpecific = {
 		Icon:SetPoint("TOPLEFT", Castbar, "TOPLEFT")
 
 		local SafeZone = Castbar:CreateTexture(nil, "OVERLAY")
+		local Shield = Castbar:CreateTexture(nil, 'OVERLAY', nil, -1)
+		Shield:SetTexture([[Interface\CastingBar\UI-CastingBar-Arena-Shield]])
 
+		Castbar.Shield = Shield
 		Castbar.bg = Background
 		Castbar.Icon = Icon
 		Castbar.SafeZone = SafeZone
@@ -366,6 +382,7 @@ local UnitSpecific = {
 		frame.Castbar = Castbar
 		frame.modules.castBar = Castbar
 		frame.modules.castBar.name = "Castbar"
+
 	end,
 	
 	maintanktarget = function(frame)
@@ -388,7 +405,10 @@ local UnitSpecific = {
 		Icon:SetPoint("TOPLEFT", Castbar, "TOPLEFT")
 
 		local SafeZone = Castbar:CreateTexture(nil, "OVERLAY")
+		local Shield = Castbar:CreateTexture(nil, 'OVERLAY', nil, -1)
+		Shield:SetTexture([[Interface\CastingBar\UI-CastingBar-Arena-Shield]])
 
+		Castbar.Shield = Shield
 		Castbar.bg = Background
 		Castbar.Icon = Icon
 		Castbar.SafeZone = SafeZone

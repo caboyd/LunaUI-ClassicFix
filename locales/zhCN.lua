@@ -406,6 +406,7 @@ local L = {
 ["color:xxxxxx"] = "自定义颜色（六位rrggbb代码）",
 ["nocolor"] = "重置为白色",
 ["castname"] = "法术名字",
+["castnameinterrupt"] = "Name of the unit's current cast, in red if not interruptible",
 ["casttime"] = "施法时间",
 ["xp"] = "当前经验等级",
 ["xppet"] = "The pet's current xp level",
@@ -419,6 +420,8 @@ local L = {
 ["Enable the sound when switching target"] = "Enable the sound when switching target",
 ["Right click to focus"] = "Right click to focus",
 ["Focus the unit upon right clicking"] = "Focus the unit upon right clicking",
+["Shield icon"] = "Non-interruptible cast",
+["Shield icon desc"] = "Show a shield around the cast icon for Non-interruptible casts",
 }
 
 local LUF = select(2, ...)

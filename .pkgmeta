@@ -14,9 +14,6 @@ externals:
   libs/LibClassicDurations:
     url: https://github.com/rgd87/LibClassicDurations.git
     tag: master
-  libs/LibClassicCasterino:
-    url: https://github.com/rgd87/LibClassicCasterino.git
-    tag: master
   libs/LibHealComm-4.0:
     url: https://github.com/Azilroka/LibHealComm-4.0.git
     tag: master

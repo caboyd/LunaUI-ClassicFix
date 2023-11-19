@@ -1,7 +1,7 @@
 -- Luna Unit Frames 4.0 by Aviana
 
 LUF = select(2, ...)
-LUF.version = 4351
+LUF.version = 4353
 
 local L = LUF.L
 local ACR = LibStub("AceConfigRegistry-3.0", true)
@@ -557,6 +557,7 @@ local moduleSettings = {
 				mod.Icon:SetPoint("LEFT", mod, "RIGHT")
 			end
 		end
+		mod.Shield.showshield = (config.shield and config.icon ~= "HIDE")
 	end,
 	emptyBar = function(mod, config)
 		mod.texture = LUF:LoadMedia(SML.MediaType.STATUSBAR, config.statusbar)
@@ -1070,80 +1071,92 @@ function LUF.PlaceModules(frame)
 	usableXCenter = usableX * (config.slots["center"].value/totalSum)
 	usableXRight = usableX * (config.slots["right"].value/totalSum)
 	
-	
-	local width, height, sqrX, attrPoint
-	
-	-- Left bars
+	local width, height, attrPoint
+
+	--Left Bars
 	yOffset = -1
 	if config.portrait.enabled and config.portrait.alignment == "LEFT" then
 		xOffset = xOffset + frame.modules.portrait:GetWidth()
 	end
 	attrPoint = point
-	sqrX = 0
-	if config.slots["left"].orientation == "vertical" then
-		width = usableXLeft
-		for i,data in pairs(left) do
-			if frame.modules[data.key] ~= attFrame then
-				frame.modules[data.key]:SetPoint(point, attFrame, attrPoint, xOffset-sqrX, yOffset)
-				sqrX = 0
-			end
+
+	--sqrX is reverse indent. 
+	--if the castbar icon exists it will push the next bar to the right unless you offset it backwards
+	local sqrX = 0
+	local isOrientationVertical = config.slots["left"].orientation == "vertical"
+
+	for i,data in pairs(left) do
+		
+		if isOrientationVertical then
+			width = usableXLeft
 			height = usableYLeft * (data.size/leftSum)
-			if data.key == "castBar" and config.castBar.icon ~= "HIDE" then
-				sqrX = height
-				frame.modules.castBar.Icon:SetSize(sqrX, sqrX)
-				frame.modules.castBar:SetWidth(width - sqrX)
-				if config.castBar.icon == "LEFT" then
-					frame.modules.castBar:ClearAllPoints()
-					frame.modules.castBar:SetPoint(point, attFrame, attrPoint, xOffset + sqrX, yOffset)
-				else
-					sqrX = 0
-				end
+		else
+			width = usableXLeft * (data.size/leftSum)
+			height = usableYLeft
+		end
+
+		if frame.modules[data.key] ~= attFrame then
+			frame.modules[data.key]:SetPoint(point, attFrame, attrPoint, xOffset - sqrX, yOffset)
+			sqrX = 0
+		end
+		
+		if data.key == "castBar" and config.castBar.icon ~= "HIDE" then
+			sqrX = height
+			frame.modules.castBar.Icon:SetSize(sqrX, sqrX)
+			frame.modules.castBar:SetWidth(width - sqrX)
+			if config.castBar.icon == "LEFT" then
+				frame.modules.castBar:ClearAllPoints()
+				frame.modules.castBar:SetPoint(point, attFrame, attrPoint, xOffset + sqrX , yOffset)
+				--fix indenting for next bars
+				if not isOrientationVertical then sqrX = 0 end
 			else
-				frame.modules[data.key]:SetWidth(width)
+				--fix indenting for next bars
+				if isOrientationVertical then sqrX = 0 else sqrX = -sqrX end
 			end
-			frame.modules[data.key]:SetHeight(height)
-			if frame.tags[data.key] then
-				local tagconfig = config.tags[data.key]
-				frame.tags[data.key].left:SetWidth(width*tagconfig.left.size/100)
-				frame.tags[data.key].left:SetHeight(height)
-				frame.tags[data.key].center:SetWidth(width*tagconfig.center.size/100)
-				frame.tags[data.key].center:SetHeight(height)
-				frame.tags[data.key].right:SetWidth(width*tagconfig.right.size/100)
-				frame.tags[data.key].right:SetHeight(height)
+		else
+			frame.modules[data.key]:SetWidth(width)
+		end
+
+		if data.key == "castBar" and frame.modules.castBar.Shield.showshield then
+			local Shield = frame.modules.castBar.Shield
+			local shieldSize = height * 3
+			--center shield on top of icon
+			local shieldOff =  shieldSize / 2.1
+			Shield:ClearAllPoints()
+			Shield:SetSize(shieldSize, shieldSize)
+			if config.castBar.icon == "LEFT" then
+				Shield:SetPoint("TOPLEFT", frame.modules.castBar, "LEFT",  -shieldOff , shieldOff )
+			else
+				Shield:SetPoint("TOPLEFT", frame.modules.castBar, "LEFT",  width - shieldOff, shieldOff )
 			end
-			if frame.modules[data.key].Update then
-				frame.modules[data.key]:Update()
-			end
+		end
+
+		frame.modules[data.key]:SetHeight(height)
+
+		if frame.tags[data.key] then
+			local tagconfig = config.tags[data.key]
+			frame.tags[data.key].left:SetWidth(width*tagconfig.left.size/100)
+			frame.tags[data.key].left:SetHeight(height)
+			frame.tags[data.key].center:SetWidth(width*tagconfig.center.size/100)
+			frame.tags[data.key].center:SetHeight(height)
+			frame.tags[data.key].right:SetWidth(width*tagconfig.right.size/100)
+			frame.tags[data.key].right:SetHeight(height)
+		end
+
+		if frame.modules[data.key].Update then
+			frame.modules[data.key]:Update()
+		end
+	
+		if isOrientationVertical then
 			xOffset = 0
 			attrPoint = "BOTTOMLEFT"
-			attFrame = frame.modules[data.key]
-		end
-	else
-		height = usableYLeft
-		for i,data in pairs(left) do
-			if frame.modules[data.key] ~= attFrame then
-				frame.modules[data.key]:SetPoint(point, attFrame, attrPoint, xOffset, yOffset)
-			end
-			width = usableXLeft * (data.size/leftSum)
-			frame.modules[data.key]:SetWidth(width)
-			frame.modules[data.key]:SetHeight(height)
-			if frame.tags[data.key] then
-				local tagconfig = config.tags[data.key]
-				frame.tags[data.key].left:SetWidth(width*tagconfig.left.size/100)
-				frame.tags[data.key].left:SetHeight(height)
-				frame.tags[data.key].center:SetWidth(width*tagconfig.center.size/100)
-				frame.tags[data.key].center:SetHeight(height)
-				frame.tags[data.key].right:SetWidth(width*tagconfig.right.size/100)
-				frame.tags[data.key].right:SetHeight(height)
-			end
-			if frame.modules[data.key].Update then
-				frame.modules[data.key]:Update()
-			end
+		else
 			xOffset = 1
 			yOffset = 0
 			attrPoint = "TOPRIGHT"
-			attFrame = frame.modules[data.key]
-		end
+		end	
+
+		attFrame = frame.modules[data.key]
 	end
 	
 	-- Center Bars
@@ -1157,74 +1170,80 @@ function LUF.PlaceModules(frame)
 	if leftSum > 0 then
 		xOffset = xOffset + usableXLeft + 1
 	end
-	if config.slots["center"].orientation == "vertical" then
-		width = usableXCenter
-		for i,data in pairs(center) do
-			if frame.modules[data.key] ~= attFrame then
-				frame.modules[data.key]:SetPoint(point, attFrame, attrPoint, xOffset-sqrX, yOffset)
-				sqrX = 0
-			end
+	sqrX = 0
+	isOrientationVertical = config.slots["center"].orientation == "vertical"
+
+	for i,data in pairs(center) do
+		if isOrientationVertical then
+			width = usableXCenter
 			height = usableYCenter * (data.size/centerSum)
-			if data.key == "castBar" and config.castBar.icon ~= "HIDE" then
-				sqrX = height
-				frame.modules.castBar.Icon:SetSize(sqrX, sqrX)
-				frame.modules.castBar:SetWidth(width - sqrX)
-				if config.castBar.icon == "LEFT" then
-					frame.modules.castBar:ClearAllPoints()
-					frame.modules.castBar:SetPoint(point, attFrame, attrPoint, xOffset + sqrX, yOffset)
-				else
-					sqrX = 0
-				end
+		else
+			width = usableXCenter * (data.size/centerSum)
+			height = usableYCenter
+		end
+		if frame.modules[data.key] ~= attFrame then
+			frame.modules[data.key]:SetPoint(point, attFrame, attrPoint, xOffset - sqrX, yOffset)
+			sqrX = 0
+		end
+		if data.key == "castBar" and config.castBar.icon ~= "HIDE" then
+			sqrX = height
+			frame.modules.castBar.Icon:SetSize(sqrX, sqrX)
+			frame.modules.castBar:SetWidth(width - sqrX)
+			if config.castBar.icon == "LEFT" then
+				frame.modules.castBar:ClearAllPoints()
+				frame.modules.castBar:SetPoint(point, attFrame, attrPoint, xOffset + sqrX , yOffset)
+				--fix indenting for next bars
+				if not isOrientationVertical then sqrX = 0 end
 			else
-				frame.modules[data.key]:SetWidth(width)
+				--fix indenting for next bars
+				if isOrientationVertical then sqrX = 0 else sqrX = -sqrX end
 			end
-			frame.modules[data.key]:SetHeight(height)
-			if frame.tags[data.key] then
-				local tagconfig = config.tags[data.key]
-				frame.tags[data.key].left:SetWidth(width*tagconfig.left.size/100)
-				frame.tags[data.key].left:SetHeight(height)
-				frame.tags[data.key].center:SetWidth(width*tagconfig.center.size/100)
-				frame.tags[data.key].center:SetHeight(height)
-				frame.tags[data.key].right:SetWidth(width*tagconfig.right.size/100)
-				frame.tags[data.key].right:SetHeight(height)
+		else
+			frame.modules[data.key]:SetWidth(width)
+		end
+
+		if data.key == "castBar" and frame.modules.castBar.Shield.showshield then
+			local shieldSize = height * 3
+			--center shield on top of icon
+			local shieldOff =  shieldSize / 2.1
+			frame.modules.castBar.Shield:ClearAllPoints()
+			frame.modules.castBar.Shield:SetSize(shieldSize, shieldSize)
+			if config.castBar.icon == "LEFT" then
+				frame.modules.castBar.Shield:SetPoint("TOPLEFT", frame.modules.castBar, "LEFT",  -shieldOff , shieldOff )
+			else
+				frame.modules.castBar.Shield:SetPoint("TOPLEFT", frame.modules.castBar, "LEFT",  width - shieldOff, shieldOff )
 			end
-			if frame.modules[data.key].Update then
-				frame.modules[data.key]:Update()
-			end
+		end
+
+		frame.modules[data.key]:SetHeight(height)
+
+		if frame.tags[data.key] then
+			local tagconfig = config.tags[data.key]
+			frame.tags[data.key].left:SetWidth(width*tagconfig.left.size/100)
+			frame.tags[data.key].left:SetHeight(height)
+			frame.tags[data.key].center:SetWidth(width*tagconfig.center.size/100)
+			frame.tags[data.key].center:SetHeight(height)
+			frame.tags[data.key].right:SetWidth(width*tagconfig.right.size/100)
+			frame.tags[data.key].right:SetHeight(height)
+		end
+
+		if frame.modules[data.key].Update then
+			frame.modules[data.key]:Update()
+		end
+		
+		if isOrientationVertical then
 			xOffset = 0
 			attrPoint = "BOTTOMLEFT"
-			attFrame = frame.modules[data.key]
-		end
-	else
-		height = usableYCenter
-		for i,data in pairs(center) do
-			if frame.modules[data.key] ~= attFrame then
-				frame.modules[data.key]:SetPoint(point, attFrame, attrPoint, xOffset, yOffset)
-			end
-			width = usableXCenter * (data.size/centerSum)
-			frame.modules[data.key]:SetWidth(width)
-			frame.modules[data.key]:SetHeight(height)
-			if frame.tags[data.key] then
-				local tagconfig = config.tags[data.key]
-				frame.tags[data.key].left:SetWidth(width*tagconfig.left.size/100)
-				frame.tags[data.key].left:SetHeight(height)
-				frame.tags[data.key].center:SetWidth(width*tagconfig.center.size/100)
-				frame.tags[data.key].center:SetHeight(height)
-				frame.tags[data.key].right:SetWidth(width*tagconfig.right.size/100)
-				frame.tags[data.key].right:SetHeight(height)
-			end
-			if frame.modules[data.key].Update then
-				frame.modules[data.key]:Update()
-			end
+		else
 			xOffset = 1
 			yOffset = 0
 			attrPoint = "TOPRIGHT"
-			attFrame = frame.modules[data.key]
-		end
+		end	
+
+		attFrame = frame.modules[data.key]
 	end
-	
+
 	-- Right Bars
-	
 	attFrame = frame
 	xOffset = -1
 	yOffset = -1
@@ -1233,70 +1252,77 @@ function LUF.PlaceModules(frame)
 	end
 	attrPoint = "TOPRIGHT"
 	point = "TOPRIGHT"
-	if config.slots["right"].orientation == "vertical" then
-		width = usableXRight
-		for i,data in pairs(right) do
-			if frame.modules[data.key] ~= attFrame then
-				frame.modules[data.key]:SetPoint(point, attFrame, attrPoint, xOffset-sqrX, yOffset)
-				sqrX = 0
-			end
+	sqrX = 0
+	isOrientationVertical = config.slots["right"].orientation == "vertical"
+
+	for i,data in pairs(right) do
+		if isOrientationVertical then
+			width = usableXRight
 			height = usableYRight * (data.size/rightSum)
-			if data.key == "castBar" and config.castBar.icon ~= "HIDE" then
-				sqrX = height
-				frame.modules.castBar.Icon:SetSize(sqrX, sqrX)
-				frame.modules.castBar:SetWidth(width - sqrX)
-				if config.castBar.icon == "LEFT" then
-					frame.modules.castBar:ClearAllPoints()
-					frame.modules.castBar:SetPoint(point, attFrame, attrPoint, xOffset + sqrX, yOffset)
-				else
-					sqrX = 0
-				end
+		else
+			width = usableXRight * (data.size/rightSum)
+			height = usableYRight
+		end
+		if frame.modules[data.key] ~= attFrame then
+			frame.modules[data.key]:SetPoint(point, attFrame, attrPoint, xOffset + sqrX, yOffset)
+			sqrX = 0
+		end
+		if data.key == "castBar" and config.castBar.icon ~= "HIDE" then
+			sqrX = height
+			frame.modules.castBar.Icon:SetSize(sqrX, sqrX)
+			frame.modules.castBar:SetWidth(width - sqrX)
+			if config.castBar.icon == "RIGHT" then
+				frame.modules.castBar:ClearAllPoints()
+				frame.modules.castBar:SetPoint(point, attFrame, attrPoint, xOffset - sqrX , yOffset)
+				--fix indenting for next bars
+				if not isOrientationVertical then sqrX = 0 end
 			else
-				frame.modules[data.key]:SetWidth(width)
+				--fix indenting for next bars
+				if isOrientationVertical then sqrX = 0 else sqrX = -sqrX end
 			end
-			frame.modules[data.key]:SetHeight(height)
-			if frame.tags[data.key] then
-				local tagconfig = config.tags[data.key]
-				frame.tags[data.key].left:SetWidth(width*tagconfig.left.size/100)
-				frame.tags[data.key].left:SetHeight(height)
-				frame.tags[data.key].center:SetWidth(width*tagconfig.center.size/100)
-				frame.tags[data.key].center:SetHeight(height)
-				frame.tags[data.key].right:SetWidth(width*tagconfig.right.size/100)
-				frame.tags[data.key].right:SetHeight(height)
+		else
+			frame.modules[data.key]:SetWidth(width)
+		end
+
+		if data.key == "castBar" and frame.modules.castBar.Shield.showshield then
+			local shieldSize = height * 3
+			--center shield on top of icon
+			local shieldOff =  shieldSize / 2.1
+			frame.modules.castBar.Shield:ClearAllPoints()
+			frame.modules.castBar.Shield:SetSize(shieldSize, shieldSize)
+			if config.castBar.icon == "LEFT" then
+				frame.modules.castBar.Shield:SetPoint("TOPLEFT", frame.modules.castBar, "LEFT",  -shieldOff , shieldOff )
+			else
+				frame.modules.castBar.Shield:SetPoint("TOPLEFT", frame.modules.castBar, "LEFT",  width - shieldOff, shieldOff )
 			end
-			if frame.modules[data.key].Update then
-				frame.modules[data.key]:Update()
-			end
+		end
+
+		frame.modules[data.key]:SetHeight(height)
+
+		if frame.tags[data.key] then
+			local tagconfig = config.tags[data.key]
+			frame.tags[data.key].left:SetWidth(width*tagconfig.left.size/100)
+			frame.tags[data.key].left:SetHeight(height)
+			frame.tags[data.key].center:SetWidth(width*tagconfig.center.size/100)
+			frame.tags[data.key].center:SetHeight(height)
+			frame.tags[data.key].right:SetWidth(width*tagconfig.right.size/100)
+			frame.tags[data.key].right:SetHeight(height)
+		end
+
+		if frame.modules[data.key].Update then
+			frame.modules[data.key]:Update()
+		end
+		
+		if isOrientationVertical then
 			xOffset = 0
 			attrPoint = "BOTTOMRIGHT"
-			attFrame = frame.modules[data.key]
-		end
-	else
-		height = usableYRight
-		for i,data in pairs(right) do
-			if frame.modules[data.key] ~= attFrame then
-				frame.modules[data.key]:SetPoint(point, attFrame, attrPoint, xOffset, yOffset)
-			end
-			width = usableXRight * (data.size/rightSum)
-			frame.modules[data.key]:SetWidth(width)
-			frame.modules[data.key]:SetHeight(height)
-			if frame.tags[data.key] then
-				local tagconfig = config.tags[data.key]
-				frame.tags[data.key].left:SetWidth(width*tagconfig.left.size/100)
-				frame.tags[data.key].left:SetHeight(height)
-				frame.tags[data.key].center:SetWidth(width*tagconfig.center.size/100)
-				frame.tags[data.key].center:SetHeight(height)
-				frame.tags[data.key].right:SetWidth(width*tagconfig.right.size/100)
-				frame.tags[data.key].right:SetHeight(height)
-			end
-			if frame.modules[data.key].Update then
-				frame.modules[data.key]:Update()
-			end
+		else
 			xOffset = -1
 			yOffset = 0
 			attrPoint = "TOPLEFT"
-			attFrame = frame.modules[data.key]
-		end
+		end	
+
+		attFrame = frame.modules[data.key]
 	end
 end
 
