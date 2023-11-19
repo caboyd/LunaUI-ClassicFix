@@ -409,6 +409,7 @@ local L = {
 ["color"] = "Farbe in hexadezimal (rrggbb)",
 ["nocolor"] = "Setzt die Farbei auf Weiss zur\195\188ck",
 ["castname"] = "Name des aktuellen Zaubers",
+["castnameinterrupt"] = "Name of the unit's current cast, in red if not interruptible",
 ["casttime"] = "Wirkungsdauer des aktuellen Zaubers",
 ["xp"] = "Die aktuelle Erfahrung",
 ["xppet"] = "Die aktuellen Prozente der Erfahrung",
@@ -422,6 +423,8 @@ local L = {
 ["Enable the sound when switching target"] = "Schalte das Ger\195\164usch bei Zielwechsel ein",
 ["Right click to focus"] = "Rechtsklick fokus",
 ["Focus the unit upon right clicking"] = "Fokussiere die Einheit bei Rechtsklick",
+["Shield icon"] = "Non-interruptible cast",
+["Shield icon desc"] = "Show a shield around the cast icon for Non-interruptible casts",
 }
 
 local LUF = select(2, ...)

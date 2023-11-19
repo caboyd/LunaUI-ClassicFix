@@ -133,8 +133,8 @@ local _ENV = {
 			rawset(tbl, val, val)
 			return val
 	end}),
-	UnitCastingInfo = function(unit) return LCC:UnitCastingInfo(unit) end,
-	UnitChannelInfo = function(unit) return LCC:UnitChannelInfo(unit) end,
+	UnitCastingInfo = function(unit) return UnitCastingInfo(unit) end,
+	UnitChannelInfo = function(unit) return UnitChannelInfo(unit) end,
 	RARE = strmatch(GARRISON_MISSION_RARE,"%a*"),
 	GHOST = GetSpellInfo(8326),
 	LHC = LHC,
@@ -1140,11 +1140,23 @@ local tagStrings = {
 		return UnitCastingInfo(unit) or UnitChannelInfo(unit)
 	end]],
 
+	["castnameinterrupt"] = [[function(unit)
+		local name, _, _, _, _, _, _, notInterruptible = UnitCastingInfo(unit)
+		if(not name) then
+			name, _, _, _, _, _, notInterruptible = UnitChannelInfo(unit)
+		end
+		if(name and notInterruptible) then
+			local red = Hex(LUF.db.profile.colors.red.r, LUF.db.profile.colors.red.g, LUF.db.profile.colors.red.b)
+			name = red..name.."|r"
+		end
+		return name
+	end]],
+
 	["casttime"] = [[function(unit)
-		local name, _, texture, startTime, endTime = UnitCastingInfo(unit)
+		local name, _, _, startTime, endTime = UnitCastingInfo(unit)
 		local retTime
 		if not name then
-			name, _, texture, startTime, endTime = UnitChannelInfo(unit)
+			name, text, texture, startTime, endTime = UnitChannelInfo(unit)
 			if name then
 				retTime = (endTime / 1000) - GetTime()
 			end
@@ -1342,7 +1354,6 @@ local tagEvents = {
 	["healthcolor"]         = "UNIT_HEALTH_FREQUENT UNIT_MAXHEALTH",
 	["color"]               = "PLAYER_LOGIN", -- Dummy
 	["br"]                  = "PLAYER_LOGIN", -- Dummy
-	["castname"]            = "UNIT_SPELLCAST_START UNIT_SPELLCAST_CHANNEL_START UNIT_SPELLCAST_STOP",
 	["xp"]                  = "PLAYER_XP_UPDATE UPDATE_EXHAUSTION",
 	["percxp"]              = "PLAYER_XP_UPDATE",
 	["xpPet"]               = "UNIT_PET_EXPERIENCE UNIT_LEVEL",
@@ -1425,6 +1436,10 @@ onUpdateDelay["numtargeting"] = 0.5
 onUpdateDelay["cnumtargeting"] = 0.5
 onUpdateDelay["afktime"] = 0.5
 onUpdateDelay["casttime"] = 0.1
+
+--since 1.15.0 cast events are not properly triggering so update name automatically
+onUpdateDelay["castname"] = 0.20
+onUpdateDelay["castnameinterrrupt"] = 0.20
 
 local escapeSequences = {
 	["||c"] = "|c",

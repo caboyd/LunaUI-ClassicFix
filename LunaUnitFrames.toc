@@ -2,7 +2,7 @@
 ## Title: Luna Unit Frames
 ## Notes: 
 ## Author: Aviana
-## Version: 4351
+## Version: 4353
 ## SavedVariables: LunaUFDB
 ## OptionalDeps: Ace3, LibSharedMedia-3.0, AceGUI-3.0-SharedMediaWidgets, Clique
 ## X-License: WTFPL (http://www.wtfpl.net/about/)
@@ -22,7 +22,6 @@ libs\LibHealComm-4.0\LibHealComm-4.0.xml
 libs\LibAuraTypes\LibAuraTypes.lua
 libs\LibSpellLocks\LibSpellLocks.lua
 libs\LibTargeted\LibTargeted.lua
-libs\LibClassicCasterino\LibClassicCasterino.lua
 libs\LibClassicDurations\LibClassicDurations.xml
 
 # oUF

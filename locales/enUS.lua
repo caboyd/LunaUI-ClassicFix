@@ -406,6 +406,7 @@ local L = {
 ["color:xxxxxx"] = "Custom color in hexadecimal (rrggbb)",
 ["nocolor"] = "Resets the color to white",
 ["castname"] = "Name of the unit's current cast",
+["castnameinterrupt"] = "Name of the unit's current cast, in red if not interruptible",
 ["casttime"] = "Casttime of the unit's current cast",
 ["xp"] = "The unit's current xp level",
 ["xppet"] = "The pet's current xp level",
@@ -421,6 +422,8 @@ local L = {
 ["Focus the unit upon right clicking"] = "Focus the unit upon right clicking",
 ["Always on Top"] = "Always on Top",
 ["Border will always be on top of Frames"] = "Border will always be on top of Frames",
+["Shield icon"] = "Non-interruptible cast",
+["Shield icon desc"] = "Show a shield around the cast icon for Non-interruptible casts",
 }
 
 LUF.L = L

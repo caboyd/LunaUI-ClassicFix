@@ -48,6 +48,7 @@ local InfoTags = {
 	["buffcount"] = true,
 	["range"] = true,
 	["castname"] = true,
+	["castnameinterrupt"] = true,
 	["casttime"] = true,
 	["xp"] = true,
 	["xppet"] = true,
@@ -777,6 +778,12 @@ function LUF:CreateConfig()
 					type = "select",
 					order = 3,
 					values = {["HIDE"] = HIDE, ["LEFT"] = L["Left"], ["RIGHT"] = L["Right"]},
+				},
+				shield = {
+					name = L["Shield icon"],
+					desc = L["Shield icon desc"],
+					type = "toggle",
+					order = 4,
 				},
 				height = {
 					name = L["Height"],
