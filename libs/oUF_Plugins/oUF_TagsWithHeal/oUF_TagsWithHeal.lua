@@ -1137,17 +1137,14 @@ local tagStrings = {
 	["br"] = [[function(unit) return "\n" end]],
 
 	["castname"] = [[function(unit)
-		return UnitCastingInfo(unit) or UnitChannelInfo(unit)
-	end]],
-
-	["castnameinterrupt"] = [[function(unit)
 		local name, _, _, _, _, _, _, notInterruptible = UnitCastingInfo(unit)
 		if(not name) then
 			name, _, _, _, _, _, notInterruptible = UnitChannelInfo(unit)
 		end
 		if(name and notInterruptible) then
-			local red = Hex(LUF.db.profile.colors.red.r, LUF.db.profile.colors.red.g, LUF.db.profile.colors.red.b)
-			name = red..name.."|r"
+			local c = LUF.db.profile.colors.castnotinterruptibletext
+			local color = Hex(c.r, c.g, c.b)
+			name = color..name.."|r"
 		end
 		return name
 	end]],
@@ -1165,6 +1162,41 @@ local tagStrings = {
 		end
 		return retTime and math.floor(retTime * 10)/10
 	end]],
+
+	["casttimesmart"] = [[function(unit)
+		previous_time = previous_time or 0
+		diff = diff or 0
+		last_castID = last_castID or 0
+		local name, _, _, startTime, endTime,_,castID = UnitCastingInfo(unit)
+		local new_time = 0
+		if not name then
+			name, text, texture, startTime, endTime = UnitChannelInfo(unit)
+			if name then
+				new_time = (endTime / 1000) - GetTime()
+			end
+		else
+			new_time = (GetTime() - (endTime / 1000)) * -1
+		end
+		local result = math.floor(new_time * 10)/10
+		
+		if( castID ~= last_castID ) then
+			diff = 0
+		else
+			if new_time > previous_time then
+				diff = diff + (new_time - previous_time)
+			end
+		end
+
+		if (math.floor(diff * 10)/10 > 0) then
+			local diff_result = math.floor(diff * 10)/10
+			result = "(-"..diff_result..") "..result
+		end 
+		
+		last_castID = castID
+		previous_time = new_time
+		return result
+	end]],
+
 
 	["xp"] = [[function(unit)
 		if UnitIsUnit(unit,"pet") then
@@ -1438,8 +1470,7 @@ onUpdateDelay["afktime"] = 0.5
 onUpdateDelay["casttime"] = 0.1
 
 --since 1.15.0 cast events are not properly triggering so update name automatically
-onUpdateDelay["castname"] = 0.20
-onUpdateDelay["castnameinterrrupt"] = 0.20
+onUpdateDelay["castname"] = 0.1
 
 local escapeSequences = {
 	["||c"] = "|c",
