@@ -206,7 +206,7 @@ function LUF:LoadDefaults()
 						size = 100,
 					},
 					["right"] = {
-						tagline = "[casttime]",
+						tagline = "[casttimesmart]",
 						size = 100,
 					},
 				},
