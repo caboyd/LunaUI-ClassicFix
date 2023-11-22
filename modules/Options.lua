@@ -50,6 +50,7 @@ local InfoTags = {
 	["castname"] = true,
 	["castnameinterrupt"] = true,
 	["casttime"] = true,
+	["casttimesmart"] = true,
 	["xp"] = true,
 	["xppet"] = true,
 	["percxp"] = true,
@@ -4528,6 +4529,18 @@ function LUF:CreateConfig()
 								name = SPELL_CASTING,
 								type = "color",
 								order = 2,
+							},
+							castnotinterrruptible = {
+								name = L["Not interruptible cast"]
+								desc = L["Color of cast bar when cast not interruptible"]
+								type = "color",
+								order = 3,
+							},
+							castnotinterrruptibletext = {
+								name = L["Not interruptible cast text"]
+								desc = L["Color of cast bar text when cast not interruptible"]
+								type = "color",
+								order = 4,
 							},
 						},
 					},

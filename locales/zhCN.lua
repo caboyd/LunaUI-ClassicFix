@@ -406,8 +406,8 @@ local L = {
 ["color:xxxxxx"] = "自定义颜色（六位rrggbb代码）",
 ["nocolor"] = "重置为白色",
 ["castname"] = "法术名字",
-["castnameinterrupt"] = "Name of the unit's current cast, in red if not interruptible",
 ["casttime"] = "施法时间",
+["casttimesmart"] = "施法时间, shows amount of time reduced by knockback",
 ["xp"] = "当前经验等级",
 ["xppet"] = "The pet's current xp level",
 ["percxp"] = "当前经验百分比",
@@ -422,6 +422,10 @@ local L = {
 ["Focus the unit upon right clicking"] = "Focus the unit upon right clicking",
 ["Shield icon"] = "Non-interruptible cast",
 ["Shield icon desc"] = "Show a shield around the cast icon for Non-interruptible casts",
+["Not interruptible cast"] = "Not interruptible cast",
+["Color of cast bar when cast not interruptible"]  = "Color of cast bar when cast not interruptible",
+["Not interruptible cast text"] = "Not interruptible cast text",
+["Color of cast bar text when cast not interruptible"] = "Color of cast bar text when cast not interruptible",
 }
 
 local LUF = select(2, ...)

@@ -406,8 +406,8 @@ local L = {
 ["color:xxxxxx"] = "自定義顏色（六位rrggbb代碼）",
 ["nocolor"] = "重置為白色",
 ["castname"] = "法術名字",
-["castnameinterrupt"] = "Name of the unit's current cast, in red if not interruptible",
 ["casttime"] = "施法時間",
+["casttimesmart"] = "施法時間, shows amount of time reduced by knockback",
 ["xp"] = "目前經驗等級",
 ["xppet"] = "The pet's current xp level",
 ["percxp"] = "目前的經驗值百分比",
@@ -424,6 +424,10 @@ local L = {
 ["Border will always be on top of Frames"] = "Border will always be on top of Frames",
 ["Shield icon"] = "Non-interruptible cast",
 ["Shield icon desc"] = "Show a shield around the cast icon for Non-interruptible casts",
+["Not interruptible cast"] = "Not interruptible cast",
+["Color of cast bar when cast not interruptible"]  = "Color of cast bar when cast not interruptible",
+["Not interruptible cast text"] = "Not interruptible cast text",
+["Color of cast bar text when cast not interruptible"] = "Color of cast bar text when cast not interruptible",
 }
 
 local LUF = select(2, ...)

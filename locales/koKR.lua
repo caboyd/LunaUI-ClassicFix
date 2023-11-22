@@ -406,8 +406,8 @@ local L = {
 ["color:xxxxxx"] = "사용자 지정 색상 표시 (rrggbb)",
 ["nocolor"] = "흰색으로 재설정",
 ["castname"] = "유닛이 현재 시전하는 이름 표시",
-["castnameinterrupt"] = "Name of the unit's current cast, in red if not interruptible",
 ["casttime"] = "유닛이 현재 시전하는 시전 시간 표시",
+["casttimesmart"] = "유닛이 현재 시전하는 시전 시간 표시, shows amount of time reduced by knockback",
 ["xp"] = "유닛의 현재 경험치 진행도 표시",
 ["xppet"] = "The pet's current xp level",
 ["percxp"] = "유닛의 현재 경험치 백분율 표시",
@@ -422,6 +422,10 @@ local L = {
 ["Focus the unit upon right clicking"] = "Focus the unit upon right clicking",
 ["Shield icon"] = "Non-interruptible cast",
 ["Shield icon desc"] = "Show a shield around the cast icon for Non-interruptible casts",
+["Not interruptible cast"] = "Not interruptible cast",
+["Color of cast bar when cast not interruptible"]  = "Color of cast bar when cast not interruptible",
+["Not interruptible cast text"] = "Not interruptible cast text",
+["Color of cast bar text when cast not interruptible"] = "Color of cast bar text when cast not interruptible",
 }
 
 local LUF = select(2, ...)

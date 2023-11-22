@@ -406,8 +406,8 @@ local L = {
 ["color:xxxxxx"] = "Custom color in hexadecimal (rrggbb)",
 ["nocolor"] = "Resets the color to white",
 ["castname"] = "Name of the unit's current cast",
-["castnameinterrupt"] = "Name of the unit's current cast, in red if not interruptible",
-["casttime"] = "Casttime of the unit's current cast",
+["casttime"] = "Cast time of the unit's current cast",
+["casttimesmart"] = "Cast time of the unit's current cast, shows amount of time reduced by knockback",
 ["xp"] = "The unit's current xp level",
 ["xppet"] = "The pet's current xp level",
 ["percxp"] = "The unit's current xp percentage",
@@ -424,6 +424,10 @@ local L = {
 ["Border will always be on top of Frames"] = "Border will always be on top of Frames",
 ["Shield icon"] = "Non-interruptible cast",
 ["Shield icon desc"] = "Show a shield around the cast icon for Non-interruptible casts",
+["Not interruptible cast"] = "Not interruptible cast",
+["Color of cast bar when cast not interruptible"]  = "Color of cast bar when cast not interruptible",
+["Not interruptible cast text"] = "Not interruptible cast text",
+["Color of cast bar text when cast not interruptible"] = "Color of cast bar text when cast not interruptible",
 }
 
 LUF.L = L

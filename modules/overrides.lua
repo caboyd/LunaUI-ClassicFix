@@ -211,14 +211,16 @@ end
 LUF.overrides["CastBar"] = {}
 LUF.overrides["CastBar"].PostCastStart = function(self, unit)
 
+	local barColor;
 	if UnitCastingInfo(unit) then
-		local castColor = LUF.db.profile.colors.cast
-		self:SetStatusBarColor(castColor.r, castColor.g, castColor.b)
+		barColor = LUF.db.profile.colors.cast
 	else
-		local chanColor = LUF.db.profile.colors.channel
-		self:SetStatusBarColor(chanColor.r, chanColor.g, chanColor.b)
+		barColor =  LUF.db.profile.colors.channel
 	end
-
+	if self.notInterruptible then
+		barColor = LUF.db.profile.colors.castnotinterrruptible
+	end
+	self:SetStatusBarColor(barColor.r, barColor.g, barColor.b)
 	--Only turn shield on if necessary
 	self.Shield:SetShown(self.Shield.showshield and self.notInterruptible)
 
