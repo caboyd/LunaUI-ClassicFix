@@ -198,7 +198,7 @@ function LUF:LoadDefaults()
 				["castBar"] = {
 					size = 10,
 					["left"] = {
-						tagline = "[castnameinterrupt]",
+						tagline = "[castname]",
 						size = 100,
 					},
 					["center"] = {
@@ -841,7 +841,7 @@ function LUF:LoadDefaults()
 				["castBar"] = {
 					size = 10,
 					["left"] = {
-						tagline = "[castnameinterrupt]",
+						tagline = "[castname]",
 						size = 100,
 					},
 					["center"] = {
@@ -1301,7 +1301,7 @@ function LUF:LoadDefaults()
 				["castBar"] = {
 					size = 10,
 					["left"] = {
-						tagline = "[castnameinterrupt]",
+						tagline = "[castname]",
 						size = 100,
 					},
 					["center"] = {
@@ -1779,7 +1779,7 @@ function LUF:LoadDefaults()
 				["castBar"] = {
 					size = 10,
 					["left"] = {
-						tagline = "[castnameinterrupt]",
+						tagline = "[castname]",
 						size = 100,
 					},
 					["center"] = {
@@ -2124,7 +2124,7 @@ function LUF:LoadDefaults()
 				["castBar"] = {
 					size = 10,
 					["left"] = {
-						tagline = "[castnameinterrupt]",
+						tagline = "[castname]",
 						size = 100,
 					},
 					["center"] = {
@@ -2618,7 +2618,7 @@ function LUF:LoadDefaults()
 				["castBar"] = {
 					size = 10,
 					["left"] = {
-						tagline = "[castnameinterrupt]",
+						tagline = "[castname]",
 						size = 100,
 					},
 					["center"] = {

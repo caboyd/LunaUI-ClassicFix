@@ -48,7 +48,6 @@ local InfoTags = {
 	["buffcount"] = true,
 	["range"] = true,
 	["castname"] = true,
-	["castnameinterrupt"] = true,
 	["casttime"] = true,
 	["casttimesmart"] = true,
 	["xp"] = true,
