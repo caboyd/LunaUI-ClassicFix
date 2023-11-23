@@ -93,10 +93,13 @@ local function UpdateTotem(self, event, slot)
 				if (self.total >= .01) then
 					self.total = 0
 					local _, _, startTime, expiration = GetTotemInfo(slot)
-					if ((GetTime() - startTime) == 0) then
+					local time_elapsed = GetTime() - startTime
+					if (time_elapsed <= 0) then
 						self:SetValue(0)
 					else
-						self:SetValue(1 - ((GetTime() - startTime) / expiration))
+						if(expiration ~= 0) then
+							self:SetValue(1 - (time_elapsed / expiration))
+						end
 					end
 				end
 			end)
