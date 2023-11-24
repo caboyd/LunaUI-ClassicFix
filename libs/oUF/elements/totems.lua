@@ -92,9 +92,9 @@ local function UpdateTotem(self, event, slot)
 				self.total = (self.total or 0) + elapsed
 				if (self.total >= .01) then
 					self.total = 0
-					local _, _, startTime, expiration = GetTotemInfo(slot)
+					local haveTotem2, _, startTime, expiration = GetTotemInfo(slot)
 					local time_elapsed = GetTime() - startTime
-					if (time_elapsed <= 0) then
+					if (time_elapsed <= 0 or not haveTotem2) then
 						self:SetValue(0)
 					else
 						if(expiration ~= 0) then
