@@ -137,6 +137,7 @@ local L = {
 ["Bar"] = "Balken",
 ["Type"] = "Typ",
 ["3D"] = "3D",
+["3D2D"] = "3D/2D",
 ["2D"] = "2D",
 ["2D Class"] = "2D Klasse",
 ["Inc Heal Cap"] = "Hereink. Heilung Limit",
