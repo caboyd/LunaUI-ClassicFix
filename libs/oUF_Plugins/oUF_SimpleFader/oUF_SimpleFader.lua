@@ -23,11 +23,18 @@ local oUF = ns.oUF
 local PowerTypesFull = {[Enum.PowerType.Mana] = true, [Enum.PowerType.Energy] = true, [Enum.PowerType.Focus] = true}
 
 local function faderOnUpdate(self, elapsed)
-	local element = self:GetParent().SimpleFader
+	local parent = self:GetParent()
+	local element = parent.SimpleFader	
+	local hasStatusPortraitModel = parent.StatusPortrait and parent.StatusPortrait.model
 	element.timeElapsed = element.timeElapsed + elapsed
+
 	if( element.timeElapsed >= element.fadeTime ) then
 		element.__owner:SetAlpha(element.alphaEnd)
 		element.onUpdate:Hide()
+
+		if hasStatusPortraitModel then
+			parent.StatusPortrait.model:SetAlpha(element.alphaEnd)
+		end
 		
 		if( element.fadeIn ) then
 			element.__owner.pauseRange = nil
@@ -36,9 +43,17 @@ local function faderOnUpdate(self, elapsed)
 	end
 	
 	if( element.fadeIn ) then
-		self:GetParent():SetAlpha((element.timeElapsed / element.fadeTime) * (element.alphaEnd - element.alphaStart) + element.alphaStart)
+		local fadeInAmount = (element.timeElapsed / element.fadeTime) * (element.alphaEnd - element.alphaStart) + element.alphaStart
+		parent:SetAlpha(fadeInAmount)
+		if hasStatusPortraitModel then
+			parent.StatusPortrait.model:SetAlpha(fadeInAmount)
+		end
 	else
-		self:GetParent():SetAlpha(((element.fadeTime - element.timeElapsed) / element.fadeTime) * (element.alphaStart - element.alphaEnd) + element.alphaEnd)
+		local fadeOutAmount = ((element.fadeTime - element.timeElapsed) / element.fadeTime) * (element.alphaStart - element.alphaEnd) + element.alphaEnd
+		parent:SetAlpha(fadeOutAmount)
+		if hasStatusPortraitModel then
+			parent.StatusPortrait.model:SetAlpha(fadeOutAmount)
+		end
 	end
 end
 

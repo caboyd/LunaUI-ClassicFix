@@ -123,14 +123,25 @@ local function Update(self, event, unit)
 		element.guid = guid
 		element.texture.cd:Hide()
 		element.texture.hasStatus = nil
-		if element.type == "3D" or element.type == "class" and not UnitIsPlayer(unit) then
+		if element.type == "3D" or element.type == "3D/2D" or (element.type == "class" and not UnitIsPlayer(unit)) then
+			element.texture:Hide()
+			element.model:Show()
 			if not isAvailable then
-				element.model:SetCamDistanceScale(0.5)
-				element.model:SetPortraitZoom(0)
-				element.model:SetModelScale(2)
-				element.model:SetPosition(0, 0, -0.08)
-				element.model:ClearModel()
-				element.model:SetModel([[Interface\Buttons\TalkToMeQuestionMark.m2]])
+				if(element.type == "3D") then
+					--floating question mark fallback
+					element.model:SetCamDistanceScale(0.5)
+					element.model:SetPortraitZoom(0)
+					element.model:SetModelScale(2)
+					element.model:SetPosition(0, 0, -0.08)
+					element.model:ClearModel()
+					element.model:SetModel([[Interface\Buttons\TalkToMeQuestionMark.m2]])
+				elseif(element.type =="3D/2D") then
+					--2D portrait fallback
+					cutTexture(element.texture)
+					SetPortraitTexture(element.texture, unit)
+					element.texture:Show()
+					element.model:Hide()
+				end
 			else
 				element.model:SetCamDistanceScale(1)
 				element.model:SetPortraitZoom(1)
@@ -138,8 +149,6 @@ local function Update(self, event, unit)
 				element.model:ClearModel()
 				element.model:SetUnit(unit)
 			end
-			element.texture:Hide()
-			element.model:Show()
 		elseif element.type == "class" or element.type == "2dclass" and UnitIsPlayer(unit) then
 			local class = select(2,UnitClass(unit)) or "WARRIOR"
 			element.texture:SetTexture("Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Classes")

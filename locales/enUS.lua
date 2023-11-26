@@ -134,6 +134,7 @@ local L = {
 ["Bar"] = "Bar",
 ["Type"] = "Type",
 ["3D"] = "3D",
+["3D2D"] = "3D/2D",
 ["2D"] = "2D",
 ["2D Class"] = "2D Class",
 ["Inc Heal Cap"] = "Inc Heal Cap",

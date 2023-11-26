@@ -939,7 +939,7 @@ function LUF:CreateConfig()
 					desc = L["Portrait type"],
 					type = "select",
 					order = 4,
-					values = {["3D"] = L["3D"], ["2D"] = L["2D"], ["class"] = CLASS, ["2dclass"] = L["2D Class"]},
+					values = {["3D"] = L["3D"], ["3D/2D"] = L["3D2D"], ["2D"] = L["2D"], ["class"] = CLASS, ["2dclass"] = L["2D Class"]},
 				},
 				alignment = {
 					name = L["Alignment"],
