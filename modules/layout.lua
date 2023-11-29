@@ -574,6 +574,11 @@ function LUF.InitializeUnit(frame, unit, notHeaderChild)
 
 	-- Border Highlight
 	frame.BorderHighlight = {}
+	frame.BorderHighlight.PreUpdate = function(self)
+		local s = LUF.db.profile.strata or "BACKGROUND"
+		if self.ontop then s = LUF:IncrementStrata(s) end
+		self.center:SetFrameStrata(s)
+	end
 
 	-- Squares
 	local RaidStatusIndicators = {}

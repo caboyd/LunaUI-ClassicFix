@@ -129,6 +129,18 @@ local function UpdateTotem(self, event, slot)
 	end
 end
 
+local function Path(self, ...)
+	--[[ Override: Totem.Override(self, event, ...)
+	Used to completely override the internal update function.
+
+	* self  - the parent object
+	* event - the event triggering the update (string)
+	* ...   - the arguments accompanying the event
+	--]]
+	return (self.Totems.Override or UpdateTotem) (self, ...)
+end
+
+
 local function Update(self, event)
 	local element = self.Totems
 
@@ -138,10 +150,10 @@ local function Update(self, event)
 	* self - the Totems element
 	* slot - the slot of the totem to be updated (number)
 	--]]
-	if(element.PreUpdate) then element:PreUpdate(slot) end
+	if(element.PreUpdate) then element:PreUpdate() end
 
 	for i=1, 4 do
-		UpdateTotem(self, event, i)
+		Path(self, event, i)
 	end
 
 	--[[ Callback: Totems:PostUpdate(slot, haveTotem, name, start, duration, icon)
@@ -156,26 +168,10 @@ local function Update(self, event)
 	* icon      - the totem's icon (Texture)
 	--]]
 	if(element.PostUpdate) then
-		return element:PostUpdate(slot, haveTotem, name, start, duration, icon)
+		return element:PostUpdate()
 	end
 end
 
-local function Path(self, ...)
-	--[[ Override: Totem.Override(self, event, ...)
-	Used to completely override the internal update function.
-
-	* self  - the parent object
-	* event - the event triggering the update (string)
-	* ...   - the arguments accompanying the event
-	--]]
-	return (self.Totems.Override or Update) (self, ...)
-end
-
-local function Update(self, event)
-	for i = 1, #self.Totems do
-		Path(self, event, i)
-	end
-end
 
 local function ForceUpdate(element)
 	return Update(element.__owner, 'ForceUpdate')

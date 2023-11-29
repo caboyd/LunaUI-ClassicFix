@@ -55,6 +55,9 @@ local function Update(self, event)
 	
 	local suffix = element.side and strupper(element.side) or "RIGHT"
 	
+	local isShown = classif == "rare" or classif == "elite" or classif == "worldboss" or classif == "rareelite"
+	element:SetShown(isShown)
+
 	if( classif == "rare" ) then
 		if(element:IsObjectType("Texture")) then
 			element:SetTexture("Interface\\AddOns\\"..addonname.."\\libs\\oUF_Plugins\\oUF_EliteIndicator\\UI-DialogBox-Silver-Dragon")
@@ -65,7 +68,6 @@ local function Update(self, event)
 				element:SetTexCoord(0, 1, 0, 1)
 			end
 		end
-		element:Show()
 	elseif( classif == "elite" or classif == "worldboss" or classif == "rareelite" ) then
 		if(element:IsObjectType("Texture")) then
 			element:SetTexture(131078)
@@ -75,9 +77,6 @@ local function Update(self, event)
 				element:SetTexCoord(0, 1, 0, 1)
 			end
 		end
-		element:Show()
-	else
-		element:Hide()
 	end
 	
 	-- We place this here for layouts that change the size of their frames
@@ -97,10 +96,11 @@ local function Update(self, event)
 	Called after the element has been updated.
 
 	* self     - the EliteIndicator element
-	* isLeader - indicates whether the element is shown (boolean)
+	* isShown - indicates whether the element is shown (boolean)
+	* classif - Classification of the unit as returned by UnitClassification
 	--]]
 	if(element.PostUpdate) then
-		return element:PostUpdate(isLeader)
+		return element:PostUpdate(isShown, classif)
 	end
 end
 

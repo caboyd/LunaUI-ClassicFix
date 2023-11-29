@@ -71,7 +71,8 @@ local function Update(self, event, unit)
 	local element = self.StatusPortrait
 	if not element.showStatus and (event == "UNIT_AURA" or event == "UPDATE_INTERRUPT") then return end
 	
-	local maxPrio, spellType, icon, duration, expirationTime = 0
+	local maxPrio = 0
+	local icon, duration, expirationTime
 	if element.showStatus then
 		local CUTOFF_AURA_TYPE = element.verbosePortraitIcon and "SPEED_BOOST" or "SILENCE"
 		local PRIO_SILENCE = LAT.GetAuraTypePriority(CUTOFF_AURA_TYPE, UnitCanAttack("player",unit))

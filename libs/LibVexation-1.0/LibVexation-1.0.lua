@@ -6,6 +6,13 @@ Description: Aggro notification library. This is a modified clone of LibBanzai-2
 Dependencies: LibStub
 ]]
 
+---@class LibVexation-1.0
+---@field public frame Frame
+---@field public callbacks CallbackHandlerRegistry
+---@field public GetUnitAggroByUnitGUID function
+---@field public GetUnitAggroByUnitId function
+---@field public IsRunning function
+
 -------------------------------------------------------------------------------
 -- Locals
 -------------------------------------------------------------------------------
@@ -14,7 +21,10 @@ local MAJOR_VERSION = "LibVexation-1.0"
 local MINOR_VERSION = 90000 + tonumber(("$Revision: 1 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
+
+---@type LibVexation-1.0
 local lib = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
+
 if not lib then return end
 
 lib.callbacks = lib.callbacks or LibStub:GetLibrary("CallbackHandler-1.0"):New(lib)
