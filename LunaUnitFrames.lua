@@ -1383,6 +1383,15 @@ function LUF:SpawnUnits()
 	oUF:RegisterStyle("LunaUnitFrames", self.InitializeUnit)
 	oUF:RegisterInitCallback(function(frame) LUF.PlaceModules(frame) LUF.ApplySettings(frame) end)
 	
+	--WOTLK backwards compat
+	self.db.profile.units["focus"] = nil
+	self.db.profile.units["focustarget"] = nil
+	self.db.profile.units["focustargettarget"] = nil
+	self.db.profile.units["arena"] = nil
+	self.db.profile.units["arenapet"] = nil
+	self.db.profile.units["arenatarget"] = nil
+	self.db.profile.units["boss"] = nil
+
 	for unit, config in pairs(self.db.profile.units) do
 		if self.HeaderFrames[unit] then
 			if unit == "raid" then
