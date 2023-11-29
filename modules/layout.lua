@@ -527,11 +527,13 @@ function LUF.InitializeUnit(frame, unit, notHeaderChild)
 -- Indicators
 	for iname in pairs(LUF.defaults.profile.units[unit].indicators) do
 		local data = LUF.IndicatorData[iname]
-		frame[data.name] = frame.toplevel:CreateTexture(nil, data.layer)
-		if data.Override then
-			frame[data.name].Override = data.Override
+		if(data) then
+			frame[data.name] = frame.toplevel:CreateTexture(nil, data.layer)
+			if data.Override then
+				frame[data.name].Override = data.Override
+			end
+			frame.indicators[iname] = frame[data.name]
 		end
-		frame.indicators[iname] = frame[data.name]
 	end
 
 -- Range
