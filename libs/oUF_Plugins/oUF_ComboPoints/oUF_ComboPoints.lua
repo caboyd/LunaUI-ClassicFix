@@ -82,9 +82,9 @@ local function Update(self, event, unit, powerType)
 		element:PreUpdate()
 	end
 
+	local cur
 	if(event ~= "ComboPointsDisable") then
-
-		local cur = GetComboPoints("player", "target")
+		cur = GetComboPoints("player", "target")
 		for i = 1, 5 do
 			if(i > cur) then
 				element[i]:Hide()

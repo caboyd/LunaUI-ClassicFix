@@ -82,7 +82,7 @@ local function Enable(self)
 
 		if not element.feedbackText or not element.feedbackText:IsObjectType("FontString") then
 			element.feedbackText = element:CreateFontString(nil, "ARTWORK")
-			element.feedbackText:SetFont("Fonts\FRIZQT__.TTF", 10)
+			element.feedbackText:SetFont("Fonts\\FRIZQT__.TTF", 10)
 			element.feedbackText:SetShadowColor(0, 0, 0, 1.0)
 			element.feedbackText:SetShadowOffset(0.80, -0.80)
 			element.feedbackText:SetPoint("CENTER", element, "CENTER")

@@ -1150,27 +1150,27 @@ local tagStrings = {
 	end]],
 
 	["casttime"] = [[function(unit)
-		local name, _, _, startTime, endTime = UnitCastingInfo(unit)
-		local retTime
+		local name, _, _, _, endTime = UnitCastingInfo(unit)
+		local result
 		if not name then
-			name, text, texture, startTime, endTime = UnitChannelInfo(unit)
+			name, _, _, _, endTime = UnitChannelInfo(unit)
 			if name then
-				retTime = (endTime / 1000) - GetTime()
+				result = (endTime / 1000) - GetTime()
 			end
 		else
-			retTime = (GetTime() - (endTime / 1000)) * -1
+			result = (GetTime() - (endTime / 1000)) * -1
 		end
-		return retTime and math.floor(retTime * 10)/10
+		return result and math.floor(result * 10)/10
 	end]],
 
 	["casttimesmart"] = [[function(unit)
 		previous_time = previous_time or 0
 		diff = diff or 0
 		last_castID = last_castID or 0
-		local name, _, _, startTime, endTime,_,castID = UnitCastingInfo(unit)
+		local name, _, _, _, endTime,_,castID = UnitCastingInfo(unit)
 		local new_time = 0
 		if not name then
-			name, text, texture, startTime, endTime = UnitChannelInfo(unit)
+			name, _, _, _, endTime = UnitChannelInfo(unit)
 			if name then
 				new_time = (endTime / 1000) - GetTime()
 			end

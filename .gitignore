@@ -5,3 +5,5 @@ libs/**
 !libs/oUF_Plugins/**
 !libs/oUF
 !libs/oUF/**
+
+.vscode

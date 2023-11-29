@@ -1642,6 +1642,20 @@ function LUF:ReloadAll()
 	end
 end
 
+function LUF:IncrementStrata(strata)
+	local lookup = {
+		BACKGROUND = "LOW",
+		LOW = "MEDIUM",
+		MEDIUM = "HIGH",
+		HIGH = "DIALOG",
+		DIALOG = "FULLSCREEN",
+		FULLSCREEN = "FULLSCREEN_DIALOG",
+		FULLSCREEN_DIALOG = "TOOLTIP",
+		TOOLTIP = "TOOLTIP"
+	}
+	return lookup[strata]
+end
+
 local queuedEvent
 local frame = CreateFrame("Frame")
 frame:RegisterEvent("PLAYER_LOGIN")

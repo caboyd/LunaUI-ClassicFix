@@ -118,11 +118,10 @@ local function CastStart(self, event, unit)
 
 	local element = self.Castbar
 
-	local numStages, _
-	local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellID = UnitCastingInfo(unit)
+	local name, _, texture, startTime, endTime, isTradeSkill, castID, notInterruptible, spellID = UnitCastingInfo(unit)
 	event = 'UNIT_SPELLCAST_START'
 	if(not name) then
-		name, text, texture, startTime, endTime, isTradeSkill, notInterruptible, spellID, _ ,_= UnitChannelInfo(unit)
+		name, _, texture, startTime, endTime, isTradeSkill, notInterruptible, spellID = UnitChannelInfo(unit)
 		event = 'UNIT_SPELLCAST_CHANNEL_START'
 	end
 	
