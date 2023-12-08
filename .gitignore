@@ -1,6 +1,8 @@
 libs/**
 !libs/LibVexation-1.0
 !libs/LibVexation-1.0/**
+!libs/LibHealComm-4.0
+!libs/LibHealComm-4.0/**
 !libs/oUF_Plugins
 !libs/oUF_Plugins/**
 !libs/oUF
