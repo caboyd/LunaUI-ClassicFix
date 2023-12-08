@@ -78,9 +78,12 @@ local MAX_RAID_MEMBERS = MAX_RAID_MEMBERS
 local MAX_PARTY_MEMBERS = MAX_PARTY_MEMBERS
 local COMBATLOG_OBJECT_AFFILIATION_MINE = COMBATLOG_OBJECT_AFFILIATION_MINE
 
-local build = floor(select(4,GetBuildInfo())/10000)
+local interfaceVer = select(4,GetBuildInfo())
+local build = floor(interfaceVer/10000)
 local isTBC = build == 2
 local isWrath = build == 3
+local isSOD = interfaceVer >= 11500 and interfaceVer < 20000
+
 
 local spellRankTableData = {
 	[1] = { 774, 8936, 5185, 740, 635, 19750, 139, 2060, 596, 2061, 2054, 2050, 1064, 331, 8004, 136, 755, 689, 746, 33763, 32546, 37563, 48438, 61295, 51945, 50464, 47757 },
@@ -806,6 +809,8 @@ end
 local CalculateHealing, GetHealTargets, AuraHandler, CalculateHotHealing, ResetChargeData, LoadClassData
 
 local function getBaseHealAmount(spellData, spellName, spellID, spellRank)
+	--SOD runes have no spellrank
+	if(spellRank == nil) then spellRank = playerLevel end
 	if spellID == 37563 then
 		spellData = spellData["37563"]
 	else
@@ -817,6 +822,26 @@ local function getBaseHealAmount(spellData, spellName, spellID, spellRank)
 	end
 	local requiresLevel = spellData.levels[spellRank]
 	return average[min(playerLevel - requiresLevel + 1, #average)]
+end
+
+
+local function generateSODLevels()
+	local levels = {}
+	for lvl=1,60 do
+		levels[lvl] = lvl
+	end
+	return levels
+end
+
+
+local function generateSODAverages(baseAmount, levelCoeff, levelScaling, levelScalingSquared) 
+	local averages = {}
+		
+	for lvl=1,60 do
+		averages[lvl] = levelCoeff * (baseAmount + levelScaling * lvl + levelScalingSquared * lvl * lvl)
+	end
+
+	return averages
 end
 
 if( playerClass == "DRUID" ) then
@@ -839,13 +864,16 @@ if( playerClass == "DRUID" ) then
 		local TreeofLife = GetSpellInfo(33891) or "Tree of Life"
 
 		hotData[Regrowth] = { interval = 3, ticks = 7, coeff = (isTBC or isWrath) and 0.7 or 0.5, levels = { 12, 18, 24, 30, 36, 42, 48, 54, 60, 65, 71, 77 }, averages = { 98, 175, 259, 343, 427, 546, 686, 861, 1064, 1274, 1792, 2345 }}
+		hotData[Rejuvenation] = { interval = 3, levels = { 4, 10, 16, 22, 28, 34, 40, 46, 52, 58, 60, 63, 69 }, averages = { 32, 56, 116, 180, 244, 304, 388, 488, 608, 756, 888, 932, 1060 }}
 		if isWrath then
 			hotData[Rejuvenation] = { interval = 3, levels = { 4, 10, 16, 22, 28, 34, 40, 46, 52, 58, 60, 63, 69, 75, 80 }, averages = { 40, 70, 145, 225, 305, 380, 485, 610, 760, 945, 1110, 1165, 1325, 1490, 1690 }}
 			hotData[Lifebloom] = {interval = 1, ticks = 7, coeff = 0.66626, dhCoeff = 0.517928287, levels = {64, 72, 80}, averages = {224, 287, 371}, bomb = {480, 616, 776}}
 			hotData[WildGrowth] = {interval = 1, ticks = 7, coeff = 0.8056, levels = {60, 70, 75, 80}, averages = {686, 861, 1239, 1442}}
-		else
-			hotData[Rejuvenation] = { interval = 3, levels = { 4, 10, 16, 22, 28, 34, 40, 46, 52, 58, 60, 63, 69 }, averages = { 32, 56, 116, 180, 244, 304, 388, 488, 608, 756, 888, 932, 1060 }}
+		elseif isTBC then
 			hotData[Lifebloom] = {interval = 1, ticks = 7, coeff = 0.52, dhCoeff = 0.34335, levels = {64}, averages = {273}, bomb = {600}}
+		elseif isSOD then
+			hotData[Lifebloom] = {interval = 1, ticks = 7, coeff = 0.357, dhCoeff = 0.274, levels = generateSODLevels(), averages = generateSODAverages(38.949830, 0.04 * 7, 0.606705, 0.167780), bomb = generateSODAverages(38.949830, 0.57, 0.606705, 0.167780)}
+			hotData[WildGrowth] = {interval = 1, ticks = 7, coeff = 0.427,  levels = generateSODLevels(), averages = generateSODAverages(38.949830, 0.34 * 7 , 0.606705, 0.167780)}
 		end
 		if isWrath then
 			spellData[HealingTouch] = { levels = {1, 8, 14, 20, 26, 32, 38, 44, 50, 56, 60, 62, 69, 74, 79}, averages = {
@@ -965,6 +993,7 @@ if( playerClass == "DRUID" ) then
 		local wgTicks = {}
 		CalculateHotHealing = function(guid, spellID)
 			local spellName, spellRank = GetSpellInfo(spellID), SpellIDToRank[spellID]
+			if(spellRank == nil) then spellRank = playerLevel end
 			local healAmount = getBaseHealAmount(hotData, spellName, spellID, spellRank)
 			local spellPower = GetSpellBonusHealing()
 			local healModifier, spModifier = playerHealModifier, 1
@@ -1458,6 +1487,11 @@ if( playerClass == "PRIEST" ) then
 			{avg(1952, 2508), avg(1955, 2512), avg(1959, 2516)} }}
 		spellData[Penance] = {_isChanneled = true, coeff = 0.857, ticks = 3, levels = {60, 70, 75, 80}, averages = {avg(670, 756), avg(805, 909), avg(1278, 1442), avg(1484, 1676)}}
 
+
+		if(isSOD) then
+			spellData[Penance] = {_isChanneled = true, coeff = 0.857, ticks = 3, levels = generateSODLevels(), averages = generateSODAverages(38.258376, 1.06, 0.904195, 0.161311)}
+		end
+		
 		talentData[ImprovedRenew] = {mod = 0.05, current = 0}
 		talentData[SpiritualHealing] = {mod = 0.02, current = 0}
 		talentData[EmpoweredHealing] = {mod = 0.02, current = 0}
@@ -2457,7 +2491,7 @@ local function parseHotBomb(casterGUID, wasUpdated, spellID, amount, ...)
 	pending.endTime = hotPending.endTime
 	pending.spellID = spellID
 	pending.bitType = BOMB_HEALS
-	pending.stack = isWrath and hotPending.stack or 1 -- TBC Lifebloom bomb heal does not stack
+	pending.stack = (isSOD or isWrath) and hotPending.stack or 1 -- TBC Lifebloom bomb heal does not stack
 
 	loadHealList(pending, amount, pending.stack, pending.endTime, nil, ...)
 
