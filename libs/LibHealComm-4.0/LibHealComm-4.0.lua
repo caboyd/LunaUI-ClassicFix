@@ -1613,7 +1613,7 @@ if( playerClass == "PRIEST" ) then
 
 		CalculateHealing = function(guid, spellID)
 			local spellName, spellRank = GetSpellInfo(spellID), SpellIDToRank[spellID]
-			if not spellRank then return end
+			if(spellRank == nil) then spellRank = playerLevel end
 
 			local healAmount = getBaseHealAmount(spellData, spellName, spellID, spellRank)
 			local spellPower = GetSpellBonusHealing()
@@ -2845,6 +2845,7 @@ local penanceIDs = {
 	[53005] = 52986,
 	[53006] = 52987,
 	[53007] = 52988,
+	[402174] = 402277
 }
 -- When the game tries to figure out the UnitID from the name it will prioritize players over non-players
 -- if there are conflicts in names it will pull the one with the least amount of current health
