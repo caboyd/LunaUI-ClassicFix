@@ -68,21 +68,21 @@ local isDisableHoTs = false
 
 
 
-local function GetMyHeal(unit, guid, timeFrame, mod)
+local function GetMyHeal(unit, guid, timeFrame)
 	if isBlizzDirectHeals then
 		return UnitGetIncomingHeals(unit, "player") or 0
 	end
-	return mod * (HealComm:GetHealAmount(guid, HealComm.DIRECT_HEALS, timeFrame, myGUID) or 0)
+	return (HealComm:GetHealAmount(guid, HealComm.DIRECT_HEALS, timeFrame, myGUID) or 0)
 end
 
-local function GetTotalHeal(unit, guid, timeFrame, mod)
+local function GetTotalHeal(unit, guid, timeFrame)
 	if isBlizzDirectHeals then
 		return UnitGetIncomingHeals(unit) or 0
 	end
-	return mod * (HealComm:GetHealAmount(guid, HealComm.DIRECT_HEALS, timeFrame) or 0)
+	return (HealComm:GetHealAmount(guid, HealComm.DIRECT_HEALS, timeFrame) or 0)
 end
 
-local function GetPreHeal(guid, timeFrame, myHeal, mod)
+local function GetPreHeal(guid, timeFrame, myHeal)
 	local preHeal = 0
 	if isBlizzDirectHeals then return 0 end
 	-- We can only scout up to 2 direct heals that would land before ours but thats good enough for most cases
@@ -94,13 +94,13 @@ local function GetPreHeal(guid, timeFrame, myHeal, mod)
 			preHeal = preHeal + (healAmount or 0)
 		end
 	end
-	return mod * preHeal
+	return preHeal
 end
 
 
-local function GetHoTHeal(guid, timeFrame, mod)
+local function GetHoTHeal(guid, timeFrame)
 	if isDisableHoTs then return 0 end
-	return mod * (HealComm:GetHealAmount(guid, bit.bor(HealComm.HOT_HEALS, HealComm.CHANNEL_HEALS, HealComm.BOMB_HEALS), timeFrame) or 0)
+	return (HealComm:GetHealAmount(guid, bit.bor(HealComm.HOT_HEALS, HealComm.CHANNEL_HEALS, HealComm.BOMB_HEALS), timeFrame) or 0)
 end
 
 local function Update(self, event, unit)
@@ -124,12 +124,12 @@ local function Update(self, event, unit)
 	local guid = UnitGUID(unit)
 	local timeFrame = GetTime() + element.timeFrame
 	local health, maxHealth = UnitHealth(unit), UnitHealthMax(unit)
-	local healMod = HealComm:GetHealModifier(guid) or 1
-	local myHeal = GetMyHeal(unit, guid, timeFrame, healMod)
-	local totalHeal = GetTotalHeal(unit, guid, timeFrame, healMod)
-	local preHeal = GetPreHeal(guid, timeFrame, myHeal, healMod)
+	local healMod 	= HealComm:GetHealModifier(guid) or 1
+	local myHeal 	= healMod * GetMyHeal(unit, guid, timeFrame)
+	local totalHeal = healMod * GetTotalHeal(unit, guid, timeFrame)
+	local preHeal 	= healMod * GetPreHeal(guid, timeFrame, myHeal)
+	local hotHeal 	= healMod * GetHoTHeal(guid, timeFrame)
 	local afterHeal = totalHeal - preHeal - myHeal
-	local hotHeal = GetHoTHeal(guid, timeFrame, healMod)
 	totalHeal = totalHeal + hotHeal
 
 	local maxBar = (maxHealth * element.maxOverflow - health)
