@@ -1,7 +1,7 @@
 -- Luna Unit Frames 4.0 by Aviana
 
 LUF = select(2, ...)
-LUF.version = 4365
+LUF.version = 4366
 
 local L = LUF.L
 local ACR = LibStub("AceConfigRegistry-3.0", true)
@@ -958,6 +958,7 @@ function LUF.ApplySettings(frame)
 			frame.BetterHealthPrediction.timeFrame = LUF.db.profile.inchealTime
 			frame.BetterHealthPrediction.maxOverflow = healConfig.cap
 			frame.BetterHealthPrediction.disableHots = LUF.db.profile.disablehots
+			frame.BetterHealthPrediction.blizzDirectHeals = LUF.db.profile.blizzDirectHeals
 			local color = LUF.db.profile.colors.incheal
 			frame.BetterHealthPrediction.otherBeforeBar:SetStatusBarColor(color.r, color.g, color.b, healConfig.alpha)
 			frame.BetterHealthPrediction.otherAfterBar:SetStatusBarColor(color.r, color.g, color.b, healConfig.alpha)
