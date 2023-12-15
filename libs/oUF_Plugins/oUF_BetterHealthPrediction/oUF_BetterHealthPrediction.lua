@@ -21,6 +21,8 @@ A default texture will be applied to the Texture widgets if they don"t have a te
 
 ## Options
 
+
+.blizzDirectHeals - Use Blizzard GetIncomingHeals API for Direct Heals over LibHealComm
 .disableHots - Disable heal over time effects
 .timeFrame   - The amount of time into the future used for healing prediction. Defaults to 4 (number)
 .maxOverflow - The maximum amount of overflow past the end of the health bar. Set this to 1 to disable the overflow.
@@ -60,6 +62,46 @@ local _, ns = ...
 local oUF = ns.oUF
 local myGUID = UnitGUID("player")
 local HealComm = LibStub("LibHealComm-4.0")
+local UnitGetIncomingHeals = UnitGetIncomingHeals
+local isBlizzDirectHeals = false
+local isDisableHoTs = false
+
+
+
+local function GetMyHeal(unit, guid, timeFrame)
+	if isBlizzDirectHeals then
+		return UnitGetIncomingHeals(unit, "player") or 0
+	end
+	return (HealComm:GetHealAmount(guid, HealComm.DIRECT_HEALS, timeFrame, myGUID) or 0)
+end
+
+local function GetTotalHeal(unit, guid, timeFrame)
+	if isBlizzDirectHeals then
+		return UnitGetIncomingHeals(unit) or 0
+	end
+	return (HealComm:GetHealAmount(guid, HealComm.DIRECT_HEALS, timeFrame) or 0)
+end
+
+local function GetPreHeal(guid, timeFrame, myHeal)
+	local preHeal = 0
+	if isBlizzDirectHeals then return 0 end
+	-- We can only scout up to 2 direct heals that would land before ours but thats good enough for most cases
+	local healTime, healFrom, healAmount = HealComm:GetNextHealAmount(guid, HealComm.DIRECT_HEALS, timeFrame)
+	if healFrom and healFrom ~= myGUID and myHeal > 0 then
+		preHeal = (healAmount or 0)
+		healTime, healFrom, healAmount = HealComm:GetNextHealAmount(guid, HealComm.DIRECT_HEALS, timeFrame, healFrom)
+		if healFrom and healFrom ~= myGUID then
+			preHeal = preHeal + (healAmount or 0)
+		end
+	end
+	return preHeal
+end
+
+
+local function GetHoTHeal(guid, timeFrame)
+	if isDisableHoTs then return 0 end
+	return (HealComm:GetHealAmount(guid, bit.bor(HealComm.HOT_HEALS, HealComm.CHANNEL_HEALS, HealComm.BOMB_HEALS), timeFrame) or 0)
+end
 
 local function Update(self, event, unit)
 	if(self.unit ~= unit) then return end
@@ -76,29 +118,18 @@ local function Update(self, event, unit)
 		element:PreUpdate(unit)
 	end
 
+	isBlizzDirectHeals = element.blizzDirectHeals
+	isDisableHoTs = element.disableHots
+
 	local guid = UnitGUID(unit)
 	local timeFrame = GetTime() + element.timeFrame
-	local preHeal, myHeal, afterHeal, hotHeal, totalHeal = 0, 0, 0, 0, 0
 	local health, maxHealth = UnitHealth(unit), UnitHealthMax(unit)
-	local mod = HealComm:GetHealModifier(guid) or 1
-
-	totalHeal = HealComm:GetHealAmount(guid, HealComm.DIRECT_HEALS, timeFrame) or 0
-	myHeal = HealComm:GetHealAmount(guid, HealComm.DIRECT_HEALS, timeFrame, myGUID) or 0
-	-- We can only scout up to 2 direct heals that would land before ours but thats good enough for most cases
-	local healTime, healFrom, healAmount = HealComm:GetNextHealAmount(guid, HealComm.DIRECT_HEALS, timeFrame)
-	if healFrom and healFrom ~= UnitGUID("player") and myHeal > 0 then
-		preHeal = healAmount
-		healTime, healFrom, healAmount = HealComm:GetNextHealAmount(guid, HealComm.DIRECT_HEALS, timeFrame, healFrom)
-		if healFrom and healFrom ~= UnitGUID("player") then
-			preHeal = preHeal + healAmount
-		end
-	end
-	afterHeal = totalHeal - preHeal - myHeal
-	if element.disableHots then
-		hotHeal = 0
-	else
-		hotHeal = HealComm:GetHealAmount(guid, bit.bor(HealComm.HOT_HEALS, HealComm.CHANNEL_HEALS, HealComm.BOMB_HEALS), timeFrame) or 0
-	end
+	local healMod 	= HealComm:GetHealModifier(guid) or 1
+	local myHeal 	= healMod * GetMyHeal(unit, guid, timeFrame)
+	local totalHeal = healMod * GetTotalHeal(unit, guid, timeFrame)
+	local preHeal 	= healMod * GetPreHeal(guid, timeFrame, myHeal)
+	local hotHeal 	= healMod * GetHoTHeal(guid, timeFrame)
+	local afterHeal = totalHeal - preHeal - myHeal
 	totalHeal = totalHeal + hotHeal
 
 	local maxBar = (maxHealth * element.maxOverflow - health)
@@ -125,42 +156,31 @@ local function Update(self, event, unit)
 		-- want, and it breaks all the anchors on top of that. Setting the min value slightly below
 		-- 0 allows us to imitate the original pre-10.2 behaviour.
 		element.otherBeforeBar:SetMinMaxValues(-0.001, maxHealth)
-		element.otherBeforeBar:SetValue(preHeal*mod)
-		if totalHeal > 0 then -- This needs to be totalHeal because only shown bars are size updated and bars might depend on another like in the example
-			element.otherBeforeBar:Show()
-		else
-			element.otherBeforeBar:Hide()
-		end
+		element.otherBeforeBar:SetValue(preHeal)
+		-- This needs to be totalHeal because only shown bars are size updated and bars might depend on another like in the example
+		element.otherBeforeBar:SetShown(totalHeal > 0)
+		element.otherBeforeBar:SetAlpha(preHeal > 0 and 1 or 0)
 	end
 
 	if(element.myBar) then
 		element.myBar:SetMinMaxValues(-0.001, maxHealth)
-		element.myBar:SetValue(myHeal*mod)
-		if totalHeal > 0 then
-			element.myBar:Show()
-		else
-			element.myBar:Hide()
-		end
+		element.myBar:SetValue(myHeal)
+		element.myBar:SetShown(totalHeal > 0)
+		element.myBar:SetAlpha(myHeal > 0 and 1 or 0)
 	end
 
 	if(element.otherAfterBar) then
 		element.otherAfterBar:SetMinMaxValues(-0.001, maxHealth)
-		element.otherAfterBar:SetValue(afterHeal*mod)
-		if totalHeal > 0 then
-			element.otherAfterBar:Show()
-		else
-			element.otherAfterBar:Hide()
-		end
+		element.otherAfterBar:SetValue(afterHeal)
+		element.otherAfterBar:SetShown(totalHeal > 0)
+		element.otherAfterBar:SetAlpha(afterHeal > 0 and 1 or 0)
 	end
 
 	if(element.hotBar) then
 		element.hotBar:SetMinMaxValues(-0.001, maxHealth)
-		element.hotBar:SetValue(hotHeal*mod)
-		if totalHeal > 0 then
-			element.hotBar:Show()
-		else
-			element.hotBar:Hide()
-		end
+		element.hotBar:SetValue(hotHeal)
+		element.hotBar:SetShown(totalHeal > 0)
+		element.hotBar:SetAlpha(hotHeal > 0 and 1 or 0)
 	end
 
 	--[[ Callback: BetterHealthPrediction:PostUpdate(unit, myIncomingHeal, otherIncomingHeal, absorb, healAbsorb, hasOverAbsorb, hasOverHealAbsorb)
@@ -175,7 +195,7 @@ local function Update(self, event, unit)
 	--]]
 	if(element.PostUpdate) then
 		-- return element:PostUpdate(unit, myIncomingHeal, otherIncomingHeal, absorb, healAbsorb, hasOverAbsorb, hasOverHealAbsorb)
-		return element:PostUpdate(unit, myIncomingHeal, otherIncomingHeal)
+		return element:PostUpdate(unit, myHeal, totalHeal - myHeal)
 	end
 end
 
@@ -202,6 +222,7 @@ local function Enable(self)
 
 		self:RegisterEvent("UNIT_HEALTH_FREQUENT", Path)
 		self:RegisterEvent("UNIT_MAXHEALTH", Path)
+		self:RegisterEvent("UNIT_HEAL_PREDICTION", Path)
 
 		local function HealCommUpdate(...)
 			if self.BetterHealthPrediction and self:IsVisible() then
@@ -292,6 +313,7 @@ local function Disable(self)
 
 		self:UnregisterEvent("UNIT_MAXHEALTH", Path)
 		self:UnregisterEvent("UNIT_HEALTH_FREQUENT", Path)
+		self:UnregisterEvent("UNIT_HEAL_PREDICTION", Path)
 	end
 end
 
