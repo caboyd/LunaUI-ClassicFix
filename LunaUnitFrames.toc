@@ -2,7 +2,7 @@
 ## Title: Luna Unit Frames
 ## Notes: 
 ## Author: Aviana
-## Version: 4366
+## Version: 4367
 
 ## SavedVariables: LunaUFDB
 ## OptionalDeps: Ace3, LibSharedMedia-3.0, AceGUI-3.0-SharedMediaWidgets, Clique
@@ -36,7 +36,7 @@ libs\oUF\units.lua
 libs\oUF\colors.lua
 libs\oUF\elements\additionalpower.lua
 libs\oUF\elements\assistantindicator.lua
-libs\oUF\elements\castbar.lua
+# libs\oUF\elements\castbar.lua
 libs\oUF\elements\happinessindicator.lua
 libs\oUF\elements\health.lua
 libs\oUF\elements\leaderindicator.lua

@@ -62,7 +62,7 @@ local _, ns = ...
 local oUF = ns.oUF
 local myGUID = UnitGUID("player")
 local HealComm = LibStub("LibHealComm-4.0")
-local UnitGetIncomingHeals = UnitGetIncomingHeals
+local UnitGetIncomingHeals = _G.UnitGetIncomingHeals
 local isBlizzDirectHeals = false
 local isDisableHoTs = false
 
