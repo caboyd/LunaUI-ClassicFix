@@ -69,17 +69,38 @@ local isDisableHoTs = false
 
 
 local function GetMyHeal(unit, guid, timeFrame)
+	local myHeal = (HealComm:GetHealAmount(guid, HealComm.DIRECT_HEALS, timeFrame, myGUID) or 0)
+	--[[
+	UnitGetIncomingHeals is bugged for Paladins and doesn't apply +healing
 	if isBlizzDirectHeals then
 		return UnitGetIncomingHeals(unit, "player") or 0
 	end
-	return (HealComm:GetHealAmount(guid, HealComm.DIRECT_HEALS, timeFrame, myGUID) or 0)
+	--]]
+	return myHeal
 end
 
-local function GetTotalHeal(unit, guid, timeFrame)
+local function GetTotalHeal(unit, guid, timeFrame, myHeal)
+	local totalHeal = (HealComm:GetHealAmount(guid, HealComm.DIRECT_HEALS, timeFrame) or 0)
+	-- UnitGetIncomingHeals is bugged for Paladins and doesn't apply +healing
+	-- Only use blizzard heals if value is greater than healcomms
 	if isBlizzDirectHeals then
-		return UnitGetIncomingHeals(unit) or 0
+		--[[Example. 
+		Me: 	paladin healing for 50 base + 950 healing
+		other:  paladin healing for 50 base + 950 healing without libhealcomm
+		myHeal: 		1000
+		myBlizzHeal: 	50
+		otherHeal: 		0 	--no libhealcomm
+		otherBlizzHeal: 50
+		totalHeal: 		1000
+		totalBlizzHeal: 100
+		totalHealCorrected: 1050 myHeal + otherBlizzHeal 
+		--]]
+		local myBlizzHeal = UnitGetIncomingHeals(unit, "player") or 0
+		local otherBlizzHeal = (UnitGetIncomingHeals(unit) or 0) - myBlizzHeal
+		local totalHealCorrected = otherBlizzHeal + myHeal
+		if totalHealCorrected > totalHeal then return totalHealCorrected end
 	end
-	return (HealComm:GetHealAmount(guid, HealComm.DIRECT_HEALS, timeFrame) or 0)
+	return totalHeal
 end
 
 local function GetPreHeal(guid, timeFrame, myHeal)
@@ -126,7 +147,7 @@ local function Update(self, event, unit)
 	local health, maxHealth = UnitHealth(unit), UnitHealthMax(unit)
 	local healMod 	= HealComm:GetHealModifier(guid) or 1
 	local myHeal 	= healMod * GetMyHeal(unit, guid, timeFrame)
-	local totalHeal = healMod * GetTotalHeal(unit, guid, timeFrame)
+	local totalHeal = healMod * GetTotalHeal(unit, guid, timeFrame, myHeal)
 	local preHeal 	= healMod * GetPreHeal(guid, timeFrame, myHeal)
 	local hotHeal 	= healMod * GetHoTHeal(guid, timeFrame)
 	local afterHeal = totalHeal - preHeal - myHeal
