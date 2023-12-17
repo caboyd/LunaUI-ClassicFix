@@ -105,7 +105,6 @@ end
 
 local function GetPreHeal(guid, timeFrame, myHeal)
 	local preHeal = 0
-	if isBlizzDirectHeals then return 0 end
 	-- We can only scout up to 2 direct heals that would land before ours but thats good enough for most cases
 	local healTime, healFrom, healAmount = HealComm:GetNextHealAmount(guid, HealComm.DIRECT_HEALS, timeFrame)
 	if healFrom and healFrom ~= myGUID and myHeal > 0 then
@@ -146,12 +145,17 @@ local function Update(self, event, unit)
 	local timeFrame = GetTime() + element.timeFrame
 	local health, maxHealth = UnitHealth(unit), UnitHealthMax(unit)
 	local healMod 	= HealComm:GetHealModifier(guid) or 1
-	local myHeal 	= healMod * GetMyHeal(unit, guid, timeFrame)
-	local totalHeal = healMod * GetTotalHeal(unit, guid, timeFrame, myHeal)
-	local preHeal 	= healMod * GetPreHeal(guid, timeFrame, myHeal)
-	local hotHeal 	= healMod * GetHoTHeal(guid, timeFrame)
+	local myHeal 	= GetMyHeal(unit, guid, timeFrame)
+	local totalHeal = GetTotalHeal(unit, guid, timeFrame, myHeal)
+	local preHeal 	= GetPreHeal(guid, timeFrame, myHeal)
+	local hotHeal 	= GetHoTHeal(guid, timeFrame)
 	local afterHeal = totalHeal - preHeal - myHeal
 	totalHeal = totalHeal + hotHeal
+
+	myHeal 		= healMod * myHeal
+	preHeal 	= healMod * preHeal
+	hotHeal 	= healMod * hotHeal
+	afterHeal 	= healMod * afterHeal
 
 	local maxBar = (maxHealth * element.maxOverflow - health)
 	if preHeal >= maxBar then
