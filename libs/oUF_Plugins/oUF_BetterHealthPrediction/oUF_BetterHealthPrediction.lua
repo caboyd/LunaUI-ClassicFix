@@ -70,12 +70,11 @@ local isDisableHoTs = false
 
 local function GetMyHeal(unit, guid, timeFrame)
 	local myHeal = (HealComm:GetHealAmount(guid, HealComm.DIRECT_HEALS, timeFrame, myGUID) or 0)
-	--[[
-	UnitGetIncomingHeals is bugged for Paladins and doesn't apply +healing
 	if isBlizzDirectHeals then
-		return UnitGetIncomingHeals(unit, "player") or 0
+		--When casting on players outside of party, libhealcomm returns 0 heal
+		local myBlizzHeal = UnitGetIncomingHeals(unit, "player") or 0
+		if myBlizzHeal > myHeal then myHeal = myBlizzHeal end
 	end
-	--]]
 	return myHeal
 end
 
