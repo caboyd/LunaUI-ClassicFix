@@ -153,9 +153,9 @@ local function Update(self, event, unit)
 	totalHeal = totalHeal + hotHeal
 
 	myHeal 		= healMod * myHeal
-	totalHeal 	= healMod * totalHeal
 	preHeal 	= healMod * preHeal
 	hotHeal 	= healMod * hotHeal
+	afterHeal 	= healMod * afterHeal
 
 	local maxBar = (maxHealth * element.maxOverflow - health)
 	if preHeal >= maxBar then
