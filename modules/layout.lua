@@ -623,17 +623,17 @@ function LUF.InitializeUnit(frame, unit, notHeaderChild)
 		local otherAfterBar = element.otherAfterBar
 		local hotBar = element.hotBar
 		local healthFrame = frame.Health
-	
+
 		--Fix anchor alignment gaps becauses of SetMinMaxValues bug
 		local point  = healthFrame:GetOrientation() == "HORIZONTAL" and "LEFT" or "BOTTOM"
 		local relativePoint = healthFrame:GetOrientation() == "HORIZONTAL" and "RIGHT" or "TOP"
-	
+
 		if(otherBeforeBar:GetValue() == 0) then
 			myBar:SetPoint(point, healthFrame:GetStatusBarTexture(), relativePoint)
 		else
 			myBar:SetPoint(point, otherBeforeBar:GetStatusBarTexture(), relativePoint)
 		end
-	
+
 		if(myBar:GetValue() == 0) then
 			if(otherBeforeBar:GetValue() == 0) then
 				otherAfterBar:SetPoint(point, healthFrame:GetStatusBarTexture(), relativePoint)
@@ -673,50 +673,50 @@ function LUF.InitializeUnit(frame, unit, notHeaderChild)
 		hotBar:ClearAllPoints()
 		hotBar:SetOrientation(orientation)
 
-		--Sets anchors depending on which bars have heals to prevent gaps in bars
-		frame.BetterHealthPrediction:PostUpdate()
-
 		if orientation == "HORIZONTAL" then
 			otherBeforeBar:SetPoint("TOP")
 			otherBeforeBar:SetPoint("BOTTOM")
-			--otherBeforeBar:SetPoint("LEFT", self:GetStatusBarTexture(), "RIGHT")
+			otherBeforeBar:SetPoint("LEFT", self:GetStatusBarTexture(), "RIGHT")
 			otherBeforeBar:SetWidth(self:GetWidth())
 
 			myBar:SetPoint("TOP")
 			myBar:SetPoint("BOTTOM")
-			--myBar:SetPoint("LEFT", otherBeforeBar:GetStatusBarTexture(), "RIGHT")
+			myBar:SetPoint("LEFT", otherBeforeBar:GetStatusBarTexture(), "RIGHT")
 			myBar:SetWidth(self:GetWidth())
 
 			otherAfterBar:SetPoint("TOP")
 			otherAfterBar:SetPoint("BOTTOM")
-			--otherAfterBar:SetPoint("LEFT", myBar:GetStatusBarTexture(), "RIGHT")
+			otherAfterBar:SetPoint("LEFT", myBar:GetStatusBarTexture(), "RIGHT")
 			otherAfterBar:SetWidth(self:GetWidth())
 
 			hotBar:SetPoint("TOP")
 			hotBar:SetPoint("BOTTOM")
-			--hotBar:SetPoint("LEFT", otherAfterBar:GetStatusBarTexture(), "RIGHT")
+			hotBar:SetPoint("LEFT", otherAfterBar:GetStatusBarTexture(), "RIGHT")
 			hotBar:SetWidth(self:GetWidth())
 		else
 			otherBeforeBar:SetPoint("LEFT")
 			otherBeforeBar:SetPoint("RIGHT")
-			--otherBeforeBar:SetPoint("BOTTOM", self:GetStatusBarTexture(), "TOP")
+			otherBeforeBar:SetPoint("BOTTOM", self:GetStatusBarTexture(), "TOP")
 			otherBeforeBar:SetHeight(self:GetHeight())
 
 			myBar:SetPoint("LEFT")
 			myBar:SetPoint("RIGHT")
-			--myBar:SetPoint("BOTTOM", otherBeforeBar:GetStatusBarTexture(), "TOP")
+			myBar:SetPoint("BOTTOM", otherBeforeBar:GetStatusBarTexture(), "TOP")
 			myBar:SetHeight(self:GetHeight())
 
 			otherAfterBar:SetPoint("LEFT")
 			otherAfterBar:SetPoint("RIGHT")
-			--otherAfterBar:SetPoint("BOTTOM", myBar:GetStatusBarTexture(), "TOP")
+			otherAfterBar:SetPoint("BOTTOM", myBar:GetStatusBarTexture(), "TOP")
 			otherAfterBar:SetHeight(self:GetHeight())
 
 			hotBar:SetPoint("LEFT")
 			hotBar:SetPoint("RIGHT")
-			--hotBar:SetPoint("BOTTOM", otherAfterBar:GetStatusBarTexture(), "TOP")
+			hotBar:SetPoint("BOTTOM", otherAfterBar:GetStatusBarTexture(), "TOP")
 			hotBar:SetHeight(self:GetHeight())
 		end
+
+		--Sets anchors depending on which bars have heals to prevent gaps in bars
+		frame.BetterHealthPrediction:PostUpdate()
 	end)
 
 -- Fontstrings
