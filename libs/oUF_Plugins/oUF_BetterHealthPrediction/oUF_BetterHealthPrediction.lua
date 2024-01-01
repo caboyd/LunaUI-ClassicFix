@@ -127,6 +127,10 @@ local function Update(self, event, unit)
 	if(self.unit ~= unit) then return end
 
 	local element = self.BetterHealthPrediction
+	local otherBeforeBar = element.otherBeforeBar
+	local myBar = element.myBar
+	local otherAfterBar = element.otherAfterBar
+	local hotBar = element.hotBar
 
 	--[[ Callback: BetterHealthPrediction:PreUpdate(unit)
 	Called before the element has been updated.
@@ -174,38 +178,33 @@ local function Update(self, event, unit)
 		hotHeal = maxBar - preHeal - myHeal - afterHeal
 	end
 
-	if(element.otherBeforeBar) then
+	if(otherBeforeBar) then
 		-- Bug introduced to Classic as of 1.15.0.52146
 		-- BUG: As of 10.2, when the current value matches the min value the status bar texture
 		-- despite not being visible is actually set to the max which is the opposite of what we
 		-- want, and it breaks all the anchors on top of that. Setting the min value slightly below
 		-- 0 allows us to imitate the original pre-10.2 behaviour.
-		element.otherBeforeBar:SetMinMaxValues(-0.001, maxHealth)
-		element.otherBeforeBar:SetValue(preHeal)
-		-- This needs to be totalHeal because only shown bars are size updated and bars might depend on another like in the example
-		element.otherBeforeBar:SetShown(totalHeal > 0)
-		element.otherBeforeBar:SetAlpha(preHeal > 0 and 1 or 0)
+		otherBeforeBar:SetMinMaxValues(-0.001, maxHealth)
+		otherBeforeBar:SetValue(preHeal)
+		otherBeforeBar:SetShown(preHeal > 0)
 	end
 
-	if(element.myBar) then
-		element.myBar:SetMinMaxValues(-0.001, maxHealth)
-		element.myBar:SetValue(myHeal)
-		element.myBar:SetShown(totalHeal > 0)
-		element.myBar:SetAlpha(myHeal > 0 and 1 or 0)
+	if(myBar) then
+		myBar:SetMinMaxValues(-0.001, maxHealth)
+		myBar:SetValue(myHeal)
+		myBar:SetShown(myHeal > 0)
 	end
 
-	if(element.otherAfterBar) then
-		element.otherAfterBar:SetMinMaxValues(-0.001, maxHealth)
-		element.otherAfterBar:SetValue(afterHeal)
-		element.otherAfterBar:SetShown(totalHeal > 0)
-		element.otherAfterBar:SetAlpha(afterHeal > 0 and 1 or 0)
+	if(otherAfterBar) then
+		otherAfterBar:SetMinMaxValues(-0.001, maxHealth)
+		otherAfterBar:SetValue(afterHeal)
+		otherAfterBar:SetShown(afterHeal > 0)
 	end
 
-	if(element.hotBar) then
-		element.hotBar:SetMinMaxValues(-0.001, maxHealth)
-		element.hotBar:SetValue(hotHeal)
-		element.hotBar:SetShown(totalHeal > 0)
-		element.hotBar:SetAlpha(hotHeal > 0 and 1 or 0)
+	if(hotBar)  then
+		hotBar:SetMinMaxValues(-0.001, maxHealth)
+		hotBar:SetValue(hotHeal)
+		hotBar:SetShown(hotHeal > 0)
 	end
 
 	--[[ Callback: BetterHealthPrediction:PostUpdate(unit, myIncomingHeal, otherIncomingHeal, absorb, healAbsorb, hasOverAbsorb, hasOverHealAbsorb)
