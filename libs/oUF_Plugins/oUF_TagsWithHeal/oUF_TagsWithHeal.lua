@@ -74,6 +74,47 @@ local LT = LibStub("LibTargeted")
 
 local _PATTERN = '%[..-%]+'
 
+-- https://github.com/WeakAuras/WeakAuras2/blob/87efa697f8e63cef943cd7a6341843f175e53466/WeakAuras/AuraEnvironment.lua#L73
+-- UTF-8 Sub is pretty commonly needed
+local WA_Utf8Sub = function(input, size)
+	local output = ""
+	if type(input) ~= "string" then
+		return output
+	end
+	local i = 1
+	while (size > 0) do
+		local byte = input:byte(i)
+		if not byte then
+			return output
+		end
+		if byte < 128 then
+			-- ASCII byte
+			output = output .. input:sub(i, i)
+			size = size - 1
+	  	elseif byte < 192 then
+			-- Continuation bytes
+			output = output .. input:sub(i, i)
+	  	elseif byte < 244 then
+			-- Start bytes
+			output = output .. input:sub(i, i)
+			size = size - 1
+	  	end
+	  	i = i + 1
+	end
+
+	-- Add any bytes that are part of the sequence
+	while (true) do
+	  	local byte = input:byte(i)
+	  	if byte and byte >= 128 and byte < 192 then
+			output = output .. input:sub(i, i)
+	  	else
+			break
+	  	end
+	  	i = i + 1
+	end
+	return output
+end
+
 local function abbreviateName(text)
 	return string.sub(text, 1, 1) .. ". "
 end
@@ -141,6 +182,7 @@ local _ENV = {
 	LT = LT,
 	GetHealTimeFrame = function() return oUF.TagsWithHealTimeFrame or 4 end,
 	GetShowHots = function() if oUF.TagsWithHealDisableHots then return LHC.DIRECT_HEALS else return LHC.ALL_HEALS end end,
+	WA_Utf8Sub = WA_Utf8Sub,
 }
 _ENV.ColorGradient = function(...)
 	return _ENV._FRAME:ColorGradient(...)
@@ -809,7 +851,8 @@ local tagStrings = {
 
 	["shortname"] = [[function(unit, realunit, var)
 		local length = tonumber(var) or 3
-		return UnitName(unit) and strsub(UnitName(unit),1,math.max(math.min(length, 12), 1)) or ""
+		local maxLength = math.max(math.min(length, 12), 1)
+		return UnitName(unit) and WA_Utf8Sub(UnitName(unit), maxLength) or ""
 	end]],
 
 	["ignore"] = [[function(unit)
