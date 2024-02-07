@@ -251,14 +251,24 @@ local tagStrings = {
 	end]],
 
 	["range"] = [[function(unit)
+		--Patch 1.15.1 - CheckInteractDistance is not able to be used on friendly targets in combat
+		local InCombatLockdownRestriction
+		if oUF.isClassic then
+			InCombatLockdownRestriction = InCombatLockdown() and not UnitCanAttack("player", unit)
+		else
+			InCombatLockdownRestriction = false
+		end
+		
 		if UnitIsUnit("player", unit) then
 			return "0"
-		elseif CheckInteractDistance(unit, 3) then
+		elseif not InCombatLockdownRestriction and CheckInteractDistance(unit, 3) then
 			return "0-10"
-		elseif CheckInteractDistance(unit, 4) then
+		elseif not InCombatLockdownRestriction and CheckInteractDistance(unit, 4) then
 			return "10-30"
-		elseif UnitInRange(unit) then
+		elseif not InCombatLockdownRestriction and UnitInRange(unit) then
 			return "30-40"
+		elseif UnitInRange(unit) then
+			return "0-40"
 		else
 			return "~"
 		end

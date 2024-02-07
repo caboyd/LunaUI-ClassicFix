@@ -48,9 +48,17 @@ local function spellCheck(unit)
 end
 
 local function measureDistance(unit)
-	if CheckInteractDistance(unit, 3) then
+	--Patch 1.15.1 - CheckInteractDistance is not able to be used on friendly targets in combat
+	local InCombatLockdownRestriction
+	if oUF.isClassic then
+		InCombatLockdownRestriction = InCombatLockdown() and not UnitCanAttack("player", unit)
+	else
+		InCombatLockdownRestriction = false
+	end
+
+	if not InCombatLockdownRestriction and CheckInteractDistance(unit, 3) then
 		return 10
-	elseif CheckInteractDistance(unit, 4) then
+	elseif not InCombatLockdownRestriction and CheckInteractDistance(unit, 4) then
 		return 30
 	elseif spellCheck(unit) then
 		return 40
