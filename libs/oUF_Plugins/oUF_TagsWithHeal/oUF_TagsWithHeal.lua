@@ -119,6 +119,16 @@ local function abbreviateName(text)
 	return string.sub(text, 1, 1) .. ". "
 end
 
+--Patch 1.15.1 - CheckInteractDistance is not able to be used on friendly targets in combat
+local function InCombatLockdownRestriction()
+	local InCombatLockdownRestriction
+	if oUF.isClassic then
+		return InCombatLockdown() and not UnitCanAttack("player", unit)
+	else
+		return false
+	end
+end
+
 local _ENV = {
 	Hex = function(r, g, b)
 		if(type(r) == 'table') then
@@ -183,6 +193,7 @@ local _ENV = {
 	GetHealTimeFrame = function() return oUF.TagsWithHealTimeFrame or 4 end,
 	GetShowHots = function() if oUF.TagsWithHealDisableHots then return LHC.DIRECT_HEALS else return LHC.ALL_HEALS end end,
 	WA_Utf8Sub = WA_Utf8Sub,
+	InCombatLockdownRestriction = InCombatLockdownRestriction
 }
 _ENV.ColorGradient = function(...)
 	return _ENV._FRAME:ColorGradient(...)
@@ -294,20 +305,15 @@ local tagStrings = {
 
 	["range"] = [[function(unit)
 		--Patch 1.15.1 - CheckInteractDistance is not able to be used on friendly targets in combat
-		local InCombatLockdownRestriction
-		if oUF.isClassic then
-			InCombatLockdownRestriction = InCombatLockdown() and not UnitCanAttack("player", unit)
-		else
-			InCombatLockdownRestriction = false
-		end
+		local InCombat = InCombatLockdownRestriction()
 		
 		if UnitIsUnit("player", unit) then
 			return "0"
-		elseif not InCombatLockdownRestriction and CheckInteractDistance(unit, 3) then
+		elseif not InCombat and CheckInteractDistance(unit, 3) then
 			return "0-10"
-		elseif not InCombatLockdownRestriction and CheckInteractDistance(unit, 4) then
+		elseif not InCombat and CheckInteractDistance(unit, 4) then
 			return "10-30"
-		elseif not InCombatLockdownRestriction and UnitInRange(unit) then
+		elseif not InCombat and UnitInRange(unit) then
 			return "30-40"
 		elseif UnitInRange(unit) then
 			return "0-40"
