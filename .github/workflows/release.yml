@@ -30,7 +30,7 @@ jobs:
         steps:
             # we first have to clone the AddOn project, this is a required step
             - name: Clone project
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4.1.7
               with:
                   fetch-depth: 0 # gets entire git history, needed for automatic changelogs
 
