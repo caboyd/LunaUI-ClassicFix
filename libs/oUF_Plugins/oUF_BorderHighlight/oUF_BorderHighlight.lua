@@ -76,7 +76,10 @@ local function Update(self, event)
 		element:PreUpdate()
 	end
 
-	local hasMouseover = self == GetMouseFocus()
+	--GetMouseFocus Function removed https://warcraft.wiki.gg/wiki/Patch_11.0.0/API_changes
+	--local hasMouseover = self == GetMouseFocus()
+	local hasMouseover = self:IsMouseMotionFocus()
+	
 	local isTarget = UnitIsUnit("target", unit)
 	local hasAggro = (UnitThreatSituation(unit) or 0) > 1
 	local showOwn, showAll, hasDebuff, highlightReason = element.debuff == 2, element.debuff == 3
