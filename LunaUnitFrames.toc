@@ -1,8 +1,8 @@
-## Interface: 11501
+## Interface: 11504
 ## Title: Luna Unit Frames
 ## Notes: 
 ## Author: Aviana
-## Version: 4375
+## Version: 4377
 
 ## SavedVariables: LunaUFDB
 ## OptionalDeps: Ace3, LibSharedMedia-3.0, AceGUI-3.0-SharedMediaWidgets, Clique
