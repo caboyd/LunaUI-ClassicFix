@@ -1,7 +1,7 @@
 -- Luna Unit Frames 4.0 by Aviana
 
 LUF = select(2, ...)
-LUF.version = 4377
+LUF.version = 4378
 
 local L = LUF.L
 local ACR = LibStub("AceConfigRegistry-3.0", true)
@@ -420,6 +420,11 @@ local active_hiddens = {
 }
 function LUF:HideBlizzardFrames()
 	if not LUF.db then return end --Prevent calling this before the db is loaded
+
+	--sometimes LUF.db.profile.hidden is bugged and doesn't contain a table so set it back to default
+	if LUF.db.profile and (not LUF.db.profile.hidden or type(LUF.db.profile.hidden) ~= "table") then
+		LUF.db.profile.hidden = LUF.defaults.profile.hidden
+	end
 	
 	if( LUF.db.profile.hidden.cast ) then
 		handleFrame(CastingBarFrame)
