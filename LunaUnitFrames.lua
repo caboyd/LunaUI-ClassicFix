@@ -1,7 +1,7 @@
 -- Luna Unit Frames 4.0 by Aviana
 
 LUF = select(2, ...)
-LUF.version = 4378
+LUF.version = 4379
 
 local L = LUF.L
 local ACR = LibStub("AceConfigRegistry-3.0", true)
@@ -848,6 +848,7 @@ function LUF.ApplySettings(frame)
 		Auras.debuffFilter = AuraConfig.filterdebuffs
 		Auras.debuffSize = AuraConfig.debuffsize
 		Auras.largeDebuffSize = AuraConfig.enlargeddebuffsize
+		Auras.buffcountfontsize = AuraConfig.buffcountfontsize
 		Auras.wrapDebuffSide = AuraConfig.wrapdebuffside
 		Auras.wrapDebuff = AuraConfig.wrapdebuff
 		Auras.debuffOffset = AuraConfig.debuffOffset
