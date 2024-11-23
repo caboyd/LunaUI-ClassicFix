@@ -432,6 +432,8 @@ local L = {
 ["Color of cast bar when cast not interruptible"]  = "Color of cast bar when cast not interruptible",
 ["Not interruptible cast text"] = "Not interruptible cast text",
 ["Color of cast bar text when cast not interruptible"] = "Color of cast bar text when cast not interruptible",
+["BuffCountFontSize"] = "Buff Count Font Size",
+["BuffCountFontSizeText"] = "Set the font size of the count for buffs with mutiple stacks",
 }
 
 local LUF = select(2, ...)
