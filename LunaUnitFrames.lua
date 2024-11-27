@@ -1,7 +1,7 @@
 -- Luna Unit Frames 4.0 by Aviana
 
 LUF = select(2, ...)
-LUF.version = 4379
+LUF.version = 4380
 
 local L = LUF.L
 local ACR = LibStub("AceConfigRegistry-3.0", true)
@@ -449,8 +449,13 @@ function LUF:HideBlizzardFrames()
 			end
 			
 			hooksecurefunc("CompactRaidFrameManager_UpdateShown", function()
-				if( LUF.db.profile.hidden.raid ) then
-					hideRaid()
+				if LUF.db.profile.hidden and type(LUF.db.profile.hidden) == "table" then
+					if LUF.db.profile.hidden.raid then
+						hideRaid()
+					end
+				else
+					--sometimes LUF.db.profile.hidden is bugged and doesn't contain a table so set it back to default
+					LUF.db.profile.hidden = LUF.defaults.profile.hidden
 				end
 			end)
 			
