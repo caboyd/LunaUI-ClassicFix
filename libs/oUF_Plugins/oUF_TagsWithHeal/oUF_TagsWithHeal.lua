@@ -193,7 +193,9 @@ local _ENV = {
 	GetHealTimeFrame = function() return oUF.TagsWithHealTimeFrame or 4 end,
 	GetShowHots = function() if oUF.TagsWithHealDisableHots then return LHC.DIRECT_HEALS else return LHC.ALL_HEALS end end,
 	WA_Utf8Sub = WA_Utf8Sub,
-	InCombatLockdownRestriction = InCombatLockdownRestriction
+	InCombatLockdownRestriction = InCombatLockdownRestriction,
+	lastChannelSpellName = function() return oUF.lastChannelSpellName end,
+	lastChannelEndTime = function() return oUF.lastChannelSpellEndTime end,
 }
 _ENV.ColorGradient = function(...)
 	return _ENV._FRAME:ColorGradient(...)
@@ -1200,6 +1202,9 @@ local tagStrings = {
 		if(not name) then
 			name, _, _, _, _, _, notInterruptible = UnitChannelInfo(unit)
 		end
+		if(not name) then 
+			name = lastChannelSpellName()
+		end
 		if(name and notInterruptible) then
 			local c = LUF.db.profile.colors.castnotinterruptibletext
 			local color = Hex(c.r, c.g, c.b)
@@ -1215,6 +1220,8 @@ local tagStrings = {
 			name, _, _, _, endTime = UnitChannelInfo(unit)
 			if name then
 				result = (endTime / 1000) - GetTime()
+			elseif lastChannelSpellName() then
+				result = (lastChannelEndTime() / 1000) - GetTime()
 			end
 		else
 			result = (GetTime() - (endTime / 1000)) * -1
@@ -1232,6 +1239,8 @@ local tagStrings = {
 			name, _, _, _, endTime = UnitChannelInfo(unit)
 			if name then
 				new_time = (endTime / 1000) - GetTime()
+			elseif lastChannelSpellName() then
+				new_time = (lastChannelEndTime() / 1000) - GetTime()
 			end
 		else
 			new_time = (GetTime() - (endTime / 1000)) * -1
@@ -1528,8 +1537,6 @@ onUpdateDelay["cnumtargeting"] = 0.5
 onUpdateDelay["afktime"] = 0.5
 onUpdateDelay["casttime"] = 0.1
 
---since 1.15.0 cast events are not properly triggering so update name automatically
-onUpdateDelay["castname"] = 0.1
 
 local escapeSequences = {
 	["||c"] = "|c",
