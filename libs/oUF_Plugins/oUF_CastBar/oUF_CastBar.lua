@@ -92,6 +92,7 @@ local oUF = ns.oUF
 local uninterruptibleList = oUF.uninterruptibleList
 local playerSilences = oUF.playerSilences
 local castImmunityBuffs = oUF.castImmunityBuffs
+local channeledSpells = oUF.channeledSpells
 
 local FALLBACK_ICON = 136243 -- Interface\ICONS\Trade_Engineering
 local FAILED = _G.FAILED or 'Failed'
@@ -120,7 +121,7 @@ local function resetAttributes(self)
     self.spellName = nil
 end
 
-local function CastStart(self, event, unit)
+local function CastStart(self, event, unit, _, channelSpellID)
 	if(self.unit ~= unit) then return end
 
 	local element = self.Castbar
@@ -130,6 +131,21 @@ local function CastStart(self, event, unit)
 	if(not name) then
 		name, _, texture, startTime, endTime, isTradeSkill, notInterruptible, spellID = UnitChannelInfo(unit)
 		event = 'UNIT_SPELLCAST_CHANNEL_START'
+	end
+	--Workaround for broken channels in classic
+	--https://github.com/wardz/ClassicCastbars/commit/79f26393833476c40826d3d61f8f03201f185b7f
+	if (channelSpellID and not name) then
+		name, _, texture = GetSpellInfo(channelSpellID)
+		local channelCastTime = name and channeledSpells[name]
+		if not channelCastTime then return end
+		spellID = channelSpellID
+		endTime = (GetTime() * 1000) + channelCastTime
+		startTime = GetTime() * 1000
+		
+		if unit ~= "player" then
+			oUF.lastChannelSpellName = name
+			oUF.lastChannelSpellEndTime = endTime
+		end
 	end
 	
 	if(not name or (isTradeSkill and element.hideTradeSkills)) then
