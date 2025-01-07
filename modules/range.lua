@@ -7,131 +7,8 @@ local BZ = AceLibrary("Babble-Zone-2.2")
 local ScanTip = LunaUF.ScanTip
 local rosterLib = AceLibrary("RosterLib-2.0")
 LunaUF:RegisterModule(Range, "range", L["Range"])
-local Continent,Zone,ZoneName
 local roster = {}
-local ZoneWatch = CreateFrame("Frame")
 local _, playerClass = UnitClass("player")
-
--- Big thx to Renew & Astrolabe
-local MapScales = {
-	[0] = {[0] = {x = 29688.932932224,	y = 44537.340058402}}, -- World Map
-
-	[-1] = { -- Battlegrounds
-		[0] = {x=0.0000000001,y=0.0000000001}, -- dummy
-		[BZ["Alterac Valley"]] = {x=0.00025277584791183,y=0.0003791834626879}, -- Alterac Valley
-		[BZ["Arathi Basin"]] = {x=0.00060996413230886,y=0.00091460134301867}, -- Arathi Basin
-		[BZ["Warsong Gulch"]] = {x=0.000934666820934484,y=0.0013986080884933}, -- Warsong Gulch
-	},
-
-	[1] = { -- Kalimdor
-		[0] = {x = 24533.025279205, y = 36800.210572494}, -- No local Map
-		[1] = {x=0.00018538534641226,y=0.00027837923594884}, -- Ashenvale
-		[2] = {x=0.0002110515322004,y=0.00031666883400508}, -- Aszhara
-		[3] = {x=0.00016346999577114,y=0.0002448782324791}, -- Darkshore
-		[4] = {x=0.001011919762407,y=0.0015176417572158}, -- Darnassus
-		[5] = {x=0.000238049243117769,y=0.00035701000264713}, -- Desolace
-		[6] = {x=0.000202241752828887,y=0.00030311250260898},  -- Durotar
-		[7] = {x=0.00020404585770198,y=0.00030594425542014}, -- Dustwallow Marsh
-		[8] = {x=0.00018605589866638,y=0.00027919347797121}, -- Felwood
-		[9] = {x=0.00015413335391453,y=0.00023112978254046}, -- Feralas
-		[10] = {x=0.00046338992459433,y=0.00069469745670046}, -- Moonglade
-		[11] = {x=0.00020824585642133,y=0.00031234536852155}, -- Mulgore
-		[12] = {x=0.00076302673135485,y=0.0011450946331024}, -- Orgrimmar
-		[13] = {x=0.00030702139650072,y=0.00046115900788988}, -- Silithus
-		[14] = {x=0.0002192035317421,y=0.00032897400004523}, -- Stonetalon Mountains
-		[15] = {x=0.00015519559383392,y=0.00023255497217178}, -- Tanaris
-		[16] = {x=0.00021010743720191,y=0.00031522342136928}, -- Teldrassil
-		[17] = {x=0.0001055257661002,y=0.00015825512153762}, -- Barrens
-		[18] = {x=0.00024301665169852,y=0.00036516572747912}, -- Thousand Needles
-		[19] = {x=0.00102553303755263,y=0.0015390366315842}, -- Thunderbluff
-		[20] = {x=0.00028926772730691,y=0.0004336131470544}, -- Un'Goro Crater
-		[21] = {x=0.0001503484589713,y=0.0002260080405644}, -- Winterspring
-	},
-
-	[2] = { -- Eastern Kingdoms
-		[0] = {x = 27149.795290881, y = 40741.175327834}, -- No local Map
-		[1] = {x=0.00038236060312816,y=0.00057270910058703}, -- Alterac Mountains
-		[2] = {x=0.00029711957488741,y=0.00044587893145425}, -- Arathi Highlands
-		[3] = {x=0.00043004538331713,y=0.00064518196242196}, -- Badlands
-		[4] = {x=0.00031955327306475,y=0.00047930649348668}, -- Blasted Lands
-		[5] = {x=0.00036544565643583,y=0.00054845426763807}, -- Burning Steppes
-		[6] = {x=0.00042719074657985,y=0.00064268921102796}, -- Deadwind Pass
-		[7] = {x=0.00021748670509883,y=0.00032613213573183}, -- Dun Morogh
-		[8] = {x=0.00039665134889739,y=0.000594192317755393},-- Duskwood
-		[9] = {x=0.00027669753347124,y=0.00041501436914716}, -- Eastern Plaguelands
-		[10] = {x=0.00030816452843802,y=0.00046261719294957}, -- Elwynn Forest
-		[11] = {x=0.00033472904137203,y=0.00050214784485953}, -- Hillsbrad Foothills
-		[12] = {x=0.0013541845338685,y=0.0020301469734737}, -- Ironforge
-		[13] = {x=0.00038827742849077,y=0.000582420040021079}, -- Loch Modan
-		[14] = {x=0.00049317521708352,y=0.0007399320602417}, -- Redridge Mountains
-		[15] = {x=0.00047916280371802,y=0.00071918751512255}, -- Searing Gorge
-		[16] = {x=0.00025506743362975,y=0.00038200191089085}, -- Silverpine
-		[17] = {x=0.00079576990434102,y=0.0011931381055287}, -- Stormwind
-		[18] = {x=0.00016783603600093,y=0.00025128040994917}, -- Stranglethorn
-		[19] = {x=0.00046689595494952,y=0.00070027368409293}, -- Swamp of Sorrows
-		[20] = {x=0.0002777065549578,y=0.00041729531117848}, -- Hinterlands
-		[21] = {x=0.00023638989244189,y=0.0003550010068076}, -- Tirisfal
-		[22] = {x=0.0011167100497655,y=0.0016737942184721}, -- Undercity
-		[23] = {x=0.00024908781051636,y=0.00037342309951782}, -- Western Plaguelands
-		[24] = {x=0.00030591232436044,y=0.00045816733368805},-- Westfall
-		[25] = {x=0.00025879591703415,y=0.00038863212934562}, -- Wetlands
-	}
-}
-
-local ZonemapzhCN = {
-	[1] = {
-		[0] = 0,
-		[1] = 21,
-		[2] = 5,
-		[3] = 18,
-		[4] = 15,
-		[5] = 12,
-		[6] = 20,
-		[7] = 7,
-		[8] = 13,
-		[9] = 10,
-		[10] = 6,
-		[11] = 16,
-		[12] = 1,
-		[13] = 14,
-		[14] = 2,
-		[15] = 11,
-		[16] = 9,
-		[17] = 17,
-		[18] = 8,
-		[19] = 4,
-		[20] = 20,
-		[21] = 3,
-	},
-	[2] = {
-		[0] = 0,
-		[1] = 9,
-		[2] = 7,
-		[3] = 1,
-		[4] = 11,
-		[5] = 22,
-		[6] = 19,
-		[7] = 21,
-		[8] = 8,
-		[9] = 17,
-		[10] = 13,
-		[11] = 25,
-		[12] = 15,
-		[13] = 5,
-		[14] = 10,
-		[15] = 18,
-		[16] = 3,
-		[17] = 23,
-		[18] = 24,
-		[19] = 4,
-		[20] = 14,
-		[21] = 20,
-		[22] = 6,
-		[23] = 12,
-		[24] = 16,
-		[25] = 2,
-	},
-}
 
 local HealSpells = {
     ["DRUID"] = {
@@ -240,31 +117,19 @@ local function OnUpdate()
 	Range:FullUpdate(this:GetParent())
 end
 
-local function OnEvent()
-	if event == "ZONE_CHANGED_NEW_AREA" or not event then
-		SetMapToCurrentZone()
-		Continent = GetCurrentMapContinent()
-		Zone = GetCurrentMapZone()
-		if GetLocale() == "zhCN" and Continent > 0 then
-			Zone = ZonemapzhCN[Continent][Zone]
-		end
-		ZoneName = GetZoneText()
-		if ZoneName == BZ["Warsong Gulch"] or ZoneName == BZ["Arathi Basin"] or ZoneName == BZ["Alterac Valley"] then
-			Zone = ZoneName
-		end
-	elseif LunaUF.db.profile.RangeCLparsing and events[event] then
-		ParseCombatMessage(events[event], arg1)
-	end
-end
-
-OnEvent()
-ZoneWatch:SetScript("OnEvent", OnEvent)
-ZoneWatch:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-for i in pairs(events) do ZoneWatch:RegisterEvent(i) end
-
 function Range:GetRange(UnitID)
     if UnitExists(UnitID) and UnitIsVisible(UnitID) then
-		local _,instance = IsInInstance()
+
+		-- try to read distance via superwow first
+		if LunaUF.isSuperWoW then
+			local x1, y1, z1 = UnitPosition("player")
+			local x2, y2, z2 = UnitPosition(UnitID)
+			-- only continue if we got position values
+			if x1 and y1 and z1 and x2 and y2 and z2 then
+				local distance = ((x2 - x1)^2 + (y2 - y1)^2 + (z2 - z1)^2)^.5
+				return distance < 45 and distance or 45
+			end
+		end
 
 		if CheckInteractDistance(UnitID, 1) then
 			return 10
@@ -272,22 +137,6 @@ function Range:GetRange(UnitID)
 			return 10
 		elseif CheckInteractDistance(UnitID, 4) then
 			return 30
-		elseif (instance == "none" or instance == "pvp") and not WorldMapFrame:IsVisible() then
-			local px, py, ux, uy, distance
-			SetMapToCurrentZone()
-			px, py = GetPlayerMapPosition("player")
-			ux, uy = GetPlayerMapPosition(UnitID)
-			if Zone ~= 0 and Continent ~= 0 then
-				distance = sqrt(((px - ux)/MapScales[Continent][Zone].x)^2 + ((py - uy)/MapScales[Continent][Zone].y)^2)
-			else
-				local xDelta, yDelta;
-				px, py = px*MapScales[Continent][Zone].x, py*MapScales[Continent][Zone].y
-				ux, uy = ux*MapScales[Continent][Zone].x, uy*MapScales[Continent][Zone].y
-				xDelta = (ux - px)
-				yDelta = (uy - py)
-				distance = sqrt(xDelta*xDelta + yDelta*yDelta)
-			end
-			return distance
 		elseif (GetTime() - (roster[UnitID] or 0)) < 4 then
 			return 40
 		else
@@ -425,9 +274,11 @@ function Range:FullUpdate(frame)
 
 end
 
-if HealSpells[playerClass] then -- only hook on healing classes
-	Range:Hook("CastSpell")
-	Range:Hook("CastSpellByName")
-	Range:Hook("UseAction")
-	Range:Hook("SpellStopTargeting")
+if not LunaUF.isSuperWoW then
+	if HealSpells[playerClass] then -- only hook on healing classes
+		Range:Hook("CastSpell")
+		Range:Hook("CastSpellByName")
+		Range:Hook("UseAction")
+		Range:Hook("SpellStopTargeting")
+	end
 end

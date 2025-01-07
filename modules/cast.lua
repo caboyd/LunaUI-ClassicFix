@@ -607,6 +607,24 @@ end
 
 --SuperWoW Custom cast event
 local function OnUnitCastEvent()
+	
+	local function stopCast(guid)
+		if CasterDB[guid] and CasterDB[guid].ct then
+			--set cast time to nil so frame update removes castbar
+			CasterDB[guid].ct = nil
+
+			for _,frame in pairs(LunaUF.Units.frameList) do
+				local _, frame_guid = UnitExists(frame.unit)
+				if frame.unit and frame.castBar and LunaUF.db.profile.units[frame.unitGroup].castBar.enabled and frame_guid == guid then
+					Cast:FullUpdate(frame)
+				end
+			end
+
+			-- delete all cast entries of guid
+			CasterDB[guid] = nil
+		end
+	end
+
 	if arg3 == "START" or arg3 == "CAST" or arg3 == "CHANNEL" then
 		-- human readable argument list
 		local guid = arg1
@@ -615,15 +633,14 @@ local function OnUnitCastEvent()
 		local spell_id = arg4
 		local timer = arg5 / 1000
 		local start = GetTime()
-			
-		--skip instant spells
-		if timer < 0.1 then 
-			if CasterDB[guid] then
-				CasterDB[guid] = nil
-			end
+		
+		--skip instant spells or stop spell that have finished casting
+		if timer < 0.1 then
+			stopCast(guid)
 			return
 		end
 
+		--new cast with cast time
 		-- get spell info from spell id
 		local spell, icon, _
 		if SpellInfo and SpellInfo(spell_id) then
@@ -637,7 +654,7 @@ local function OnUnitCastEvent()
 		CasterDB[guid].start = GetTime()
 		CasterDB[guid].ct = timer
 		CasterDB[guid].icon = icon
-		
+
 		for _,frame in pairs(LunaUF.Units.frameList) do
 			local _, frame_guid = UnitExists(frame.unit)
 			if frame.unit and frame.castBar and LunaUF.db.profile.units[frame.unitGroup].castBar.enabled and frame_guid == guid then
@@ -645,27 +662,11 @@ local function OnUnitCastEvent()
 				Cast:FullUpdate(frame)
 			end
 		end
-
 	elseif arg3 == "FAIL" then
 		local guid = arg1
-
-		if CasterDB[guid] and CasterDB[guid].sp then
-			--set cast time to nil so frame update removes castbar
-			CasterDB[guid].ct = nil
-			for _,frame in pairs(LunaUF.Units.frameList) do
-				local _, frame_guid = UnitExists(frame.unit)
-				if frame.unit and frame.castBar and LunaUF.db.profile.units[frame.unitGroup].castBar.enabled and frame_guid == guid then
-					Cast:FullUpdate(frame)
-				end
-			end
-
-			-- delete all cast entries of guid
-			if CasterDB[guid] then CasterDB[guid] = nil end
-		end
-		
-	
+		stopCast(guid)
     end
-		
+
 end
 
 local function OnEvent()
@@ -930,7 +931,7 @@ function Cast:FullUpdate(frame)
 		else
 			
 			--SUPERWOW provides guid casters that we just replace for unit
-			if SUPERWOW_STRING and SUPERWOW_VERSION then
+			if LunaUF.isSuperWoW then
 				local _, guid = UnitExists(frame.unit)
 				if CasterDB[guid] then
 					unitname = guid
@@ -995,7 +996,7 @@ function Cast:MINIMAP_ZONE_CHANGED()
 	end
 end
 
-if SUPERWOW_STRING and SUPERWOW_VERSION then
+if LunaUF.isSuperWoW then
 	Cast:SetScript("OnEvent", OnUnitCastEvent)
 	Cast:RegisterEvent("UNIT_CASTEVENT")
 else

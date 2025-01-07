@@ -968,24 +968,31 @@ function LunaUF:CreateOptionsMenu()
 	LunaOptionsFrame.icon:SetPoint("TOPLEFT", LunaOptionsFrame, "TOPLEFT", 0, 0)
 
 	LunaOptionsFrame.name = LunaOptionsFrame:CreateFontString(nil, "OVERLAY", "NumberFontNormalHuge")
-	LunaOptionsFrame.name:SetPoint("TOP", LunaOptionsFrame, "TOP", 0, -10)
+	LunaOptionsFrame.name:SetPoint("TOP", LunaOptionsFrame, "TOP", -25, -10)
 	LunaOptionsFrame.name:SetShadowColor(0, 0, 0)
 	LunaOptionsFrame.name:SetShadowOffset(0.8, -0.8)
 	LunaOptionsFrame.name:SetTextColor(1,1,1)
 	LunaOptionsFrame.name:SetText("LUNA UNIT FRAMES")
 
 	LunaOptionsFrame.version = LunaOptionsFrame:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
-	LunaOptionsFrame.version:SetPoint("BOTTOMLEFT", LunaOptionsFrame.name, "BOTTOMRIGHT", 10, 5)
+	LunaOptionsFrame.version:SetPoint("BOTTOMLEFT", LunaOptionsFrame.name, "BOTTOMRIGHT", 0, 5)
 	LunaOptionsFrame.version:SetShadowColor(0, 0, 0)
 	LunaOptionsFrame.version:SetShadowOffset(0.8, -0.8)
 
+	local LunaVersionText = "V."..LunaUF.Version
+	if LunaUF.isSuperWoW then
+		LunaVersionText = LunaVersionText.." SuperWoW "..SUPERWOW_VERSION
+	end
+	
 	if LunaUF.db.profile.version or 0 > LunaUF.Version then
 		LunaOptionsFrame.version:SetTextColor(1,0,0)
-		LunaOptionsFrame.version:SetText("V."..LunaUF.Version.." (Outdated)")
+		LunaVersionText = LunaVersionText.."(Outdated)"
+	elseif LunaUF.isSuperWoW then
+		LunaOptionsFrame.version:SetTextColor(1,0,1)
 	else
 		LunaOptionsFrame.version:SetTextColor(1,1,1)
-		LunaOptionsFrame.version:SetText("V."..LunaUF.Version)
 	end
+	LunaOptionsFrame.version:SetText(LunaVersionText)
 
 	LunaOptionsFrame.help = CreateFrame("Button", nil, LunaOptionsFrame)
 	LunaOptionsFrame.help:SetHeight(14)
