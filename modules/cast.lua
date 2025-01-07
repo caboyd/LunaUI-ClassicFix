@@ -608,8 +608,9 @@ end
 --SuperWoW Custom cast event
 local function OnUnitCastEvent()
 	
-	local function stopCast(guid)
-		if CasterDB[guid] and CasterDB[guid].ct then
+	--Stop casts if it same spell id as current cast
+	local function tryStopCast(guid, spell_id)
+		if CasterDB[guid] and CasterDB[guid].spell_id == spell_id then
 			--set cast time to nil so frame update removes castbar
 			CasterDB[guid].ct = nil
 
@@ -635,8 +636,8 @@ local function OnUnitCastEvent()
 		local start = GetTime()
 		
 		--skip instant spells or stop spell that have finished casting
-		if timer < 0.1 then
-			stopCast(guid)
+		if timer < 0.1 then		
+			tryStopCast(guid, spell_id)
 			return
 		end
 
@@ -650,6 +651,7 @@ local function OnUnitCastEvent()
 		-- add cast action to the database
 		if not CasterDB[guid] then CasterDB[guid] = {} end
 		CasterDB[guid].sp = spell
+		CasterDB[guid].spell_id = spell_id
 		--CasterDB[guid].rank = nil
 		CasterDB[guid].start = start
 		CasterDB[guid].ct = timer
@@ -664,7 +666,8 @@ local function OnUnitCastEvent()
 		end
 	elseif arg3 == "FAIL" then
 		local guid = arg1
-		stopCast(guid)
+		local spell_id = arg4
+		tryStopCast(guid, spell_id)
     end
 
 end
