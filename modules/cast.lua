@@ -651,7 +651,7 @@ local function OnUnitCastEvent()
 		if not CasterDB[guid] then CasterDB[guid] = {} end
 		CasterDB[guid].sp = spell
 		--CasterDB[guid].rank = nil
-		CasterDB[guid].start = GetTime()
+		CasterDB[guid].start = start
 		CasterDB[guid].ct = timer
 		CasterDB[guid].icon = icon
 
