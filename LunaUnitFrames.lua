@@ -2,7 +2,8 @@ LunaUF = AceLibrary("AceAddon-2.0"):new("AceEvent-2.0", "AceConsole-2.0", "AceDB
 LunaUF:RegisterDB("LunaDB")
 
 -- Assets ----------------------------------------------------------------------------------
-LunaUF.Version = 2225
+LunaUF.Version = 2226
+LunaUF.isSuperWoW = SUPERWOW_STRING and SUPERWOW_VERSION
 LunaUF.BS = AceLibrary("Babble-Spell-2.2")
 LunaUF.Banzai = AceLibrary("Banzai-1.0")
 LunaUF.HealComm = AceLibrary("HealComm-1.0")

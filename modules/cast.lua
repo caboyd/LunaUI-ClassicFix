@@ -604,6 +604,71 @@ local function isBuffed()
 	end
 end
 
+
+--SuperWoW Custom cast event
+local function OnUnitCastEvent()
+	
+	local function stopCast(guid)
+		if CasterDB[guid] and CasterDB[guid].ct then
+			--set cast time to nil so frame update removes castbar
+			CasterDB[guid].ct = nil
+
+			for _,frame in pairs(LunaUF.Units.frameList) do
+				local _, frame_guid = UnitExists(frame.unit)
+				if frame.unit and frame.castBar and LunaUF.db.profile.units[frame.unitGroup].castBar.enabled and frame_guid == guid then
+					Cast:FullUpdate(frame)
+				end
+			end
+
+			-- delete all cast entries of guid
+			CasterDB[guid] = nil
+		end
+	end
+
+	if arg3 == "START" or arg3 == "CAST" or arg3 == "CHANNEL" then
+		-- human readable argument list
+		local guid = arg1
+		local target = arg2
+		local event_type = arg3
+		local spell_id = arg4
+		local timer = arg5 / 1000
+		local start = GetTime()
+		
+		--skip instant spells or stop spell that have finished casting
+		if timer < 0.1 then
+			stopCast(guid)
+			return
+		end
+
+		--new cast with cast time
+		-- get spell info from spell id
+		local spell, icon, _
+		if SpellInfo and SpellInfo(spell_id) then
+			spell, _, icon = SpellInfo(spell_id)
+		end
+
+		-- add cast action to the database
+		if not CasterDB[guid] then CasterDB[guid] = {} end
+		CasterDB[guid].sp = spell
+		--CasterDB[guid].rank = nil
+		CasterDB[guid].start = start
+		CasterDB[guid].ct = timer
+		CasterDB[guid].icon = icon
+
+		for _,frame in pairs(LunaUF.Units.frameList) do
+			local _, frame_guid = UnitExists(frame.unit)
+			if frame.unit and frame.castBar and LunaUF.db.profile.units[frame.unitGroup].castBar.enabled and frame_guid == guid then
+				frame.castBar.channeling = event_type == "CHANNEL"
+				Cast:FullUpdate(frame)
+			end
+		end
+	elseif arg3 == "FAIL" then
+		local guid = arg1
+		stopCast(guid)
+    end
+
+end
+
 local function OnEvent()
 	local frame = this:GetParent()
 	if event == "SPELLCAST_CHANNEL_START" then
@@ -864,6 +929,15 @@ function Cast:FullUpdate(frame)
 				end
 			end
 		else
+			
+			--SUPERWOW provides guid casters that we just replace for unit
+			if LunaUF.isSuperWoW then
+				local _, guid = UnitExists(frame.unit)
+				if CasterDB[guid] then
+					unitname = guid
+				end
+			end	
+			
 			frame.castBar:SetScript("OnEvent", nil)
 			if CasterDB[unitname] and CasterDB[unitname].ct and (CasterDB[unitname].start + CasterDB[unitname].ct) > GetTime() then
 				frame.castBar.bar:SetMinMaxValues(0, CasterDB[unitname].ct)
@@ -875,7 +949,7 @@ function Cast:FullUpdate(frame)
 				end
 				frame.castBar.Text:SetText(CasterDB[unitname].sp)
 				if LunaUF.db.profile.units[frame.unitGroup].castBar.icon then
-					frame.castBar.icon:SetTexture(BS:GetSpellIcon(CasterDB[unitname].sp) or GetItemIconTexture(CasterDB[unitname].sp))
+					frame.castBar.icon:SetTexture(CasterDB[unitname].icon or BS:GetSpellIcon(CasterDB[unitname].sp) or GetItemIconTexture(CasterDB[unitname].sp))
 				end
 				frame.castBar.casting = true
 				frame.castBar:SetScript("OnUpdate", OnUpdateOther)
@@ -922,20 +996,26 @@ function Cast:MINIMAP_ZONE_CHANGED()
 	end
 end
 
-Cast:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE")
-Cast:RegisterEvent("CHAT_MSG_SPELL_FRIENDLYPLAYER_BUFF")
-Cast:RegisterEvent("CHAT_MSG_SPELL_HOSTILEPLAYER_BUFF")
-Cast:RegisterEvent("CHAT_MSG_SPELL_SELF_DAMAGE")
-Cast:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_CREATURE_DAMAGE")
-Cast:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_BUFFS")
-Cast:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_BUFFS")
-Cast:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE")
-Cast:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_DAMAGE")
-Cast:RegisterEvent("CHAT_MSG_SPELL_PARTY_BUFF")
-Cast:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_PARTY_DAMAGE")
-Cast:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_PARTY_BUFFS")
-Cast:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_SELF_BUFF")
-Cast:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_PARTY_BUFF")
-Cast:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_CREATURE_BUFF")
-Cast:MINIMAP_ZONE_CHANGED()
-Cast:SetScript("OnEvent", function() this[event](this, arg1) end)
+if LunaUF.isSuperWoW then
+	Cast:SetScript("OnEvent", OnUnitCastEvent)
+	Cast:RegisterEvent("UNIT_CASTEVENT")
+else
+	Cast:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE")
+	Cast:RegisterEvent("CHAT_MSG_SPELL_FRIENDLYPLAYER_BUFF")
+	Cast:RegisterEvent("CHAT_MSG_SPELL_HOSTILEPLAYER_BUFF")
+	Cast:RegisterEvent("CHAT_MSG_SPELL_SELF_DAMAGE")
+	Cast:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_CREATURE_DAMAGE")
+	Cast:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_BUFFS")
+	Cast:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_BUFFS")
+	Cast:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE")
+	Cast:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_DAMAGE")
+	Cast:RegisterEvent("CHAT_MSG_SPELL_PARTY_BUFF")
+	Cast:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_PARTY_DAMAGE")
+	Cast:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_PARTY_BUFFS")
+	Cast:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_SELF_BUFF")
+	Cast:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_PARTY_BUFF")
+	Cast:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_CREATURE_BUFF")
+	Cast:MINIMAP_ZONE_CHANGED()
+	Cast:SetScript("OnEvent", function() this[event](this, arg1) end)
+end
+
