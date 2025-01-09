@@ -492,67 +492,45 @@ function Cast:CHAT_MSG_SPELL_SELF_DAMAGE(arg1)
 	end
 end
 
-local function OnUpdateOther()
-	local elapsed = GetTime() - this.startTime
-	if this.casting then
-		if this.maxValue >= elapsed then
-			this.bar:SetValue(elapsed)
-			this.Time:SetText(math.floor((this.maxValue - elapsed)*100)/100)
-		else
-			this.bar:SetMinMaxValues(0,1)
-			this.bar:SetValue(0)
-			this.casting = false
-			this.Text:Hide()
-			this.Time:Hide()
-			if LunaUF.db.profile.units[this:GetParent().unitGroup].castBar.hide and not this.hidden then
-				this.hidden = true
-				LunaUF.Units:PositionWidgets(this:GetParent())
-			end
-		end
-	end
-end
-
-local function OnUpdatePlayer()
-	local sign
+local function OnUpdate()
 	local frame = this:GetParent()
 	local elapsed = GetTime() - frame.castBar.startTime
-	local text = string.sub(math.max((frame.castBar.maxValue - elapsed + frame.castBar.delaySum),0)+0.001,1,4)
-	if (frame.castBar.delaySum ~= 0) then
-		local delay = string.sub(math.max(frame.castBar.delaySum, 0)+0.001,1,4)
-		if (frame.castBar.channeling == 1) then
-			sign = "-"
-		else
-			sign = "+"
-		end
-		text = "|cffcc0000"..sign..delay.."|r "..text
-	end
-	if frame.castBar.casting or frame.castBar.channeling then
-		frame.castBar.Time:SetText(text)
+	local delay = frame.castBar.delaySum or 0
+	local remaining = 0
+	local sign
+	
+	if frame.castBar.channeling then
+		remaining = math.max(frame.castBar.maxValue - elapsed - delay,0)
+		sign = "-"
 	else
-		frame.castBar.Time:SetText("")
+		remaining = math.max(frame.castBar.maxValue - elapsed + delay,0)
+		sign = "+"
 	end
 	
-	if (frame.castBar.casting) then
-		if (elapsed > (frame.castBar.maxValue + frame.castBar.delaySum) ) then
-			frame.castBar.casting = nil
-			elapsed = frame.castBar.maxValue
-			frame.castBar:SetScript("OnUpdate", nil)
-			Cast:FullUpdate(frame)
-			return
-		end
-		frame.castBar.bar:SetValue(elapsed)
-	elseif (frame.castBar.channeling) then
-		if (elapsed > frame.castBar.maxValue) then
-			elapsed = frame.castBar.maxValue
-		end
-		if (elapsed == frame.castBar.maxValue) then
-			frame.castBar.channeling = nil
-			frame.castBar:SetScript("OnUpdate", nil)
-			Cast:FullUpdate(frame)
-			return
-		end
-		frame.castBar.bar:SetValue(frame.castBar.maxValue - elapsed)
+	local text = string.format("%.2f", remaining)
+
+	if frame.castBar.delaySum and delay > 0 then
+		text = string.format("|cffcc0000%s%.2f |r%.2f", sign, delay, remaining)
 	end
+	
+	frame.castBar.Time:SetText(text)
+
+	if frame.castBar.casting then
+		if (elapsed < (frame.castBar.maxValue + delay) ) then
+			frame.castBar.bar:SetValue(elapsed)
+		else
+			frame.castBar:SetScript("OnUpdate", nil)
+			Cast:ClearCastBar(frame)
+		end
+	elseif frame.castBar.channeling then
+		if (elapsed + delay < frame.castBar.maxValue) then
+			frame.castBar.bar:SetValue(frame.castBar.maxValue - elapsed - delay)
+		else
+			frame.castBar:SetScript("OnUpdate", nil)
+			Cast:ClearCastBar(frame)
+		end
+	end
+
 end
 
 -- stolen from OCB, thanks Athene!
@@ -625,12 +603,13 @@ local function OnUnitCastEvent()
 			CasterDB[guid] = nil
 		end
 	end
+	
+	local event = arg3
 
-	if arg3 == "START" or arg3 == "CAST" or arg3 == "CHANNEL" then
+	if event == "START" or event == "CAST" or event == "CHANNEL" then
 		-- human readable argument list
 		local guid = arg1
 		local target = arg2
-		local event_type = arg3
 		local spell_id = arg4
 		local timer = arg5 / 1000
 		local start = GetTime()
@@ -649,22 +628,22 @@ local function OnUnitCastEvent()
 		end
 
 		-- add cast action to the database
-		if not CasterDB[guid] then CasterDB[guid] = {} end
-		CasterDB[guid].sp = spell
-		CasterDB[guid].spell_id = spell_id
-		--CasterDB[guid].rank = nil
-		CasterDB[guid].start = start
-		CasterDB[guid].ct = timer
-		CasterDB[guid].icon = icon
-
+		CasterDB[guid] = {
+			sp = spell, 
+			spell_id = spell_id, 
+			start = start, 
+			ct = timer, 
+			icon = icon,
+			channeling = event == "CHANNEL"
+		} 
+		
 		for _,frame in pairs(LunaUF.Units.frameList) do
 			local _, frame_guid = UnitExists(frame.unit)
 			if frame.unit and frame.castBar and LunaUF.db.profile.units[frame.unitGroup].castBar.enabled and frame_guid == guid then
-				frame.castBar.channeling = event_type == "CHANNEL"
 				Cast:FullUpdate(frame)
 			end
 		end
-	elseif arg3 == "FAIL" then
+	elseif event == "FAIL" then
 		local guid = arg1
 		local spell_id = arg4
 		tryStopCast(guid, spell_id)
@@ -686,24 +665,9 @@ local function OnEvent()
 		frame.castBar.Text:SetText(spellName)
 		if LunaUF.db.profile.units[frame.unitGroup].castBar.icon then
 			frame.castBar.icon:SetTexture(BS:GetSpellIcon(spellName or "") or GetItemIconTexture(spellName))
-		end
-		frame.castBar:SetScript("OnUpdate", OnUpdatePlayer)
+		end	
+		frame.castBar:SetScript("OnUpdate", OnUpdate)
 		Cast:FullUpdate(frame)
-	elseif event == "SPELLCAST_CHANNEL_UPDATE" then
-		if (arg1 == 0) then
-			frame.castBar.channeling = nil
-			frame.castBar.delaySum = 0
-		elseif (frame.castBar.channeling) then
-			local losttime = frame.castBar.maxValue - (frame.castBar.maxValue - (arg1 / 1000)) - (arg1 / 1000)
-			--frame.castBar.elapsed = frame.castBar.maxValue - (arg1 / 1000)
-			frame.castBar.delaySum = frame.castBar.delaySum + losttime
-		end
-	elseif event == "SPELLCAST_DELAYED" then
-		if arg1 then
-			frame.castBar.delaySum = (frame.castBar.delaySum or 0) + (arg1 / 1000)
-			local statusMin, statusMax = frame.castBar.bar:GetMinMaxValues()
-			frame.castBar.bar:SetMinMaxValues(statusMin, (statusMax + (arg1 / 1000)))
-		end
 	elseif event == "SPELLCAST_START" then
 		frame.castBar.maxValue = (arg2 / 1000)
 		frame.castBar.startTime = GetTime()
@@ -716,8 +680,15 @@ local function OnEvent()
 		end
 		frame.castBar.bar:SetMinMaxValues(0, frame.castBar.maxValue)
 		frame.castBar.bar:SetValue(0)
-		frame.castBar:SetScript("OnUpdate", OnUpdatePlayer)
+		frame.castBar:SetScript("OnUpdate", OnUpdate)
 		Cast:FullUpdate(frame)
+	elseif event == "SPELLCAST_CHANNEL_UPDATE" then
+		local value = frame.castBar.bar:GetValue()	
+		frame.castBar.delaySum = frame.castBar.delaySum + (value - (arg1 / 1000))
+	elseif event == "SPELLCAST_DELAYED" then
+		frame.castBar.delaySum = (frame.castBar.delaySum or 0) + (arg1 / 1000)
+		local statusMin, statusMax = frame.castBar.bar:GetMinMaxValues()
+		frame.castBar.bar:SetMinMaxValues(statusMin, (statusMax + (arg1 / 1000)))
 	elseif event == "UNIT_AURA" then
 		local newBuffStatus = isBuffed()
 		if not buffed and newBuffStatus then
@@ -775,7 +746,7 @@ local function OnAimed(cast)
 				end
 				uframe.castBar.bar:SetMinMaxValues(0, uframe.castBar.maxValue)
 				uframe.castBar.bar:SetValue(0)
-				uframe.castBar:SetScript("OnUpdate", OnUpdatePlayer)
+				uframe.castBar:SetScript("OnUpdate", OnUpdate)
 				Cast:FullUpdate(uframe)
 			end
 		end
@@ -794,7 +765,7 @@ local function OnAimed(cast)
 				end
 				uframe.castBar.bar:SetMinMaxValues(0, uframe.castBar.maxValue)
 				uframe.castBar.bar:SetValue(0)
-				uframe.castBar:SetScript("OnUpdate", OnUpdatePlayer)
+				uframe.castBar:SetScript("OnUpdate", OnUpdate)
 				Cast:FullUpdate(uframe)
 			end
 		end
@@ -906,6 +877,7 @@ function Cast:FullUpdate(frame)
 		elseif frame.castBar.channeling then
 			frame.castBar.bar:SetStatusBarColor(LunaUF.db.profile.castColors.channel.r, LunaUF.db.profile.castColors.channel.g, LunaUF.db.profile.castColors.channel.b)
 		end
+		
 		if UnitIsUnit(frame.unit,"player") then
 			frame.castBar:SetScript("OnEvent", OnEvent)
 			if (frame.castBar.casting or frame.castBar.channeling) then
@@ -918,21 +890,9 @@ function Cast:FullUpdate(frame)
 					LunaUF.Units:PositionWidgets(frame)
 				end
 			else
-				frame.castBar.Text:Hide()
-				frame.castBar.Time:Hide()
-				frame.castBar.icon:SetTexture(nil)
-				frame.castBar.bar:SetMinMaxValues(0,1)
-				frame.castBar.bar:SetValue(0)
-				if LunaUF.db.profile.units[frame.unitGroup].castBar.hide and not frame.castBar.hidden then
-					frame.castBar.hidden = true
-					LunaUF.Units:PositionWidgets(frame)
-				elseif not LunaUF.db.profile.units[frame.unitGroup].castBar.hide and frame.castBar.hidden then
-					frame.castBar.hidden = nil
-					LunaUF.Units:PositionWidgets(frame)
-				end
+				Cast:ClearCastBar(frame)
 			end
 		else
-			
 			--SUPERWOW provides guid casters that we just replace for unit
 			if LunaUF.isSuperWoW then
 				local _, guid = UnitExists(frame.unit)
@@ -954,31 +914,40 @@ function Cast:FullUpdate(frame)
 				if LunaUF.db.profile.units[frame.unitGroup].castBar.icon then
 					frame.castBar.icon:SetTexture(CasterDB[unitname].icon or BS:GetSpellIcon(CasterDB[unitname].sp) or GetItemIconTexture(CasterDB[unitname].sp))
 				end
-				frame.castBar.casting = true
-				frame.castBar:SetScript("OnUpdate", OnUpdateOther)
+				if CasterDB[unitname].channeling then
+					frame.castBar.channeling =  true
+				else
+					frame.castBar.casting =  true
+				end
+				frame.castBar:SetScript("OnUpdate", OnUpdate)
 				if frame.castBar.hidden then
 					frame.castBar.hidden = false
 					LunaUF.Units:PositionWidgets(frame)
 				end
 			else
-				frame.castBar.casting = false
-				frame.castBar.channeling = false
-				frame.castBar.bar:SetMinMaxValues(0,1)
-				frame.castBar.bar:SetValue(0)
-				frame.castBar.Text:Hide()
-				frame.castBar.Time:Hide()
-				frame.castBar.icon:SetTexture(nil)
 				frame.castBar:SetScript("OnUpdate", nil)
-				if LunaUF.db.profile.units[frame.unitGroup].castBar.hide and not frame.castBar.hidden then
-					frame.castBar.hidden = true
-					LunaUF.Units:PositionWidgets(frame)
-				elseif not LunaUF.db.profile.units[frame.unitGroup].castBar.hide and frame.castBar.hidden then
-					frame.castBar.hidden = nil
-					LunaUF.Units:PositionWidgets(frame)
-				end
+				Cast:ClearCastBar(frame)
 			end
 		end
 		OnSizeChanged(frame.castBar)
+	end
+end
+
+
+function Cast:ClearCastBar(frame)
+	frame.castBar.casting = nil
+	frame.castBar.channeling = nil
+	frame.castBar.Text:Hide()
+	frame.castBar.Time:Hide()
+	frame.castBar.icon:SetTexture(nil)
+	frame.castBar.bar:SetMinMaxValues(0,1)
+	frame.castBar.bar:SetValue(0)
+	if LunaUF.db.profile.units[frame.unitGroup].castBar.hide and not frame.castBar.hidden then
+		frame.castBar.hidden = true
+		LunaUF.Units:PositionWidgets(frame)
+	elseif not LunaUF.db.profile.units[frame.unitGroup].castBar.hide and frame.castBar.hidden then
+		frame.castBar.hidden = nil
+		LunaUF.Units:PositionWidgets(frame)
 	end
 end
 
