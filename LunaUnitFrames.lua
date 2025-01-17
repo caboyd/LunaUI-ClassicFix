@@ -1,7 +1,7 @@
 -- Luna Unit Frames 4.0 by Aviana
 
 LUF = select(2, ...)
-LUF.version = 4382
+LUF.version = 4383
 
 local L = LUF.L
 local ACR = LibStub("AceConfigRegistry-3.0", true)
@@ -881,9 +881,13 @@ function LUF.ApplySettings(frame)
 			frame:EnableElement("CombatText")
 			frame.CombatText:ClearAllPoints()
 			if config.portrait.enabled and config.portrait.alignment ~= "CENTER" then
-				frame.CombatText:SetAllPoints(frame.StatusPortrait.model)
+				--frame.CombatText:SetAllPoints(frame.StatusPortrait.model)
+				frame.CombatText:SetPoint("TOPLEFT", frame.StatusPortrait.model, "TOPLEFT", config.combatText.x or 0, config.combatText.y or 0)
+				frame.CombatText:SetPoint("BOTTOMRIGHT", frame.StatusPortrait.model, "BOTTOMRIGHT", 0, 0)
 			else
-				frame.CombatText:SetAllPoints(frame)
+				--frame.CombatText:SetAllPoints(frame)
+				frame.CombatText:SetPoint("TOPLEFT", frame, "TOPLEFT", config.combatText.x or 0, config.combatText.y or 0)
+				frame.CombatText:SetPoint("BOTTOMRIGHT",frame, "BOTTOMRIGHT", 0, 0)
 			end
 		else
 			frame:DisableElement("CombatText")

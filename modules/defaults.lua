@@ -113,7 +113,7 @@ function LUF:LoadDefaults()
 			highlight = { enabled = true, debuff = 2 },
 			borders = { enabled = true, debuff = 2, size = 1 },
 			fader = {enabled = false, combatAlpha = 1, inactiveAlpha = 0.2, speedyFade = false},
-			combatText = {enabled = false, size = 15},
+			combatText = {enabled = false, size = 15, x = 0, y = 0},
 			squares = {
 				topleft = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
 				top = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
@@ -310,7 +310,7 @@ function LUF:LoadDefaults()
 			highlight = { enabled = true, debuff = 2 },
 			borders = { enabled = true, debuff = 2, size = 1 },
 			fader = {enabled = false, combatAlpha = 1, inactiveAlpha = 0.2, speedyFade = false},
-			combatText = {enabled = false, size = 15},
+			combatText = {enabled = false, size = 15, x = 0, y = 0},
 			squares = {
 				topleft = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
 				top = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
@@ -469,7 +469,7 @@ function LUF:LoadDefaults()
 			highlight = { enabled = true, debuff = 2 },
 			borders = { enabled = true, debuff = 2, size = 1 },
 			fader = {enabled = false, combatAlpha = 1, inactiveAlpha = 0.2, speedyFade = false},
-			combatText = {enabled = false, size = 15},
+			combatText = {enabled = false, size = 15, x = 0, y = 0},
 			squares = {
 				topleft = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
 				top = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
@@ -614,7 +614,7 @@ function LUF:LoadDefaults()
 			highlight = { enabled = true, debuff = 2 },
 			borders = { enabled = true, debuff = 2, size = 1 },
 			fader = {enabled = false, combatAlpha = 1, inactiveAlpha = 0.2, speedyFade = false},
-			combatText = {enabled = false, size = 15},
+			combatText = {enabled = false, size = 15, x = 0, y = 0},
 			squares = {
 				topleft = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
 				top = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
@@ -761,7 +761,7 @@ function LUF:LoadDefaults()
 			highlight = { enabled = true, debuff = 2 },
 			borders = { enabled = true, debuff = 2, size = 1 },
 			fader = {enabled = false, combatAlpha = 1, inactiveAlpha = 0.2, speedyFade = false},
-			combatText = {enabled = false, size = 15},
+			combatText = {enabled = false, size = 15, x = 0, y = 0},
 			squares = {
 				topleft = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
 				top = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
@@ -925,7 +925,7 @@ function LUF:LoadDefaults()
 			highlight = { enabled = true, debuff = 2 },
 			borders = { enabled = true, debuff = 2, size = 1 },
 			fader = {enabled = false, combatAlpha = 1, inactiveAlpha = 0.2, speedyFade = false},
-			combatText = {enabled = false, size = 15},
+			combatText = {enabled = false, size = 15, x = 0, y = 0},
 			squares = {
 				topleft = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
 				top = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
@@ -1074,7 +1074,7 @@ function LUF:LoadDefaults()
 			highlight = { enabled = true, debuff = 2 },
 			borders = { enabled = true, debuff = 2, size = 1 },
 			fader = {enabled = false, combatAlpha = 1, inactiveAlpha = 0.2, speedyFade = false},
-			combatText = {enabled = false, size = 15},
+			combatText = {enabled = false, size = 15, x = 0, y = 0},
 			squares = {
 				topleft = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
 				top = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
@@ -1224,7 +1224,7 @@ function LUF:LoadDefaults()
 			highlight = { enabled = true, debuff = 2 },
 			borders = { enabled = true, debuff = 2, size = 1 },
 			fader = {enabled = false, combatAlpha = 1, inactiveAlpha = 0.2, speedyFade = false},
-			combatText = {enabled = false, size = 15},
+			combatText = {enabled = false, size = 15, x = 0, y = 0},
 			squares = {
 				topleft = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
 				top = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
@@ -1399,7 +1399,7 @@ function LUF:LoadDefaults()
 			highlight = { enabled = true, debuff = 2 },
 			borders = { enabled = true, debuff = 2, size = 1 },
 			fader = {enabled = false, combatAlpha = 1, inactiveAlpha = 0.2, speedyFade = false},
-			combatText = {enabled = false, size = 15},
+			combatText = {enabled = false, size = 15, x = 0, y = 0},
 			squares = {
 				topleft = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
 				top = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
@@ -1553,7 +1553,7 @@ function LUF:LoadDefaults()
 			highlight = { enabled = true, debuff = 2 },
 			borders = { enabled = true, debuff = 2, size = 1 },
 			fader = {enabled = false, combatAlpha = 1, inactiveAlpha = 0.2, speedyFade = false},
-			combatText = {enabled = false, size = 15},
+			combatText = {enabled = false, size = 15, x = 0, y = 0},
 			squares = {
 				topleft = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
 				top = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
@@ -1705,7 +1705,7 @@ function LUF:LoadDefaults()
 			highlight = { enabled = true, debuff = 2 },
 			borders = { enabled = true, debuff = 2, size = 1 },
 			fader = {enabled = false, combatAlpha = 1, inactiveAlpha = 0.2, speedyFade = false},
-			combatText = {enabled = false, size = 15},
+			combatText = {enabled = false, size = 15, x = 0, y = 0},
 			squares = {
 				topleft = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
 				top = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
@@ -1897,7 +1897,7 @@ function LUF:LoadDefaults()
 			highlight = { enabled = true, debuff = 2 },
 			borders = { enabled = true, debuff = 2, size = 1 },
 			fader = {enabled = false, combatAlpha = 1, inactiveAlpha = 0.2, speedyFade = false},
-			combatText = {enabled = false, size = 15},
+			combatText = {enabled = false, size = 15, x = 0, y = 0},
 			squares = {
 				topleft = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
 				top = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
@@ -2050,7 +2050,7 @@ function LUF:LoadDefaults()
 			highlight = { enabled = true, debuff = 2 },
 			borders = { enabled = true, debuff = 2, size = 1 },
 			fader = {enabled = false, combatAlpha = 1, inactiveAlpha = 0.2, speedyFade = false},
-			combatText = {enabled = false, size = 15},
+			combatText = {enabled = false, size = 15, x = 0, y = 0},
 			squares = {
 				topleft = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
 				top = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
@@ -2226,7 +2226,7 @@ function LUF:LoadDefaults()
 			highlight = { enabled = true, debuff = 2 },
 			borders = { enabled = true, debuff = 2, size = 1 },
 			fader = {enabled = false, combatAlpha = 1, inactiveAlpha = 0.2, speedyFade = false},
-			combatText = {enabled = false, size = 15},
+			combatText = {enabled = false, size = 15, x = 0, y = 0},
 			squares = {
 				topleft = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
 				top = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
@@ -2386,7 +2386,7 @@ function LUF:LoadDefaults()
 			highlight = { enabled = true, debuff = 2 },
 			borders = { enabled = true, debuff = 2, size = 1 },
 			fader = {enabled = false, combatAlpha = 1, inactiveAlpha = 0.2, speedyFade = false},
-			combatText = {enabled = false, size = 15},
+			combatText = {enabled = false, size = 15, x = 0, y = 0},
 			squares = {
 				topleft = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
 				top = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
@@ -2547,7 +2547,7 @@ function LUF:LoadDefaults()
 			highlight = { enabled = true, debuff = 2 },
 			borders = { enabled = true, debuff = 2, size = 1 },
 			fader = {enabled = false, combatAlpha = 1, inactiveAlpha = 0.2, speedyFade = false},
-			combatText = {enabled = false, size = 15},
+			combatText = {enabled = false, size = 15, x = 0, y = 0},
 			squares = {
 				topleft = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
 				top = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
@@ -2723,7 +2723,7 @@ function LUF:LoadDefaults()
 			highlight = { enabled = true, debuff = 2 },
 			borders = { enabled = true, debuff = 2, size = 1 },
 			fader = {enabled = false, combatAlpha = 1, inactiveAlpha = 0.2, speedyFade = false},
-			combatText = {enabled = false, size = 15},
+			combatText = {enabled = false, size = 15, x = 0, y = 0},
 			squares = {
 				topleft = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
 				top = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
@@ -2883,7 +2883,7 @@ function LUF:LoadDefaults()
 			highlight = { enabled = true, debuff = 2 },
 			borders = { enabled = true, debuff = 2, size = 1 },
 			fader = {enabled = false, combatAlpha = 1, inactiveAlpha = 0.2, speedyFade = false},
-			combatText = {enabled = false, size = 15},
+			combatText = {enabled = false, size = 15, x = 0, y = 0},
 			squares = {
 				topleft = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
 				top = {enabled = false, type = "aggro", size = 10, x = 0, y = 0 },
