@@ -433,6 +433,8 @@ local L = {
 ["Color of cast bar text when cast not interruptible"] = "Color of cast bar text when cast not interruptible",
 ["BuffCountFontSize"] = "Buff Count Font Size",
 ["BuffCountFontSizeText"] = "Set the font size of the count for buffs with mutiple stacks",
+["IndexOfDispel"] = "Index of Dispel",
+["IndexOfDispelDesc"] = "To display first found dispel leave blank or use 1, second found dispel use 2, 3, etc.",
 }
 
 local LUF = select(2, ...)

@@ -53,12 +53,19 @@ local cures = {
 }
 cures = cures[playerClass]
 
-local function checkDispel(unit)
+--Returns the dispel found at the given index defaults to the first one
+local function checkDispel(unit, index)
 	if not UnitCanAssist("player", unit) then return end
+	index = index or 1
+	local found_index = 0;
+
 	local i, name, _, _, debuffType = 1, UnitDebuff(unit, 1)
 	while name do
 		if canCure[debuffType] then
-			return lCD:UnitAura(unit, i, "HARMFUL")
+			found_index = found_index + 1
+			if found_index == index then
+				return lCD:UnitAura(unit, i, "HARMFUL")
+			end
 		end
 		i = i + 1
 		name, _, _, debuffType = UnitDebuff(unit, i)
@@ -237,6 +244,12 @@ local function Update(self, event, unit)
 						indicator:Hide()
 					end
 				elseif indicator.type == "dispel" then
+					if dispelType then
+						--Get correct index of dispel if set
+						if indicator.dispel_index > 1 then
+							icon, _, dispelType, duration, expirationTime = select(2, checkDispel(unit, indicator.dispel_index))
+						end
+					end
 					if dispelType then
 						indicator:Show()
 						if indicator.showTexture then
