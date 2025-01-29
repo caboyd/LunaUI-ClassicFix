@@ -57,15 +57,15 @@ cures = cures[playerClass]
 local function checkDispel(unit, index)
 	if not UnitCanAssist("player", unit) then return end
 	index = index or 1
-	local found_index = 0;
+	local i, found_index = 1, 1;
 
-	local i, name, _, _, debuffType = 1, UnitDebuff(unit, 1)
+	local name, _, _, debuffType = UnitDebuff(unit, i)
 	while name do
 		if canCure[debuffType] then
-			found_index = found_index + 1
 			if found_index == index then
 				return lCD:UnitAura(unit, i, "HARMFUL")
 			end
+			found_index = found_index + 1
 		end
 		i = i + 1
 		name, _, _, debuffType = UnitDebuff(unit, i)
