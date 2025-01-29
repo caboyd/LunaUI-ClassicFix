@@ -182,7 +182,6 @@ local function Update(self, event, unit)
 
 	local hasAggro = UnitThreatSituation(UnitExists(unit) and unit or "player")
 	local legacyThreat = Vex and Vex:GetUnitAggroByUnitId(unit)
-	local icon, _, dispelType, duration, expirationTime = select(2, checkDispel(unit))
 	local hasAura, isMissing, hasOwn
 
 	for _, indicator in pairs(element) do
@@ -244,16 +243,13 @@ local function Update(self, event, unit)
 						indicator:Hide()
 					end
 				elseif indicator.type == "dispel" then
-					if dispelType then
-						--Get correct index of dispel if set
-						if indicator.dispel_index > 1 then
-							icon, _, dispelType, duration, expirationTime = select(2, checkDispel(unit, indicator.dispel_index))
-						end
-					end
+					--Get correct index of dispel if set
+					local dispelIcon, _, dispelType, duration, expirationTime = select(2, checkDispel(unit, indicator.dispel_index))
+					
 					if dispelType then
 						indicator:Show()
 						if indicator.showTexture then
-							indicator.texture:SetTexture(icon)
+							indicator.texture:SetTexture(dispelIcon)
 							indicator.texture:SetVertexColor(1,1,1)
 						else
 							local color = oUF.colors.debuff[dispelType]
