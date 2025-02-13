@@ -53,12 +53,19 @@ local cures = {
 }
 cures = cures[playerClass]
 
-local function checkDispel(unit)
+--Returns the dispel found at the given index defaults to the first one
+local function checkDispel(unit, index)
 	if not UnitCanAssist("player", unit) then return end
-	local i, name, _, _, debuffType = 1, UnitDebuff(unit, 1)
+	index = index or 1
+	local i, found_index = 1, 1;
+
+	local name, _, _, debuffType = UnitDebuff(unit, i)
 	while name do
 		if canCure[debuffType] then
-			return lCD:UnitAura(unit, i, "HARMFUL")
+			if found_index == index then
+				return lCD:UnitAura(unit, i, "HARMFUL")
+			end
+			found_index = found_index + 1
 		end
 		i = i + 1
 		name, _, _, debuffType = UnitDebuff(unit, i)
@@ -175,7 +182,6 @@ local function Update(self, event, unit)
 
 	local hasAggro = UnitThreatSituation(UnitExists(unit) and unit or "player")
 	local legacyThreat = Vex and Vex:GetUnitAggroByUnitId(unit)
-	local icon, _, dispelType, duration, expirationTime = select(2, checkDispel(unit))
 	local hasAura, isMissing, hasOwn
 
 	for _, indicator in pairs(element) do
@@ -237,10 +243,13 @@ local function Update(self, event, unit)
 						indicator:Hide()
 					end
 				elseif indicator.type == "dispel" then
+					--Get correct index of dispel if set
+					local dispelIcon, _, dispelType, duration, expirationTime = select(2, checkDispel(unit, indicator.dispel_index))
+					
 					if dispelType then
 						indicator:Show()
 						if indicator.showTexture then
-							indicator.texture:SetTexture(icon)
+							indicator.texture:SetTexture(dispelIcon)
 							indicator.texture:SetVertexColor(1,1,1)
 						else
 							local color = oUF.colors.debuff[dispelType]

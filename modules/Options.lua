@@ -3125,11 +3125,11 @@ function LUF:CreateConfig()
 							set = function(info, value) set(info,value) LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].value = nil ACR:NotifyChange("LunaUnitFrames") end,
 						},
 						value = {
-							name = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID"] or L["Name (partial) or ID"] end,
-							desc = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID of the effect to track. Use ; as a logical AND and / as logical OR. Also supports [mana] to only check on mana classes. Example: Arcane Intellect[mana]/Arcane Brilliance[mana];Dampen Magic"] or L["Name (partial) or ID of the effect to track. Use ; as a seperator for multiple auras"] end,
+							name = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" and L["IndexOfDispel"] or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID"] or L["Name (partial) or ID"] end,
+							desc = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" and L["IndexOfDispelDesc"] or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID of the effect to track. Use ; as a logical AND and / as logical OR. Also supports [mana] to only check on mana classes. Example: Arcane Intellect[mana]/Arcane Brilliance[mana];Dampen Magic"] or L["Name (partial) or ID of the effect to track. Use ; as a seperator for multiple auras"] end,
 							type = "input",
 							order = 4,
-							hidden = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "aggro" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "legacythreat" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" end,
+							hidden = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "aggro" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "legacythreat" end,
 							validate = validateMissingBuffInput,
 						},
 						timer = {
@@ -3196,11 +3196,11 @@ function LUF:CreateConfig()
 							set = function(info, value) set(info,value) LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].value = nil ACR:NotifyChange("LunaUnitFrames") end,
 						},
 						value = {
-							name = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID"] or L["Name (partial) or ID"] end,
-							desc = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID of the effect to track. Use ; as a logical AND and / as logical OR. Also supports [mana] to only check on mana classes. Example: Arcane Intellect[mana]/Arcane Brilliance[mana];Dampen Magic"] or L["Name (partial) or ID of the effect to track. Use ; as a seperator for multiple auras"] end,
+							name = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" and L["IndexOfDispel"] or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID"] or L["Name (partial) or ID"] end,
+							desc = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" and L["IndexOfDispelDesc"] or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID of the effect to track. Use ; as a logical AND and / as logical OR. Also supports [mana] to only check on mana classes. Example: Arcane Intellect[mana]/Arcane Brilliance[mana];Dampen Magic"] or L["Name (partial) or ID of the effect to track. Use ; as a seperator for multiple auras"] end,
 							type = "input",
 							order = 4,
-							hidden = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "aggro" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "legacythreat" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" end,
+							hidden = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "aggro" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "legacythreat" end,
 							validate = validateMissingBuffInput,
 						},
 						timer = {
@@ -3267,11 +3267,11 @@ function LUF:CreateConfig()
 							set = function(info, value) set(info,value) LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].value = nil ACR:NotifyChange("LunaUnitFrames") end,
 						},
 						value = {
-							name = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID"] or L["Name (partial) or ID"] end,
-							desc = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID of the effect to track. Use ; as a logical AND and / as logical OR. Also supports [mana] to only check on mana classes. Example: Arcane Intellect[mana]/Arcane Brilliance[mana];Dampen Magic"] or L["Name (partial) or ID of the effect to track. Use ; as a seperator for multiple auras"] end,
+							name = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" and L["IndexOfDispel"] or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID"] or L["Name (partial) or ID"] end,
+							desc = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" and L["IndexOfDispelDesc"] or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID of the effect to track. Use ; as a logical AND and / as logical OR. Also supports [mana] to only check on mana classes. Example: Arcane Intellect[mana]/Arcane Brilliance[mana];Dampen Magic"] or L["Name (partial) or ID of the effect to track. Use ; as a seperator for multiple auras"] end,
 							type = "input",
 							order = 4,
-							hidden = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "aggro" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "legacythreat" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" end,
+							hidden = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "aggro" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "legacythreat" end,
 							validate = validateMissingBuffInput,
 						},
 						timer = {
@@ -3338,11 +3338,11 @@ function LUF:CreateConfig()
 							set = function(info, value) set(info,value) LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].value = nil ACR:NotifyChange("LunaUnitFrames") end,
 						},
 						value = {
-							name = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID"] or L["Name (partial) or ID"] end,
-							desc = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID of the effect to track. Use ; as a logical AND and / as logical OR. Also supports [mana] to only check on mana classes. Example: Arcane Intellect[mana]/Arcane Brilliance[mana];Dampen Magic"] or L["Name (partial) or ID of the effect to track. Use ; as a seperator for multiple auras"] end,
+							name = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" and L["IndexOfDispel"] or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID"] or L["Name (partial) or ID"] end,
+							desc = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" and L["IndexOfDispelDesc"] or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID of the effect to track. Use ; as a logical AND and / as logical OR. Also supports [mana] to only check on mana classes. Example: Arcane Intellect[mana]/Arcane Brilliance[mana];Dampen Magic"] or L["Name (partial) or ID of the effect to track. Use ; as a seperator for multiple auras"] end,
 							type = "input",
 							order = 4,
-							hidden = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "aggro" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "legacythreat" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" end,
+							hidden = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "aggro" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "legacythreat" end,
 							validate = validateMissingBuffInput,
 						},
 						timer = {
@@ -3409,11 +3409,11 @@ function LUF:CreateConfig()
 							set = function(info, value) set(info,value) LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].value = nil ACR:NotifyChange("LunaUnitFrames") end,
 						},
 						value = {
-							name = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID"] or L["Name (partial) or ID"] end,
-							desc = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID of the effect to track. Use ; as a logical AND and / as logical OR. Also supports [mana] to only check on mana classes. Example: Arcane Intellect[mana]/Arcane Brilliance[mana];Dampen Magic"] or L["Name (partial) or ID of the effect to track. Use ; as a seperator for multiple auras"] end,
+							name = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" and L["IndexOfDispel"] or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID"] or L["Name (partial) or ID"] end,
+							desc = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" and L["IndexOfDispelDesc"] or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID of the effect to track. Use ; as a logical AND and / as logical OR. Also supports [mana] to only check on mana classes. Example: Arcane Intellect[mana]/Arcane Brilliance[mana];Dampen Magic"] or L["Name (partial) or ID of the effect to track. Use ; as a seperator for multiple auras"] end,
 							type = "input",
 							order = 4,
-							hidden = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "aggro" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "legacythreat" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" end,
+							hidden = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "aggro" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "legacythreat" end,
 							validate = validateMissingBuffInput,
 						},
 						timer = {
@@ -3480,11 +3480,11 @@ function LUF:CreateConfig()
 							set = function(info, value) set(info,value) LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].value = nil ACR:NotifyChange("LunaUnitFrames") end,
 						},
 						value = {
-							name = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID"] or L["Name (partial) or ID"] end,
-							desc = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID of the effect to track. Use ; as a logical AND and / as logical OR. Also supports [mana] to only check on mana classes. Example: Arcane Intellect[mana]/Arcane Brilliance[mana];Dampen Magic"] or L["Name (partial) or ID of the effect to track. Use ; as a seperator for multiple auras"] end,
+							name = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" and L["IndexOfDispel"] or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID"] or L["Name (partial) or ID"] end,
+							desc = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" and L["IndexOfDispelDesc"] or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID of the effect to track. Use ; as a logical AND and / as logical OR. Also supports [mana] to only check on mana classes. Example: Arcane Intellect[mana]/Arcane Brilliance[mana];Dampen Magic"] or L["Name (partial) or ID of the effect to track. Use ; as a seperator for multiple auras"] end,
 							type = "input",
 							order = 4,
-							hidden = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "aggro" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "legacythreat" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" end,
+							hidden = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "aggro" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "legacythreat" end,
 							validate = validateMissingBuffInput,
 						},
 						timer = {
@@ -3551,11 +3551,11 @@ function LUF:CreateConfig()
 							set = function(info, value) set(info,value) LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].value = nil ACR:NotifyChange("LunaUnitFrames") end,
 						},
 						value = {
-							name = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID"] or L["Name (partial) or ID"] end,
-							desc = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID of the effect to track. Use ; as a logical AND and / as logical OR. Also supports [mana] to only check on mana classes. Example: Arcane Intellect[mana]/Arcane Brilliance[mana];Dampen Magic"] or L["Name (partial) or ID of the effect to track. Use ; as a seperator for multiple auras"] end,
+							name = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" and L["IndexOfDispel"] or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID"] or L["Name (partial) or ID"] end,
+							desc = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" and L["IndexOfDispelDesc"] or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID of the effect to track. Use ; as a logical AND and / as logical OR. Also supports [mana] to only check on mana classes. Example: Arcane Intellect[mana]/Arcane Brilliance[mana];Dampen Magic"] or L["Name (partial) or ID of the effect to track. Use ; as a seperator for multiple auras"] end,
 							type = "input",
 							order = 4,
-							hidden = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "aggro" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "legacythreat" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" end,
+							hidden = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "aggro" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "legacythreat" end,
 							validate = validateMissingBuffInput,
 						},
 						timer = {
@@ -3622,11 +3622,11 @@ function LUF:CreateConfig()
 							set = function(info, value) set(info,value) LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].value = nil ACR:NotifyChange("LunaUnitFrames") end,
 						},
 						value = {
-							name = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID"] or L["Name (partial) or ID"] end,
-							desc = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID of the effect to track. Use ; as a logical AND and / as logical OR. Also supports [mana] to only check on mana classes. Example: Arcane Intellect[mana]/Arcane Brilliance[mana];Dampen Magic"] or L["Name (partial) or ID of the effect to track. Use ; as a seperator for multiple auras"] end,
+							name = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" and L["IndexOfDispel"] or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID"] or L["Name (partial) or ID"] end,
+							desc = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" and L["IndexOfDispelDesc"] or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID of the effect to track. Use ; as a logical AND and / as logical OR. Also supports [mana] to only check on mana classes. Example: Arcane Intellect[mana]/Arcane Brilliance[mana];Dampen Magic"] or L["Name (partial) or ID of the effect to track. Use ; as a seperator for multiple auras"] end,
 							type = "input",
 							order = 4,
-							hidden = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "aggro" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "legacythreat" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" end,
+							hidden = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "aggro" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "legacythreat" end,
 							validate = validateMissingBuffInput,
 						},
 						timer = {
@@ -3693,11 +3693,11 @@ function LUF:CreateConfig()
 							set = function(info, value) set(info,value) LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].value = nil ACR:NotifyChange("LunaUnitFrames") end,
 						},
 						value = {
-							name = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID"] or L["Name (partial) or ID"] end,
-							desc = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID of the effect to track. Use ; as a logical AND and / as logical OR. Also supports [mana] to only check on mana classes. Example: Arcane Intellect[mana]/Arcane Brilliance[mana];Dampen Magic"] or L["Name (partial) or ID of the effect to track. Use ; as a seperator for multiple auras"] end,
+							name = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" and L["IndexOfDispel"] or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID"] or L["Name (partial) or ID"] end,
+							desc = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" and L["IndexOfDispelDesc"] or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "missing" and L["Name (exact) or ID of the effect to track. Use ; as a logical AND and / as logical OR. Also supports [mana] to only check on mana classes. Example: Arcane Intellect[mana]/Arcane Brilliance[mana];Dampen Magic"] or L["Name (partial) or ID of the effect to track. Use ; as a seperator for multiple auras"] end,
 							type = "input",
 							order = 4,
-							hidden = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "aggro" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "legacythreat" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "dispel" end,
+							hidden = function(info) return LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "aggro" or LUF.db.profile.units[info[#info-3]].squares[info[#info-1]].type == "legacythreat" end,
 							validate = validateMissingBuffInput,
 						},
 						timer = {
