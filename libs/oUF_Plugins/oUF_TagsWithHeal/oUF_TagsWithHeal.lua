@@ -120,8 +120,7 @@ local function abbreviateName(text)
 end
 
 --Patch 1.15.1 - CheckInteractDistance is not able to be used on friendly targets in combat
-local function InCombatLockdownRestriction()
-	local InCombatLockdownRestriction
+local function InCombatLockdownRestriction(unit)
 	if oUF.isClassic then
 		return InCombatLockdown() and not UnitCanAttack("player", unit)
 	else
@@ -307,7 +306,7 @@ local tagStrings = {
 
 	["range"] = [[function(unit)
 		--Patch 1.15.1 - CheckInteractDistance is not able to be used on friendly targets in combat
-		local InCombat = InCombatLockdownRestriction()
+		local InCombat = InCombatLockdownRestriction(unit)
 		
 		if UnitIsUnit("player", unit) then
 			return "0"
