@@ -121,7 +121,6 @@ end
 
 --Patch 1.15.1 - CheckInteractDistance is not able to be used on friendly targets in combat
 local function InCombatLockdownRestriction(unit)
-	local InCombatLockdownRestriction
 	if oUF.isClassic then
 		return InCombatLockdown() and not UnitCanAttack("player", unit)
 	else
