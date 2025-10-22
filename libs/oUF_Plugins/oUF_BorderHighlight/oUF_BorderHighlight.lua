@@ -141,7 +141,7 @@ local function checkCurableSpells(self, event, arg1)
 		end
 	elseif cures then
 		for spellID, types in pairs(cures) do
-			if( IsPlayerSpell(spellID) ) then
+			if( C_SpellBook.IsSpellKnown(spellID) ) then
 				for _, type in pairs(types) do
 					canCure[type] = true
 				end
