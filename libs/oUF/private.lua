@@ -22,7 +22,7 @@ function Private.error(...)
 end
 
 function Private.unitExists(unit)
-	return unit and (UnitExists(unit) or ShowBossFrameWhenUninteractable(unit))
+	return unit and (UnitExists(unit) or UnitIsVisible(unit))
 end
 
 local validator = CreateFrame('Frame')
