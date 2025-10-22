@@ -113,6 +113,19 @@ local weaponEnchantData = {
 	[1003] = 300,  -- Venomhide Poison (5 min)
 }
 
+
+local function CheckBlizzardCooldownTextOverflow(button, disableBCC)
+    if not button.cdFontString or disableBCC then return end
+
+    local text_width = button.cdFontString:GetStringWidth()
+    local button_width = button:GetWidth()
+    if text_width * 0.9 > button_width then
+        button.cd:SetHideCountdownNumbers(true)
+    else
+        button.cd:SetHideCountdownNumbers(false)
+    end
+end
+
 local function UpdateTooltip(self)
 	if GameTooltip:IsForbidden() then return end
 	if self.filter == "TEMP" then
@@ -175,6 +188,17 @@ local function createAuraIcon(element, index)
 	button.icon = icon
 	button.count = count
 	button.cd = cd
+
+	C_Timer.After(0, function()
+		-- Cache the font string once
+		for _, region in ipairs({ button.cd:GetRegions() }) do
+			if region:GetObjectType() == "FontString" then
+				button.cdFontString = region
+				break
+			end
+		end
+		CheckBlizzardCooldownTextOverflow(button, element.disableBCC)
+	end)
 
 	--[[ Callback: SimpleAuras:PostCreateIcon(button)
 	Called after a new aura button has been created.
@@ -341,6 +365,8 @@ local function updateIcon(element, unit, index, position, filter, isDebuff)
 				element:PostUpdateIcon(unit, button, index, position, duration, expiration, debuffType, isStealable)
 			end
 		end
+		CheckBlizzardCooldownTextOverflow(button, element.disableBCC)
+
 	end
 end
 
