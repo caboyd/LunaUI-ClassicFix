@@ -114,12 +114,35 @@ local weaponEnchantData = {
 }
 
 
-local function CheckBlizzardCooldownTextOverflow(button, disableBCC)
-    if not button.cdFontString or disableBCC then return end
+local function CheckBlizzardCooldownTextOverflow(element, button)
+	--OmniCC always prevents blizzard timers so we dont need to do this if its installed
+    if element.disableBCC or _G.OmniCC then return end
 
-    local text_width = button.cdFontString:GetStringWidth()
+	if not button.cdFontString then
+		-- Cache the cooldown text font string
+		for _, region in ipairs({ button.cd:GetRegions() }) do
+			if region:GetObjectType() == "FontString" then
+				button.cdFontString = region
+				break
+			end
+		end
+	end
+
+	local fs = button.cdFontString
+
+	local _, oldFontSize, _ = fs:GetFont()
     local button_width = button:GetWidth()
-    if text_width * 0.9 > button_width then
+	local fontSize = math.max(8, button_width * 0.42)
+
+	if(oldFontSize ~= fontSize) then
+		--only update when font size changed
+		local fontName = fs:GetFont()
+		fs:SetFont(fontName, fontSize, 'OUTLINE')
+	end
+
+	local text_width = fs:GetStringWidth()
+
+    if (button_width < 18)  then
         button.cd:SetHideCountdownNumbers(true)
     else
         button.cd:SetHideCountdownNumbers(false)
@@ -188,18 +211,6 @@ local function createAuraIcon(element, index)
 	button.icon = icon
 	button.count = count
 	button.cd = cd
-
-	C_Timer.After(0, function()
-		-- Cache the font string once
-		for _, region in ipairs({ button.cd:GetRegions() }) do
-			if region:GetObjectType() == "FontString" then
-				button.cdFontString = region
-				break
-			end
-		end
-		CheckBlizzardCooldownTextOverflow(button, element.disableBCC)
-	end)
-
 	--[[ Callback: SimpleAuras:PostCreateIcon(button)
 	Called after a new aura button has been created.
 
@@ -280,10 +291,10 @@ local function updateIcon(element, unit, index, position, filter, isDebuff)
 		if(name) then
 			if button.cd then
 				if (expiration and expiration > 0) and (duration and duration > 0) and (element.timer == "all" or element.timer == "self" and button.isPlayer) then
-					button.cd:SetHideCountdownNumbers(element.disableBCC)
 					button.cd.noCooldownCount = element.disableOCC
 					button.cd:SetCooldown(expiration - duration, duration)
 					button.cd:Show()
+					button.cd:SetHideCountdownNumbers(element.disableBCC)
 				else
 					button.cd:Hide()
 				end
@@ -365,7 +376,7 @@ local function updateIcon(element, unit, index, position, filter, isDebuff)
 				element:PostUpdateIcon(unit, button, index, position, duration, expiration, debuffType, isStealable)
 			end
 		end
-		CheckBlizzardCooldownTextOverflow(button, element.disableBCC)
+		CheckBlizzardCooldownTextOverflow(element, button)
 
 	end
 end
