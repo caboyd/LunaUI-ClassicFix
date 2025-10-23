@@ -752,6 +752,8 @@ function LUF.InitializeUnit(frame, unit, notHeaderChild)
 		end
 	end)
 	
-	frame:SetClampedToScreen(true)
+	if not InCombatLockdown() then
+		frame:SetClampedToScreen(true)
+	end
 	frame:RegisterForClicks("AnyUp")
 end
