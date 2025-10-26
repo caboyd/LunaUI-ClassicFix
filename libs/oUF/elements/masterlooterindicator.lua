@@ -46,7 +46,9 @@ local function Update(self, event)
 	local isShown = false
 	if(UnitInParty(unit) or UnitInRaid(unit)) then
 		local method, partyIndex, raidIndex = GetLootMethod()
-		if(method == 'master') then
+
+		--https://warcraft.wiki.gg/wiki/API_C_PartyInfo.GetLootMethod
+		if(method == Enum.LootMethod.Masterlooter) then
 			local mlUnit
 			if(partyIndex) then
 				if(partyIndex == 0) then
