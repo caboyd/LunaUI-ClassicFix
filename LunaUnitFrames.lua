@@ -1,7 +1,7 @@
 -- Luna Unit Frames 4.0 by Aviana
 
 LUF = select(2, ...)
-LUF.version = 4389
+LUF.version = 4390
 
 local L = LUF.L
 local ACR = LibStub("AceConfigRegistry-3.0", true)
@@ -416,6 +416,29 @@ local function handleFrame(baseName)
 	end
 end
 
+local postCombatActionQueue = {}
+
+--Queue up functions while in combat that can only be done outside combat
+local function QueuePostCombatAction(name, func,...)
+	-- prevent duplicate entries by checking for functions with same name
+    for _, job in ipairs(postCombatActionQueue) do
+        if job.name == name then
+            return -- already queued
+        end
+    end
+	table.insert(postCombatActionQueue, {name = name, fn = func, args = {...}})
+end
+
+--Process functions that can only be done outside combat
+--called at bottom of this file when event == "PLAYER_REGEN_ENABLED"
+local function ProcessPostCombatActionQueue()
+	for _, job in ipairs(postCombatActionQueue) do
+		job.fn(unpack(job.args))
+	end
+	--clear queue
+	postCombatActionQueue = {}
+end
+
 local active_hiddens = {
 }
 function LUF:HideBlizzardFrames()
@@ -439,12 +462,19 @@ function LUF:HideBlizzardFrames()
 			local function hideRaid()
 				CompactRaidFrameManager:UnregisterAllEvents()
 				CompactRaidFrameContainer:UnregisterAllEvents()
-				if( InCombatLockdown() ) then return end
-	
-				CompactRaidFrameManager:Hide()
-				local shown = CompactRaidFrameManager_GetSetting("IsShown")
-				if( shown and shown ~= "0" ) then
-					CompactRaidFrameManager_SetSetting("IsShown", "0")
+
+				local function hideRaidFrameProtectedByCombat()
+					CompactRaidFrameManager:Hide()
+					local shown = CompactRaidFrameManager_GetSetting("IsShown")
+					if( shown and shown ~= "0" ) then
+						CompactRaidFrameManager_SetSetting("IsShown", "0")
+					end
+				end
+
+				if LUF.InCombatLockdown then
+					QueuePostCombatAction("hideRaidFrameProtectedByCombat",hideRaidFrameProtectedByCombat)
+				else
+					hideRaidFrameProtectedByCombat()
 				end
 			end
 			
@@ -1704,6 +1734,7 @@ frame:SetScript("OnEvent", function(self, event, addon)
 		end
 	elseif event == "PLAYER_REGEN_ENABLED" then
 		LUF.InCombatLockdown = nil
+		ProcessPostCombatActionQueue()
 		if queuedEvent then
 			LUF:AutoswitchProfile(queuedEvent)
 		end
