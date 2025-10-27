@@ -31,13 +31,13 @@ local hostileSpell = GetSpellInfo(Spells.hostile[select(2,UnitClass("player"))])
 
 local function spellCheck(unit)
 	if UnitCanAssist("player", unit) then
-		if friendlySpell and IsSpellInRange(friendlySpell, unit) == 1 then
+		if friendlySpell and C_Spell.IsSpellInRange(friendlySpell, unit) == true then
 			return true
 		end
 	else
-		if hostileSpell and IsSpellInRange(hostileSpell, unit) == 1 then
+		if hostileSpell and C_Spell.IsSpellInRange(hostileSpell, unit) == true then
 			return true
-		elseif select(2,UnitClass("player")) == "WARRIOR" and IsSpellInRange(355, unit) == 1 then
+		elseif select(2,UnitClass("player")) == "WARRIOR" and C_Spell.IsSpellInRange(355, unit) == true then
 			return true
 		end
 	end
