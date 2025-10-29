@@ -1549,14 +1549,6 @@ local tagPool = {}
 local funcPool = {}
 local tmp = {}
 
-local function getBaseTagName(tag)
-    -- Remove surrounding brackets
-    local baseTag = tag:match("^%[(.-)%]$") or tag
-    -- Remove numeric suffix after colon
-    baseTag = baseTag:match("^[^:]+") or baseTag
-    return baseTag
-end
-
 local function getTagName(tag)
 	local tagStart = tag:match('>+()') or 2
 	local tagEnd = (tag:match('.-()<') or -1) - 1
@@ -1691,7 +1683,7 @@ end
 
 local function registerEvents(fontstr, tagstr)
 	for tag in tagstr:gmatch(_PATTERN) do
-		tag = getBaseTagName(tag)
+		tag = getTagName(tag)
 		local tagevents = tagEvents[tag]
 		if(tagevents) then
 			for event in tagevents:gmatch('%S+') do
