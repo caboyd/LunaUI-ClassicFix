@@ -233,6 +233,7 @@ local function Update(self, event, unit)
 						else
 							indicator.cd:Hide()
 						end
+						indicator.cd:SetHideCountdownNumbers(true)
 						if indicator.count then
 							indicator.count:Show()
 							indicator.count:SetText(count > 1 and count or "")
