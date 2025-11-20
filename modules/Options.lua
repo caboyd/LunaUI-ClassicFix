@@ -537,7 +537,7 @@ function LUF:CreateConfig()
 			local k
 			for k,spell in ipairs(localSpells) do
 				spell = spell:gsub("%[mana%]", "")
-				if spell ~="" and not tonumber(spell) and not GetSpellInfo(spell) then
+				if spell ~="" and not tonumber(spell) and not C_Spell.GetSpellName(spell) then
 					return L["You can only use Spellnames for Spells your Character knows otherwise please use Spell IDs"]
 				end
 			end
@@ -4178,7 +4178,7 @@ function LUF:CreateConfig()
 						order = 1,
 					},
 					descriptiontext = {
-						name = "Luna Unit Frames by Aviana\nDonate: paypal.me/LunaUnitFrames\n".."Version: "..LUF.version,
+						name = "Luna Unit Frames by "..C_AddOns.GetAddOnMetadata("LunaUnitFrames", "Author").."\nDonate: "..C_AddOns.GetAddOnMetadata("LunaUnitFrames", "X-Donate").."\n".."Version: "..LUF.version,
 						type = "description",
 						width = "full",
 						order = 2,

@@ -135,7 +135,8 @@ local function CastStart(self, event, unit, _, channelSpellID)
 	--Workaround for broken channels in classic
 	--https://github.com/wardz/ClassicCastbars/commit/79f26393833476c40826d3d61f8f03201f185b7f
 	if (channelSpellID and not name) then
-		name, _, texture = GetSpellInfo(channelSpellID)
+		name = C_Spell.GetSpellName(channelSpellID);
+		texture = C_Spell.GetSpellTexture(channelSpellID);
 		local channelCastTime = name and channeledSpells[name]
 		if not channelCastTime then return end
 		spellID = channelSpellID
@@ -496,9 +497,15 @@ local function Enable(self, unit)
 		element:SetScript('OnUpdate', element.OnUpdate or onUpdate)
 
 		if(self.unit == 'player' and not (self.hasChildren or self.isChild or self.isNamePlate)) then
-			CastingBarFrame_SetUnit(CastingBarFrame, nil)
-			CastingBarFrame_SetUnit(PetCastingBarFrame, nil)
-
+			if CastingBarFrame_SetUnit then
+				--classic
+				CastingBarFrame_SetUnit(CastingBarFrame, nil)
+				CastingBarFrame_SetUnit(PetCastingBarFrame, nil)
+			elseif (PlayerCastingBarFrame and PlayerCastingBarFrame.SetUnit) then
+				--tbc
+				PlayerCastingBarFrame:SetUnit(nil)
+				PetCastingBarFrame:SetUnit(nil)
+			end
 		end
 
 		if(element:IsObjectType('StatusBar') and not element:GetStatusBarTexture()) then

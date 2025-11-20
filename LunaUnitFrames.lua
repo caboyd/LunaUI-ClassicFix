@@ -1,7 +1,7 @@
 -- Luna Unit Frames 4.0 by Aviana
 
 LUF = select(2, ...)
-LUF.version = 4393
+LUF.version = C_AddOns.GetAddOnMetadata("LunaUnitFrames", "Version")
 
 local L = LUF.L
 local ACR = LibStub("AceConfigRegistry-3.0", true)
@@ -521,6 +521,7 @@ function LUF:HideBlizzardFrames()
 		for i = 1, MAX_PARTY_MEMBERS do
 			handleFrame(string.format("PartyMemberFrame%d", i))
 		end
+		handleFrame(PartyFrame)
 	end
 
 	-- As a reload is required to reset the hidden hooks, we can just set this to true if anything is true

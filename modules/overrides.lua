@@ -26,8 +26,8 @@ local Spells = {
 	},
 }
 
-local friendlySpell = GetSpellInfo(Spells.friendly[select(2,UnitClass("player"))])
-local hostileSpell = GetSpellInfo(Spells.hostile[select(2,UnitClass("player"))])
+local friendlySpell = C_Spell.GetSpellName(Spells.friendly[select(2,UnitClass("player"))])
+local hostileSpell = C_Spell.GetSpellName(Spells.hostile[select(2,UnitClass("player"))])
 
 local function spellCheck(unit)
 	if UnitCanAssist("player", unit) then

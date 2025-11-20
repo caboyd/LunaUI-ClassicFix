@@ -73,45 +73,71 @@ LCD:Register("LunaUnitFrames")
 local weaponWatchTimer
 local mainHandEnd, mainHandDuration, mainHandCharges, offHandEnd, offHandDuration, offHandCharges
 
+local weaponEnchantData;
+
 -- Things in this table have a duration other than 30 min
-local weaponEnchantData = {
-	[2684] = 3600, -- +100 Attack Power vs Undead (60 min)
-	[2685] = 3600, -- +60 Spell Power vs Undead (60 min)
-	[263] = 600,   -- Fishing +25 (10 min)
-	[264] = 600,   -- Fishing +50 (10 min)
-	[265] = 600,   -- Fishing +75 (10 min)
-	[266] = 300,   -- Fishing +100 (5 min)
-	[5] = 300,     -- Flametongue 1 (5 min)
-	[4] = 300,     -- Flametongue 2 (5 min)
-	[3] = 300,     -- Flametongue 3 (5 min)
-	[523] = 300,   -- Flametongue 4 (5 min)
-	[1665] = 300,  -- Flametongue 5 (5 min)
-	[1666] = 300,  -- Flametongue 6 (5 min)
-	[124] = 10,    -- Flametongue Totem 1 (10 sec)
-	[285] = 10,    -- Flametongue Totem 2 (10 sec)
-	[543] = 10,    -- Flametongue Totem 3 (10 sec)
-	[1683] = 10,   -- Flametongue Totem 4 (10 sec)
-	[2] = 300,     -- Frostbrand 1 (5 min)
-	[12] = 300,    -- Frostbrand 2 (5 min)
-	[524] = 300,   -- Frostbrand 3 (5 min)
-	[1667] = 300,  -- Frostbrand 4 (5 min)
-	[1668] = 300,  -- Frostbrand 5 (5 min)
-	[29] = 300,    -- Rockbiter 1 (5 min)
-	[6] = 300,     -- Rockbiter 2 (5 min)
-	[1] = 300,     -- Rockbiter 3 (5 min)
-	[503] = 300,   -- Rockbiter 4 (5 min)
-	[1663] = 300,  -- Rockbiter 5 (5 min)
-	[683] = 300,   -- Rockbiter 6 (5 min)
-	[1664] = 300,  -- Rockbiter 7 (5 min)
-	[283] = 300,   -- Windfury 1 (5 min)
-	[284] = 300,   -- Windfury 2 (5 min)
-	[525] = 300,   -- Windfury 3 (5 min)
-	[1669] = 300,  -- Windfury 4 (5 min)
-	[1783] = 10,   -- Windfury Totem 1 (10 sec)
-	[563] = 10,    -- Windfury Totem 2 (10 sec)
-	[564] = 10,    -- Windfury Totem 3 (10 sec)
-	[1003] = 300,  -- Venomhide Poison (5 min)
-}
+if oUF.isClassic then 
+	weaponEnchantData = {
+		[2684] = 3600, -- +100 Attack Power vs Undead (60 min)
+		[2685] = 3600, -- +60 Spell Power vs Undead (60 min)
+		[263] = 600,   -- Fishing +25 (10 min)
+		[264] = 600,   -- Fishing +50 (10 min)
+		[265] = 600,   -- Fishing +75 (10 min)
+		[266] = 300,   -- Fishing +100 (5 min)
+		[5] = 300,     -- Flametongue 1 (5 min)
+		[4] = 300,     -- Flametongue 2 (5 min)
+		[3] = 300,     -- Flametongue 3 (5 min)
+		[523] = 300,   -- Flametongue 4 (5 min)
+		[1665] = 300,  -- Flametongue 5 (5 min)
+		[1666] = 300,  -- Flametongue 6 (5 min)
+		[124] = 10,    -- Flametongue Totem 1 (10 sec)
+		[285] = 10,    -- Flametongue Totem 2 (10 sec)
+		[543] = 10,    -- Flametongue Totem 3 (10 sec)
+		[1683] = 10,   -- Flametongue Totem 4 (10 sec)
+		[2] = 300,     -- Frostbrand 1 (5 min)
+		[12] = 300,    -- Frostbrand 2 (5 min)
+		[524] = 300,   -- Frostbrand 3 (5 min)
+		[1667] = 300,  -- Frostbrand 4 (5 min)
+		[1668] = 300,  -- Frostbrand 5 (5 min)
+		[29] = 300,    -- Rockbiter 1 (5 min)
+		[6] = 300,     -- Rockbiter 2 (5 min)
+		[1] = 300,     -- Rockbiter 3 (5 min)
+		[503] = 300,   -- Rockbiter 4 (5 min)
+		[1663] = 300,  -- Rockbiter 5 (5 min)
+		[683] = 300,   -- Rockbiter 6 (5 min)
+		[1664] = 300,  -- Rockbiter 7 (5 min)
+		[283] = 300,   -- Windfury 1 (5 min)
+		[284] = 300,   -- Windfury 2 (5 min)
+		[525] = 300,   -- Windfury 3 (5 min)
+		[1669] = 300,  -- Windfury 4 (5 min)
+		[1783] = 10,   -- Windfury Totem 1 (10 sec)
+		[563] = 10,    -- Windfury Totem 2 (10 sec)
+		[564] = 10,    -- Windfury Totem 3 (10 sec)
+		[1003] = 300,  -- Venomhide Poison (5 min)
+	}
+elseif oUF.isTBC then
+	-- Things in this table have a duration other than 60 min
+	weaponEnchantData = {
+		[25] = 1800,   -- Shadow Oil (30 min)
+		[263] = 600,   -- Fishing +25 (10 min)
+		[264] = 600,   -- Fishing +50 (10 min)
+		[265] = 600,   -- Fishing +75 (10 min)
+		[266] = 600,   -- Fishing +100 (10 min)
+		[124] = 10,    -- Flametongue Totem 1 (10 sec)
+		[285] = 10,    -- Flametongue Totem 2 (10 sec)
+		[543] = 10,    -- Flametongue Totem 3 (10 sec)
+		[1683] = 10,   -- Flametongue Totem 4 (10 sec)
+		[2637] = 10,   -- Flametongue Totem 5 (10 sec)
+		[1783] = 10,   -- Windfury Totem 1 (10 sec)
+		[563] = 10,    -- Windfury Totem 2 (10 sec)
+		[564] = 10,    -- Windfury Totem 3 (10 sec)
+		[2638] = 10,   -- Windfury Totem 4 (10 sec)
+		[2639] = 10,   -- Windfury Totem 5 (10 sec)
+		[1003] = 300,  -- Venomhide Poison (5 min)
+		[3093] = 300,  -- Scourgebane (5 min)
+		[3102] = 1800, -- Bloodboil Poison (30 min)
+	}
+end
 
 
 local function CheckBlizzardCooldownTextOverflow(element, button)
@@ -251,7 +277,9 @@ local function updateIcon(element, unit, index, position, filter, isDebuff)
 
 	if element.forceShow or element.forceCreate then
 		spellID = filter == "HELPFUL" and 28059 or filter == "TEMP" and 13852 or 28084
-		name, _, texture = GetSpellInfo(spellID)
+		name = C_Spell.GetSpellName(spellID)
+		texture = C_Spell.GetSpellTexture(spellID);
+
 		if element.forceShow then
 			count, debuffType, duration, expiration, caster, isStealable, nameplateShowSelf, isBossDebuff = filter == "TEMP" and 1 or index, "Magic", 0, 60, (math.random(0,1) > 0) and "player", nil, nil, nil
 		end
@@ -806,11 +834,12 @@ end
 local playerFrames = {}
 local function UpdateWeaponEnchants(self, silent)
 	weaponWatchTimer = nil
+	local defaultDuration = oUF.isTBC and 3600 or 1800
 	
 	local hasMainHandEnchant, mainHandExpiration, mainHandChargeNum, mainHandEnchantID, hasOffHandEnchant, offHandExpiration, offHandChargeNum, offHandEnchantId = GetWeaponEnchantInfo()
 	if hasMainHandEnchant then
 		mainHandEnd = GetTime() + (mainHandExpiration / 1000)
-		mainHandDuration = weaponEnchantData[mainHandEnchantID] or 1800
+		mainHandDuration = weaponEnchantData[mainHandEnchantID] or defaultDuration
 		mainHandCharges = mainHandChargeNum
 	else
 		mainHandEnd = nil
@@ -819,7 +848,7 @@ local function UpdateWeaponEnchants(self, silent)
 	end
 	if hasOffHandEnchant then
 		offHandEnd = GetTime() + (offHandExpiration / 1000)
-		offHandDuration = weaponEnchantData[offHandEnchantId] or 1800
+		offHandDuration = weaponEnchantData[offHandEnchantId] or defaultDuration
 		offHandCharges = offHandChargeNum
 	else
 		offHandEnd = nil

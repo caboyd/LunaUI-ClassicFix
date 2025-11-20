@@ -1,0 +1,69 @@
+## Interface: 11508
+
+## Title: Luna Unit Frames
+## Notes: 
+## Author: Aviana, caboyd
+## Version: 4400
+## Source: https://github.com/caboyd/LunaUI-ClassicFix
+## SavedVariables: LunaUFDB
+## OptionalDeps: Ace3, LibSharedMedia-3.0, AceGUI-3.0-SharedMediaWidgets, Clique
+## X-License: WTFPL (http://www.wtfpl.net/about/)
+## X-Donate: https://ko-fi.com/caboyd
+
+#@no-lib-strip@
+libs\LibStub\LibStub.lua
+libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+libs\LibSharedMedia-3.0\lib.xml
+libs\AceDB-3.0\AceDB-3.0.xml
+libs\AceDBOptions-3.0\AceDBOptions-3.0.xml
+libs\AceGUI-3.0\AceGUI-3.0.xml
+libs\AceGUI-3.0-SharedMediaWidgets\widget.xml
+libs\AceConfig-3.0\AceConfig-3.0.xml
+libs\LibVexation-1.0\lib.xml
+libs\LibHealComm-4.0\LibHealComm-4.0.xml
+libs\LibAuraTypes\LibAuraTypes.lua
+libs\LibSpellLocks\LibSpellLocks.lua
+libs\LibTargeted\LibTargeted.lua
+libs\LibClassicDurations\LibClassicDurations.xml
+
+# oUF
+libs\oUF\init.lua
+libs\oUF\private.lua
+libs\oUF\ouf.lua
+libs\oUF\events.lua
+libs\oUF\factory.lua
+libs\oUF\blizzard.lua
+libs\oUF\units.lua
+libs\oUF\colors.lua
+libs\oUF\elements\additionalpower.lua
+libs\oUF\elements\assistantindicator.lua
+libs\oUF\elements\happinessindicator.lua
+libs\oUF\elements\health.lua
+libs\oUF\elements\leaderindicator.lua
+libs\oUF\elements\masterlooterindicator.lua
+libs\oUF\elements\power.lua
+libs\oUF\elements\powerprediction.lua
+libs\oUF\elements\pvpindicator.lua
+libs\oUF\elements\raidroleindicator.lua
+libs\oUF\elements\raidtargetindicator.lua
+libs\oUF\elements\range.lua
+libs\oUF\elements\readycheckindicator.lua
+libs\oUF\elements\resurrectindicator.lua
+
+libs\oUF_Plugins\oUF_Plugins.xml
+#@end-no-lib-strip@
+
+locales\enUS.lua
+locales\deDE.lua
+locales\koKR.lua
+locales\zhCN.lua
+locales\zhTW.lua
+locales\ruRU.lua
+
+modules\options.lua
+modules\overrides.lua
+modules\defaults.lua
+modules\movers.lua
+modules\layout.lua
+
+LunaUnitFrames.lua

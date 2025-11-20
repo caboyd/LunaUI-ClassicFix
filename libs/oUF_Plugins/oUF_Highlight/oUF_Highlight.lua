@@ -120,7 +120,7 @@ local function checkCurableSpells(self, event, arg1)
 	table.wipe(canCure)
 	
 	if playerClass == "WARLOCK" then
-		if IsUsableSpell(GetSpellInfo(19505)) then
+		if C_Spell.IsSpellUsable(19505) then
 			canCure["Magic"] = true
 		end
 	elseif cures then
@@ -163,7 +163,11 @@ local function Enable(self)
 		self:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE", Path)
 		self:RegisterEvent("PLAYER_TARGET_CHANGED", Path, true)
 		
-		self:RegisterEvent("LEARNED_SPELL_IN_TAB", checkCurableSpells, true)
+		if(oUF.isClassic) then
+			self:RegisterEvent("LEARNED_SPELL_IN_TAB", checkCurableSpells, true)
+		elseif(oUF.isTBC) then
+			self:RegisterEvent("LEARNED_SPELL_IN_SKILL_LINE", checkCurableSpells, true)
+		end
 		self:RegisterEvent("PLAYER_LOGIN", checkCurableSpells, true)
 		self:RegisterEvent("UNIT_PET", checkCurableSpells, true)
 
@@ -188,7 +192,11 @@ local function Disable(self)
 		self:UnregisterEvent("UNIT_THREAT_SITUATION_UPDATE", Path)
 		self:UnregisterEvent("PLAYER_TARGET_CHANGED", Path)
 		
-		self:UnregisterEvent("LEARNED_SPELL_IN_TAB", checkCurableSpells)
+		if(oUF.isClassic) then
+			self:UnregisterEvent("LEARNED_SPELL_IN_TAB", checkCurableSpells)
+		elseif(oUF.isTBC) then
+			self:UnregisterEvent("LEARNED_SPELL_IN_SKILL_LINE", checkCurableSpells)
+		end
 		self:UnregisterEvent("PLAYER_LOGIN", checkCurableSpells)
 		self:UnregisterEvent("UNIT_PET", checkCurableSpells)
 	end
