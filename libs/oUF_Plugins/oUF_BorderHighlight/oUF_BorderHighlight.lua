@@ -136,7 +136,7 @@ local function checkCurableSpells(self, event, arg1)
 	table.wipe(canCure)
 	
 	if playerClass == "WARLOCK" then
-		if and C_Spell.IsSpellUsable(19505) then
+		if C_Spell.IsSpellUsable(19505) then
 			canCure["Magic"] = true
 		end
 	elseif cures then
