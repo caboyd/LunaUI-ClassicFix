@@ -1,4 +1,4 @@
--- Luna Unit Frames 4.0 by Aviana
+-- Luna Unit Frames 4.0 by Aviana, caboyd
 
 LUF = select(2, ...)
 LUF.version = C_AddOns.GetAddOnMetadata("LunaUnitFrames", "Version")
