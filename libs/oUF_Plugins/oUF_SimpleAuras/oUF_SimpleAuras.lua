@@ -224,7 +224,7 @@ local function createAuraIcon(element, index)
 	local count = countFrame:CreateFontString(nil, 'OVERLAY', 'NumberFontNormal')
 	local fontName = count:GetFont()
 	count:SetFont(fontName, 10, "OUTLINE")
-	count:SetPoint('BOTTOMRIGHT', countFrame, 'BOTTOMRIGHT', -1, 0)
+	count:SetPoint('BOTTOMRIGHT', countFrame, 'BOTTOMRIGHT', 3, 0)
 
 	local overlay = button:CreateTexture(nil, 'OVERLAY')
 	overlay:SetAllPoints()
