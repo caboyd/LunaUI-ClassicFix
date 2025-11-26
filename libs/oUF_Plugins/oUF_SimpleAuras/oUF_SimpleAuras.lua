@@ -341,9 +341,13 @@ local function updateIcon(element, unit, index, position, filter, isDebuff)
 			end
 
 			if(button.icon) then button.icon:SetTexture(texture) end
+
 			button.count:SetText(count > 1 and count or "")
-			button.count:SetFont(button.count:GetFont(), element.buffcountfontsize or 10, "OUTLINE")
-			
+			if(button.buffcountfontsize ~= element.buffcountfontsize) then
+				button.count:SetFont(button.count:GetFont(), element.buffcountfontsize or 10, "OUTLINE")
+				button.buffcountfontsize = element.buffcountfontsize
+			end
+				
 			local size
 			local preventBuffGrowth, preventDebuffGrowth = (element.buffAnchor == "INFRAME" or element.buffAnchor == "INFRAMECENTER"), (element.debuffAnchor == "INFRAME" or element.debuffAnchor == "INFRAMECENTER")
 			if isDebuff then
