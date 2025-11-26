@@ -49,12 +49,7 @@ end
 
 local function measureDistance(unit)
 	--Patch 1.15.1 - CheckInteractDistance is not able to be used on friendly targets in combat
-	local InCombatLockdownRestriction
-	if oUF.isClassic then
-		InCombatLockdownRestriction = InCombatLockdown() and not UnitCanAttack("player", unit)
-	else
-		InCombatLockdownRestriction = false
-	end
+	local InCombatLockdownRestriction = InCombatLockdown() and not UnitCanAttack("player", unit)
 
 	if not InCombatLockdownRestriction and CheckInteractDistance(unit, 3) then
 		return 10
