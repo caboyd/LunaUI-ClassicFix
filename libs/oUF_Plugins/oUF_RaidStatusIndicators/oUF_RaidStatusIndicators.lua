@@ -97,7 +97,7 @@ local function checkMissingBuff(unit, spells)
 			end
 			if not found then
 				missingSpell = spell
-				spell = tonumber(spell) or select(7, GetSpellInfo(spell))
+				spell = tonumber(spell) or C_Spell.GetSpellInfo(spell).spellID
 				if not spell then
 					found = true
 				else
@@ -272,7 +272,7 @@ local function Update(self, event, unit)
 						indicator:Show()
 						indicator.cd:Hide()
 						if indicator.showTexture then
-							indicator.texture:SetTexture(GetSpellTexture(isMissing))
+							indicator.texture:SetTexture(C_Spell.GetSpellTexture(isMissing))
 							indicator.texture:SetVertexColor(1,1,1)
 						else
 							indicator.texture:SetTexture([[Interface\Buttons\WHITE8X8]])
@@ -342,7 +342,7 @@ local function checkCurableSpells(self, event, arg1)
 	table.wipe(canCure)
 	
 	if playerClass == "WARLOCK" then
-		if IsUsableSpell(GetSpellInfo(19505)) then
+		if C_Spell.IsSpellUsable(19505) then
 			canCure["Magic"] = true
 		end
 	elseif cures then
@@ -418,7 +418,11 @@ local function Enable(self)
 
 		self:RegisterEvent("UNIT_AURA", Path)
 		self:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE", Path)
-		self:RegisterEvent("LEARNED_SPELL_IN_TAB", checkCurableSpells, true)
+		if(oUF.isClassic) then
+			self:RegisterEvent("LEARNED_SPELL_IN_TAB", checkCurableSpells, true)
+		elseif(oUF.isTBC) then
+			self:RegisterEvent("LEARNED_SPELL_IN_SKILL_LINE", checkCurableSpells, true)
+		end
 		self:RegisterEvent("PLAYER_LOGIN", checkCurableSpells, true)
 		self:RegisterEvent("UNIT_PET", checkCurableSpells, true)
 
@@ -439,7 +443,12 @@ local function Disable(self)
 
 		self:UnregisterEvent("UNIT_AURA", Path)
 		self:UnregisterEvent("UNIT_THREAT_SITUATION_UPDATE", Path)
-		self:UnregisterEvent("LEARNED_SPELL_IN_TAB", checkCurableSpells)
+
+		if(oUF.isClassic) then
+			self:UnregisterEvent("LEARNED_SPELL_IN_TAB", checkCurableSpells)
+		elseif(oUF.isTBC) then
+			self:UnregisterEvent("LEARNED_SPELL_IN_SKILL_LINE", checkCurableSpells)
+		end
 		self:UnregisterEvent("PLAYER_LOGIN", checkCurableSpells)
 		self:UnregisterEvent("UNIT_PET", checkCurableSpells)
 		

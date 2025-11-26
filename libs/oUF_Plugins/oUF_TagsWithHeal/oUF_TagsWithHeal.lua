@@ -121,11 +121,7 @@ end
 
 --Patch 1.15.1 - CheckInteractDistance is not able to be used on friendly targets in combat
 local function InCombatLockdownRestriction(unit)
-	if oUF.isClassic then
-		return InCombatLockdown() and not UnitCanAttack("player", unit)
-	else
-		return false
-	end
+	return InCombatLockdown() and not UnitCanAttack("player", unit)
 end
 
 local _ENV = {
@@ -147,7 +143,7 @@ local _ENV = {
 		return format('|cff%02x%02x%02x', r * 255, g * 255, b * 255)
 	end,
 	afkStatus = {},
-	feignDeath = GetSpellInfo(5384),
+	feignDeath =  C_Spell.GetSpellName(5384),
 	feigncheck = function(unit)
 		if select(2,UnitClass(unit)) == "HUNTER" then
 			for i=1,32 do
@@ -162,12 +158,12 @@ local _ENV = {
 	end,
 	UnitHasHealthData = function(unit) return not UnitPlayerControlled(unit) or UnitIsUnit("player", unit) or UnitIsUnit("pet", unit) or UnitPlayerOrPetInParty(unit) or UnitPlayerOrPetInRaid(unit) end,
 	DruidForms = {
-		[24858] = GetSpellInfo(24858), --moonkin
-		[1066] = GetSpellInfo(1066), -- seal
-		[783] = GetSpellInfo(783), -- travel
-		[768] = GetSpellInfo(768), -- cat
-		[5487] = GetSpellInfo(5487), -- bear
-		[9634] = GetSpellInfo(9634), -- dire bear
+		[24858] =  C_Spell.GetSpellName(24858), --moonkin
+		[1066] =  C_Spell.GetSpellName(1066), -- seal
+		[783] =  C_Spell.GetSpellName(783), -- travel
+		[768] =  C_Spell.GetSpellName(768), -- cat
+		[5487] =  C_Spell.GetSpellName(5487), -- bear
+		[9634] =  C_Spell.GetSpellName(9634), -- dire bear
 	},
 	formatTime = function(seconds)
 		if seconds >= 3600 then
@@ -186,7 +182,7 @@ local _ENV = {
 	UnitCastingInfo = function(unit) return UnitCastingInfo(unit) end,
 	UnitChannelInfo = function(unit) return UnitChannelInfo(unit) end,
 	RARE = strmatch(GARRISON_MISSION_RARE,"%a*"),
-	GHOST = GetSpellInfo(8326),
+	GHOST = C_Spell.GetSpellName(8326),
 	LHC = LHC,
 	LT = LT,
 	GetHealTimeFrame = function() return oUF.TagsWithHealTimeFrame or 4 end,
@@ -1256,7 +1252,7 @@ local tagStrings = {
 
 		if (math.floor(diff * 10)/10 > 0) then
 			local diff_result = math.floor(diff * 10)/10
-			result = "(-"..diff_result..") "..result
+			result = "(+"..diff_result..") "..result
 		end 
 		
 		last_castID = castID
@@ -1646,7 +1642,14 @@ local function getTagFunc(tagstr)
 				end
 
 				-- We do 1, numTags because tmp can hold several unneeded variables.
+				-- print(tagstr, "FORMAT:", format, type(format))
+				-- for i = 1, numTags do
+				-- 	print("ARG", i, tmp[i], type(tmp[i]))
+				-- end
+				
 				return self:SetFormattedText(format, unpack(tmp, 1, numTags))
+				
+			
 			end
 		end
 

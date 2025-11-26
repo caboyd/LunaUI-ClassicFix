@@ -5,7 +5,9 @@ local oUF = ns.oUF
 
 local CLIENT_IS_TBC = oUF.isTBC
 local CLIENT_IS_CLASSIC_ERA = oUF.isClassic
-if not CLIENT_IS_TBC and not CLIENT_IS_CLASSIC_ERA then return end
+local CLIENT_IS_SOD = oUF.isClassicSoD
+
+local GetSpellInfo = C_Spell and C_Spell.GetSpellName or _G.GetSpellInfo
 
 local physicalClasses = {
     ["WARRIOR"] = true,
@@ -51,6 +53,8 @@ end
 -- Spells that can't be interrupted.
 -- This table accepts both spellIDs and spellNames.
 -- See also npcCastUninterruptibleCache in SavedVariables.lua for NPC tied spells.
+-- Spells that can't be interrupted, not tied to npcIDs.
+-- This table accepts both spellIDs and spellNames.
 oUF.uninterruptibleList = {
     [34120] = CLIENT_IS_TBC or nil, -- Steady Shot
     [19821] = true, -- Arcane Bomb
@@ -135,6 +139,21 @@ oUF.uninterruptibleList = {
     [28089] = true, -- Polarity Shift
     [28785] = true, -- Locust Swarm
     [18159] = true, -- Curse of the Fallen Magram
+    [23511] = true, -- Demoralizing Shout
+    [17238] = true, -- Drain Life
+    [17243] = true, -- Drain Mana
+    [17503] = true, -- Frostbolt
+    [16869] = true, -- Ice Tomb
+    [16788] = true, -- Fireball
+    [16419] = true, -- Flamestrike
+    [16390] = true, -- Flame Breath
+    [13899] = true, -- Fire Storm
+    [15668] = true, -- Fiery Burst
+    [17235] = true, -- Raise Undead Scarab
+    [4962] = true, -- Encasing Webs
+    [16418] = true, -- Crypt Scarabs
+    [18327] = true, -- Silence
+    [7121] = true, -- Anti-Magic Shield
 
     -- Spells with duplicate versions/ranks that doesn't need to be tied to NPC ids
     [GetSpellInfo(10436)] = true,-- Attack (Totems)
@@ -150,7 +169,6 @@ oUF.uninterruptibleList = {
     [GetSpellInfo(22539)] = true, -- Shadow Flame
     [GetSpellInfo(16868)] = true, -- Banshee Wail
     [GetSpellInfo(22479)] = true, -- Frost Breath
-    [GetSpellInfo(26134)] = true, -- Eye Beam
     [GetSpellInfo(26103)] = true, -- Sweep
     [GetSpellInfo(30732)] = true, -- Worm Sweep
     [GetSpellInfo(15847)] = true, -- Tail Sweep
@@ -159,11 +177,32 @@ oUF.uninterruptibleList = {
     [GetSpellInfo(27794)] = true, -- Cleave
     [GetSpellInfo(28995)] = true, -- Stoneskin
     [GetSpellInfo(28783)] = true, -- Impale
+    [GetSpellInfo(7951)] = true, -- Toxic Spit
+    [GetSpellInfo(7054)] = true, -- Forsaken Skills
 }
 
+if CLIENT_IS_CLASSIC_ERA then -- these ids only exists in classic era build
+    oUF.uninterruptibleList[GetSpellInfo(2480)] = true -- Shoot Bow
+    oUF.uninterruptibleList[GetSpellInfo(7918)] = true -- Shoot Gun
+    oUF.uninterruptibleList[GetSpellInfo(7919)] = true -- Shoot Crossbow
+    if CLIENT_IS_SOD then
+        oUF.uninterruptibleList[GetSpellInfo(433797)] = true -- Bladestorm
+        oUF.uninterruptibleList[GetSpellInfo(404373)] = true -- Bubble Beam
+        oUF.uninterruptibleList[GetSpellInfo(404316)] = true -- Greater Frostbolt
+        oUF.uninterruptibleList[GetSpellInfo(414370)] = true -- Aqua Shell
+        oUF.uninterruptibleList[GetSpellInfo(407819)] = true -- Frost Arrow
+        oUF.uninterruptibleList[GetSpellInfo(407568)] = true -- Freezing Arrow
+    end
+elseif CLIENT_IS_TBC then
+    oUF.uninterruptibleList[GetSpellInfo(29121)] = true -- Shoot Bow
+    oUF.uninterruptibleList[GetSpellInfo(33808)] = true -- Shoot Gun
+end
 
--- UnitChannelInfo() currently doesn't work in Classic Era 1.15.0 due to a Blizzard bug(?)
--- We use this data to retrieve spell cast time
+
+
+
+-- UnitChannelInfo() currently doesn't work in Classic Era 1.15.0, but the channel events still work for the current target.
+-- We use this table data to retrieve spell cast times inside the channel events.
 oUF.channeledSpells = {
     -- MISC
     [GetSpellInfo(746)] = 8000,      -- First Aid
@@ -177,28 +216,29 @@ oUF.channeledSpells = {
     [GetSpellInfo(24322)] = 8000,    -- Blood Siphon
     [GetSpellInfo(27177)] = 10000,   -- Defile
     [GetSpellInfo(27286)] = 1000,    -- Shadow Wrath (see issue #59)
-    [GetSpellInfo(433797)] = 7000,   -- Bladestorm
+
     -- DRUID
     [GetSpellInfo(17401)] = 10000,   -- Hurricane
     [GetSpellInfo(740)] = 10000,     -- Tranquility
     [GetSpellInfo(20687)] = 10000,   -- Starfall
+
     -- HUNTER
     [GetSpellInfo(6197)] = 60000,     -- Eagle Eye
     [GetSpellInfo(1002)] = 60000,     -- Eyes of the Beast
     [GetSpellInfo(1510)] = 6000,      -- Volley
     [GetSpellInfo(136)] = 5000,       -- Mend Pet
+
     -- MAGE
     [GetSpellInfo(5143)] = 5000,      -- Arcane Missiles
     [GetSpellInfo(7268)] = 3000,      -- Arcane Missile
     [GetSpellInfo(10)] = 8000,        -- Blizzard
     [GetSpellInfo(12051)] = 8000,     -- Evocation
-    [GetSpellInfo(401417)] = 3000,    -- Regeneration
-    [GetSpellInfo(412510)] = 3000,    -- Mass Regeneration
+
     -- PRIEST
     [GetSpellInfo(15407)] = 3000,     -- Mind Flay
     [GetSpellInfo(2096)] = 60000,     -- Mind Vision
     [GetSpellInfo(605)] = 3000,       -- Mind Control
-    [GetSpellInfo(402174)] = 2000,    -- Penance
+
     -- WARLOCK
     [GetSpellInfo(126)] = 45000,      -- Eye of Kilrogg
     [GetSpellInfo(689)] = 5000,       -- Drain Life
@@ -216,6 +256,17 @@ if CLIENT_IS_CLASSIC_ERA then
     oUF.uninterruptibleList[GetSpellInfo(2480)] = true -- Shoot Bow
     oUF.uninterruptibleList[GetSpellInfo(7918)] = true -- Shoot Gun
     oUF.uninterruptibleList[GetSpellInfo(7919)] = true -- Shoot Crossbow
+    if CLIENT_IS_SOD then
+    -- WARRIOR
+    oUF.channeledSpells[GetSpellInfo(433797)] = 7000   -- Bladestorm
+    oUF.channeledSpells[GetSpellInfo(404373)] = 10000  -- Bubble Beam
+    oUF.channeledSpells[GetSpellInfo(407077)] = 3500   -- Triple Chomp
+    -- PRIEST
+    oUF.channeledSpells[GetSpellInfo(402174)] = 2000    -- Penance
+    -- MAGE
+    oUF.channeledSpells[GetSpellInfo(401417)] = 3000    -- Regeneration
+    oUF.channeledSpells[GetSpellInfo(412510)] = 3000    -- Mass Regeneration
+    end
 elseif CLIENT_IS_TBC then
     oUF.uninterruptibleList[GetSpellInfo(29121)] = true -- Shoot Bow
     oUF.uninterruptibleList[GetSpellInfo(33808)] = true -- Shoot Gun
