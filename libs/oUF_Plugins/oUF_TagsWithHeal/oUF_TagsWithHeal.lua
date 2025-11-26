@@ -306,7 +306,7 @@ local tagStrings = {
 
 	["range"] = [[function(unit)
 		--Patch 1.15.1 - CheckInteractDistance is not able to be used on friendly targets in combat
-		local InCombat = InCombatLockdownRestriction(unit)
+		local InCombat = InCombatLockdown() and not UnitCanAttack("player", unit)
 		
 		if UnitIsUnit("player", unit) then
 			return "0"
