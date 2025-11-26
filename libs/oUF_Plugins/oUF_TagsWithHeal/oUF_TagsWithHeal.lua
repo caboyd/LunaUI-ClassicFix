@@ -121,11 +121,7 @@ end
 
 --Patch 1.15.1 - CheckInteractDistance is not able to be used on friendly targets in combat
 local function InCombatLockdownRestriction(unit)
-	if oUF.isClassic then
-		return InCombatLockdown() and not UnitCanAttack("player", unit)
-	else
-		return false
-	end
+	return InCombatLockdown() and not UnitCanAttack("player", unit)
 end
 
 local _ENV = {
@@ -306,7 +302,7 @@ local tagStrings = {
 
 	["range"] = [[function(unit)
 		--Patch 1.15.1 - CheckInteractDistance is not able to be used on friendly targets in combat
-		local InCombat = InCombatLockdown() and not UnitCanAttack("player", unit)
+		local InCombat = InCombatLockdownRestriction(unit)
 		
 		if UnitIsUnit("player", unit) then
 			return "0"
@@ -1256,7 +1252,7 @@ local tagStrings = {
 
 		if (math.floor(diff * 10)/10 > 0) then
 			local diff_result = math.floor(diff * 10)/10
-			result = "(-"..diff_result..") "..result
+			result = "(+"..diff_result..") "..result
 		end 
 		
 		last_castID = castID
