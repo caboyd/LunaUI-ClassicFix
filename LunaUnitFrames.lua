@@ -450,10 +450,18 @@ function LUF:HideBlizzardFrames()
 	end
 	
 	if( LUF.db.profile.hidden.cast ) then
-		handleFrame(CastingBarFrame)
+		if(CastingBarFrame) then
+			handleFrame(CastingBarFrame)
+		elseif(PlayerCastingBarFrame) then
+			handleFrame(PlayerCastingBarFrame)
+		end
 		active_hiddens.cast = true
 	elseif( not LUF.db.profile.hidden.cast and not active_hiddens.cast ) then
-		CastingBarFrame_OnLoad(CastingBarFrame, "player", true, false) --restore castbar as oUF kills it
+		if(CastingBarFrame_OnLoad) then
+			CastingBarFrame_OnLoad(CastingBarFrame, "player", true, false) --restore castbar as oUF kills it
+		elseif PlayerCastingBarFrame and PlayerCastingBarFrame.OnLoad then
+			PlayerCastingBarFrame:OnLoad()
+		end
 	end
 
 	if( CompactRaidFrameManager ) then
@@ -498,9 +506,12 @@ function LUF:HideBlizzardFrames()
 	if( LUF.db.profile.hidden.buffs and not active_hiddens.buffs ) then
 		BuffFrame:UnregisterAllEvents()
 		BuffFrame:Hide()
-		TemporaryEnchantFrame:UnregisterAllEvents()
-		TemporaryEnchantFrame:Hide()
-		TemporaryEnchantFrame_Hide()
+		if(TemporaryEnchantFrame) then
+			--removed in TBC
+			TemporaryEnchantFrame:UnregisterAllEvents()
+			TemporaryEnchantFrame:Hide()
+			TemporaryEnchantFrame_Hide()
+		end
 	end
 
 	if( LUF.db.profile.hidden.player and not active_hiddens.player ) then

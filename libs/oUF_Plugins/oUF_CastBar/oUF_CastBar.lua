@@ -489,9 +489,10 @@ local function Enable(self, unit)
         self:RegisterEvent('UNIT_SPELLCAST_FAILED', CastFail)
         self:RegisterEvent('UNIT_SPELLCAST_INTERRUPTED', CastFail)
 		--Retail Only
-        --self:RegisterEvent('UNIT_SPELLCAST_INTERRUPTIBLE', CastInterruptible)
-		--self:RegisterEvent('UNIT_SPELLCAST_NOT_INTERRUPTIBLE', CastInterruptible)
-
+		if(oUF.isTBC) then
+        	self:RegisterEvent('UNIT_SPELLCAST_INTERRUPTIBLE', CastInterruptible)
+			self:RegisterEvent('UNIT_SPELLCAST_NOT_INTERRUPTIBLE', CastInterruptible)
+		end
 		element.holdTime = 0
 
 		element:SetScript('OnUpdate', element.OnUpdate or onUpdate)
@@ -546,16 +547,22 @@ local function Disable(self)
 		self:UnregisterEvent('UNIT_SPELLCAST_CHANNEL_UPDATE', CastUpdate)
 		self:UnregisterEvent('UNIT_SPELLCAST_FAILED', CastFail)
 		self:UnregisterEvent('UNIT_SPELLCAST_INTERRUPTED', CastFail)
-		--Retail Only
-		--self:UnregisterEvent('UNIT_SPELLCAST_INTERRUPTIBLE', CastInterruptible)
-		--self:UnregisterEvent('UNIT_SPELLCAST_NOT_INTERRUPTIBLE', CastInterruptible)
-
+		if(oUF.isTBC) then
+			self:UnregisterEvent('UNIT_SPELLCAST_INTERRUPTIBLE', CastInterruptible)
+			self:UnregisterEvent('UNIT_SPELLCAST_NOT_INTERRUPTIBLE', CastInterruptible)
+		end
 		element:SetScript('OnUpdate', nil)
 
 		if(self.unit == 'player' and not (self.hasChildren or self.isChild or self.isNamePlate)) then
-            CastingBarFrame_OnLoad(CastingBarFrame, 'player', true, false)
-			PetCastingBarFrame_OnLoad(PetCastingBarFrame)
-
+			if CastingBarFrame_OnLoad then
+				--classic
+				CastingBarFrame_OnLoad(CastingBarFrame, 'player', true, false)
+				PetCastingBarFrame_OnLoad(PetCastingBarFrame)
+			elseif (PlayerCastingBarFrame and PlayerCastingBarFrame.OnLoad) then
+				--tbc
+				PlayerCastingBarFrame:OnLoad()
+				PetCastingBarFrame:PetCastingBar_OnLoad()
+			end
 		end
 	end
 end
