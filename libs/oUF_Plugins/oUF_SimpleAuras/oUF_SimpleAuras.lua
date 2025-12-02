@@ -115,7 +115,8 @@ if oUF.isClassic then
 		[564] = 10,    -- Windfury Totem 3 (10 sec)
 		[1003] = 300,  -- Venomhide Poison (5 min)
 	}
-elseif oUF.isTBC then
+else
+	--TBC
 	-- Things in this table have a duration other than 60 min
 	weaponEnchantData = {
 		[25] = 1800,   -- Shadow Oil (30 min)
@@ -838,7 +839,7 @@ end
 local playerFrames = {}
 local function UpdateWeaponEnchants(self, silent)
 	weaponWatchTimer = nil
-	local defaultDuration = oUF.isTBC and 3600 or 1800
+	local defaultDuration = oUF.isClassic and 1800 or 3600
 	
 	local hasMainHandEnchant, mainHandExpiration, mainHandChargeNum, mainHandEnchantID, hasOffHandEnchant, offHandExpiration, offHandChargeNum, offHandEnchantId = GetWeaponEnchantInfo()
 	if hasMainHandEnchant then

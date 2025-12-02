@@ -172,7 +172,8 @@ local function Update(self, event, unit)
 		element:PreUpdate(unit)
 	end
 
-	local cur, max = UnitPower(unit), UnitPowerMax(unit)
+	local powerType = UnitPowerType(unit)
+	local cur, max = UnitPower(unit, powerType), UnitPowerMax(unit, powerType)
 
 	element:SetMinMaxValues(0, max)
 

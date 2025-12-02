@@ -537,7 +537,7 @@ function LUF:CreateConfig()
 			local k
 			for k,spell in ipairs(localSpells) do
 				spell = spell:gsub("%[mana%]", "")
-				if spell ~="" and not tonumber(spell) and not C_Spell.GetSpellName(spell) then
+				if spell ~="" and not tonumber(spell) and not C_Spell.GetSpellInfo(spell) then
 					return L["You can only use Spellnames for Spells your Character knows otherwise please use Spell IDs"]
 				end
 			end

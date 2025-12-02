@@ -756,10 +756,10 @@ local tagStrings = {
 		end
 	end]],
 
-	["maxpp"] = [[function(unit) return UnitPowerMax(unit) end]],
+	["maxpp"] = [[function(unit) return UnitPowerMax(unit, UnitPowerType(unit)) end]],
 
 	["smaxpp"] = [[function(unit)
-		local maxpower = UnitPowerMax(unit)
+		local maxpower = UnitPowerMax(unit, UnitPowerType(unit))
 		if maxpower > 1000000 then
 			return (math.floor(maxpower/10000)/100).."M"
 		elseif maxpower > 1000 then
@@ -771,17 +771,18 @@ local tagStrings = {
 
 	["missingpp"] = [[function(unit)
 		local mana = UnitPower(unit)
-		local manamax = UnitPowerMax(unit)
+		local manamax = UnitPowerMax(unit, UnitPowerType(unit))
 		if manamax-mana ~= 0 then
 			return mana-manamax
 		end
 	end]],
 
 	["perpp"] = [[function(unit)
-		if UnitPowerMax(unit) < 1 then
+		local powerType = UnitPowerType(unit)
+		if UnitPowerMax(unit, powerType) < 1 then
 			return 0
 		else
-			return math.floor(((UnitPower(unit) / UnitPowerMax(unit)) * 100)+0.5)
+			return math.floor(((UnitPower(unit, powerType) / UnitPowerMax(unit, powerType)) * 100)+0.5)
 		end
 	end]],
 
