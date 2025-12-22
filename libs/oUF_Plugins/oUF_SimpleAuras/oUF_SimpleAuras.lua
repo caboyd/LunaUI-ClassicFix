@@ -69,7 +69,9 @@ local _, ns = ...
 local oUF = ns.oUF
 
 local LCD = LibStub("LibClassicDurations", true)
-LCD:Register("LunaUnitFrames")
+if LCD then
+	LCD:Register("LunaUnitFrames")
+end
 local weaponWatchTimer
 local mainHandEnd, mainHandDuration, mainHandCharges, offHandEnd, offHandDuration, offHandCharges
 
@@ -142,8 +144,9 @@ end
 
 
 local function CheckBlizzardCooldownTextOverflow(element, button)
-	--OmniCC always prevents blizzard timers so we dont need to do this if its installed
-    if element.disableBCC or _G.OmniCC then return end
+	--OmniCC always prevents blizzard timers so we dont need to do
+	-- this if it's installed and not disabled
+    if element.disableBCC or (_G.OmniCC and not element.disableOCC) then return end
 
 	if not button.cdFontString then
 		-- Cache the cooldown text font string
@@ -158,8 +161,8 @@ local function CheckBlizzardCooldownTextOverflow(element, button)
 	local fs = button.cdFontString
 
 	local _, oldFontSize, _ = fs:GetFont()
-    local button_width = button:GetWidth()
-	local fontSize = math.max(8, button_width * 0.42)
+	local button_width = button:GetWidth()
+	local fontSize = math.max(8, button_width^0.95 * 0.42)
 
 	if(oldFontSize ~= fontSize) then
 		--only update when font size changed
@@ -169,7 +172,7 @@ local function CheckBlizzardCooldownTextOverflow(element, button)
 
 	local text_width = fs:GetStringWidth()
 
-    if (button_width < 18)  then
+    if (button_width < 18.5)  then
         button.cd:SetHideCountdownNumbers(true)
     else
         button.cd:SetHideCountdownNumbers(false)
@@ -435,7 +438,7 @@ local function UpdateAuras(self, event, unit)
 		local button
 		if element.buffs then
 			for i=1,(element.maxBuffs or 32) do
-				local name, _, _, _, _, _, caster = LCD:UnitAura(self.unit, i, filter)
+				local name, _, _, _, _, _, caster = oUF.LCDUnitAura(self.unit, i, filter)
 				if name or element.forceShow then
 					if element.buffFilter ~= 2 or caster == "player" then
 						updateIcon(element, self.unit, i, currentSlot, filter, false)
@@ -467,7 +470,7 @@ local function UpdateAuras(self, event, unit)
 		filter = "HARMFUL"..(element.debuffFilter == 3 and "|RAID" or "")
 		if element.debuffs then
 			for i=1,(element.maxDebuffs or 40) do
-				local name, _, _, _, _, _, caster = LCD:UnitAura(self.unit, i, filter)
+				local name, _, _, _, _, _, caster = oUF.LCDUnitAura(self.unit, i, filter)
 				if name or element.forceShow then
 					if element.debuffFilter ~= 2 or caster == "player" then
 						updateIcon(element, self.unit, i, currentSlot, filter, true)
@@ -904,9 +907,11 @@ local function Enable(self)
 			self:RegisterEvent("UNIT_INVENTORY_CHANGED", SetWeaponUpdateTimer)
 			UpdateWeaponEnchants(self, true)
 		elseif self.unit ~= "player" then
-			LCD.RegisterCallback("LUF", "UNIT_BUFF", function(event, unit)
-				UpdateAuras(element, "UNIT_AURA", unit)
-			end)
+			if LCD and LCD.RegisterCallback then
+				LCD:RegisterCallback("LUF", "UNIT_BUFF", function(event, unit)
+					UpdateAuras(element, "UNIT_AURA", unit)
+				end)
+			end
 		end
 
 		element.buffFrame = element.buffFrame or CreateFrame("Frame", "$parentBuffFrame", element)
