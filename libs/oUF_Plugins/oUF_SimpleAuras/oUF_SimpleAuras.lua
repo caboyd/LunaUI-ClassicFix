@@ -908,7 +908,7 @@ local function Enable(self)
 			UpdateWeaponEnchants(self, true)
 		elseif self.unit ~= "player" then
 			if LCD and LCD.RegisterCallback then
-				LCD:RegisterCallback("LUF", "UNIT_BUFF", function(event, unit)
+				LCD.RegisterCallback("LUF", "UNIT_BUFF", function(event, unit)
 					UpdateAuras(element, "UNIT_AURA", unit)
 				end)
 			end
