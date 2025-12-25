@@ -3,6 +3,8 @@ LUF = select(2, ...)
 local oUF = LUF.oUF
 local SML = LibStub:GetLibrary("LibSharedMedia-3.0")
 
+local ArenaAndFocusExists = not LUF.oUF.isClassic
+
 local backdrop = {
 	bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
 	tile = true,
@@ -286,6 +288,7 @@ local UnitSpecific = {
 		comboPoints.name = "ComboPoints"
 		frame.modules.comboPoints = comboPoints
 		frame.ComboPoints = ComboPoints
+
 	end,
 
 	targettarget = function(frame)
@@ -293,6 +296,41 @@ local UnitSpecific = {
 	end,
 
 	targettargettarget = function(frame)
+	-- Nothing here yet
+	end,
+
+	focus = function(frame)
+		if not ArenaAndFocusExists then return end
+	-- Castbar
+		local Castbar = CreateFrame("StatusBar", nil, frame)
+
+		local Background = Castbar:CreateTexture(nil, "BACKGROUND")
+		Background:SetAllPoints(Castbar)
+
+		local Icon = Castbar:CreateTexture(nil, "OVERLAY")
+		Icon:SetSize(10, 10)
+		Icon:SetPoint("TOPLEFT", Castbar, "TOPLEFT")
+
+		local SafeZone = Castbar:CreateTexture(nil, "OVERLAY")
+		local Shield = Castbar:CreateTexture(nil, 'OVERLAY', nil, -1)
+		Shield:SetTexture([[Interface\CastingBar\UI-CastingBar-Arena-Shield]])
+
+		Castbar.Shield = Shield
+		Castbar.bg = Background
+		Castbar.Icon = Icon
+		Castbar.SafeZone = SafeZone
+		Castbar:SetScript("OnShow", LUF.PlaceModules)
+		Castbar:SetScript("OnHide", LUF.PlaceModules)
+		frame.Castbar = Castbar
+		frame.modules.castBar = Castbar
+		frame.modules.castBar.name = "Castbar"
+	end,
+
+	focustarget = function(frame)
+	-- Nothing here yet
+	end,
+
+	focustargettarget = function(frame)
 	-- Nothing here yet
 	end,
 
@@ -426,6 +464,49 @@ local UnitSpecific = {
 	end,
 	
 	mainassisttargettarget = function(frame)
+	-- Nothing here yet
+	end,
+
+	arena = function(frame)
+		if not ArenaAndFocusExists then return end
+	-- Castbar
+		local Castbar = CreateFrame("StatusBar", nil, frame)
+
+		local Background = Castbar:CreateTexture(nil, "BACKGROUND")
+		Background:SetAllPoints(Castbar)
+
+		local Icon = Castbar:CreateTexture(nil, "OVERLAY")
+		Icon:SetSize(10, 10)
+		Icon:SetPoint("TOPLEFT", Castbar, "TOPLEFT")
+
+		local SafeZone = Castbar:CreateTexture(nil, "OVERLAY")
+		local Shield = Castbar:CreateTexture(nil, 'OVERLAY', nil, -1)
+		Shield:SetTexture([[Interface\CastingBar\UI-CastingBar-Arena-Shield]])
+
+		Castbar.Shield = Shield
+		Castbar.bg = Background
+		Castbar.Icon = Icon
+		Castbar.SafeZone = SafeZone
+		Castbar:SetScript("OnShow", LUF.PlaceModules)
+		Castbar:SetScript("OnHide", LUF.PlaceModules)
+		frame.Castbar = Castbar
+		frame.modules.castBar = Castbar
+		frame.modules.castBar.name = "Castbar"
+
+	-- Trinket
+		frame.Trinket = CreateFrame("Frame", nil, frame.toplevel)
+		frame.Trinket.icon = frame.Trinket:CreateTexture(nil, "OVERLAY")
+		frame.Trinket.icon:SetAllPoints()
+		frame.Trinket.cd = CreateFrame("Cooldown", frame:GetName().."TrinketCooldown", frame.Trinket, "CooldownFrameTemplate")
+		frame.Trinket.cd:SetAllPoints()
+		frame.Trinket.cd:SetReverse(true)
+	end,
+
+	arenapet = function(frame)
+	-- Nothing here yet
+	end,
+
+	arenatarget = function(frame)
 	-- Nothing here yet
 	end,
 }

@@ -7,6 +7,7 @@ local L = LUF.L
 local ACR = LibStub("AceConfigRegistry-3.0", true)
 local SML = LibStub:GetLibrary("LibSharedMedia-3.0")
 local oUF = LUF.oUF
+local ArenaAndFocusExists = not oUF.isClassic
 
 -- Disable oUFs Anti Blizzard function since we make our own
 oUF.DisableBlizzard = function() end
@@ -20,6 +21,8 @@ L.party = PARTY
 L.raid = RAID
 L.maintank = MAINTANK
 L.mainassist = MAIN_ASSIST
+L.focus = ArenaAndFocusExists and FOCUS or nil
+L.arena = ArenaAndFocusExists and ARENA or nil
 
 LUF.stateMonitor = CreateFrame("Frame", nil, nil, "SecureHandlerBaseTemplate")
 LUF.stateMonitor:WrapScript(LUF.stateMonitor, "OnAttributeChanged", [[
@@ -109,6 +112,15 @@ LUF.unitList = {
 	"mainassisttargettarget",
 }
 
+if ArenaAndFocusExists then
+	table.insert(LUF.unitList, "focus")
+	table.insert(LUF.unitList, "focustarget")
+	table.insert(LUF.unitList, "focustargettarget")
+	table.insert(LUF.unitList, "arena")
+	table.insert(LUF.unitList, "arenapet")
+	table.insert(LUF.unitList, "arenatarget")
+end
+
 LUF.fakeUnits = {
 	["targettarget"] = true,
 	["targettargettarget"] = true,
@@ -120,6 +132,12 @@ LUF.fakeUnits = {
 	["mainassisttarget"] = true,
 	["mainassisttargettarget"] = true,
 }
+
+if ArenaAndFocusExists then
+	LUF.fakeUnits["focustarget"] = true
+	LUF.fakeUnits["focustargettarget"] = true
+	LUF.fakeUnits["arenatarget"] = true
+end
 
 LUF.HeaderFrames = {
 	["party"] = true,
@@ -134,6 +152,12 @@ LUF.HeaderFrames = {
 	["mainassisttarget"] = true,
 	["mainassisttargettarget"] = true,
 }
+
+if ArenaAndFocusExists then
+	LUF.HeaderFrames["arena"] = true
+	LUF.HeaderFrames["arenapet"] = true
+	LUF.HeaderFrames["arenatarget"] = true
+end
 
 -- taken from framexml
 local function getRelativePointAnchor( point )
@@ -234,7 +258,7 @@ end
 function LUF:OnLoad()
 	
 	self:LoadDefaults()
-	
+
 	-- Initialize DB
 	self.db = LibStub:GetLibrary("AceDB-3.0"):New("LunaUFDB", self.defaults, true)
 	self.db.RegisterCallback(self, "OnProfileChanged", "ProfilesChanged")
@@ -365,6 +389,13 @@ function LUF:AutoswitchProfile(event)
 			groupType = "SOLO"
 		end
 		profile = self.db.char.grpdb[groupType]
+	elseif event == "PLAYER_ENTERING_WORLD" and self.db.char.switchtype == "ARENA" then
+		if select(2,IsInInstance()) == "arena" then
+			profile = self.db.char.grpdb["ARENA"]
+			self.db.char.grpdb["NONARENA"] = self.db:GetCurrentProfile()
+		elseif self.db.char.grpdb["NONARENA"] then
+			profile = self.db.char.grpdb["NONARENA"]
+		end
 	end
 	if profile and profile ~= self.db:GetCurrentProfile() then
 		self.db:SetProfile(profile)
@@ -522,6 +553,10 @@ function LUF:HideBlizzardFrames()
 		handleFrame(PetFrame)
 	end
 
+	if( ArenaAndFocusExists and LUF.db.profile.hidden.focus and not active_hiddens.focus ) then
+		handleFrame(FocusFrame)
+	end
+
 	if( LUF.db.profile.hidden.target and not active_hiddens.target ) then
 		handleFrame(TargetFrame)
 		handleFrame(ComboFrame)
@@ -533,6 +568,16 @@ function LUF:HideBlizzardFrames()
 			handleFrame(string.format("PartyMemberFrame%d", i))
 		end
 		handleFrame(PartyFrame)
+	end
+
+	if( ArenaAndFocusExists and LUF.db.profile.hidden.arena and not active_hiddens.arena ) then
+		for i = 1, 5 do
+			handleFrame(string.format("ArenaEnemyFrame%d", i))
+		end
+
+		-- Blizzard_ArenaUI should not be loaded
+		Arena_LoadUI = function() end
+		--SetCVar('showArenaEnemyFrames', '0', 'SHOW_ARENA_ENEMY_FRAMES_TEXT')
 	end
 
 	-- As a reload is required to reset the hidden hooks, we can just set this to true if anything is true
@@ -886,6 +931,7 @@ function LUF.ApplySettings(frame)
 		Auras.buffFilter = AuraConfig.filterbuffs
 		Auras.buffSize = AuraConfig.buffsize
 		Auras.largeBuffSize = AuraConfig.enlargedbuffsize
+		Auras.showSteal = AuraConfig.showSteal
 		Auras.wrapBuffSide = AuraConfig.wrapbuffside
 		Auras.wrapBuff = AuraConfig.wrapbuff
 		Auras.buffOffset = AuraConfig.buffOffset
@@ -1029,6 +1075,22 @@ function LUF.ApplySettings(frame)
 		end
 	end
 	
+	--Arena Trinket
+	if ArenaAndFocusExists and frame.Trinket then
+		local trinketConfig = config.trinket
+		if trinketConfig.enabled then
+			local point = getRelativePointAnchor(trinketConfig.anchorPoint)
+			frame.Trinket:ClearAllPoints()
+			frame.Trinket:SetPoint(point, frame, trinketConfig.anchorPoint, trinketConfig.x, trinketConfig.y)
+			frame.Trinket:SetHeight(trinketConfig.size)
+			frame.Trinket:SetWidth(trinketConfig.size)
+			frame.isForced = true
+			frame:EnableElement("Trinket")
+		else
+			frame:DisableElement("Trinket")
+		end
+	end
+
 	frame:UpdateAllElements("RefreshUnit")
 end
 
@@ -1389,11 +1451,13 @@ end
 function LUF:PlaceFrame(frame)
 	local scale = 1
 	local unit = frame:GetAttribute("oUF-headerType") or frame:GetAttribute("oUF-guessUnit")
-	local config = self.db.profile.units[unit]
+
+	local config = self.db.profile.units[unit] or nil
+
 	if config.positions then
 		config = config.positions[tonumber(strsub(frame:GetName(),14))]
 	end
-	
+
 	if config.anchorTo == "UIParent" then
 		scale = frame:GetScale() * UIParent:GetScale()
 	end
@@ -1441,23 +1505,43 @@ function LUF:SpawnUnits()
 	oUF:RegisterStyle("LunaUnitFrames", self.InitializeUnit)
 	oUF:RegisterInitCallback(function(frame) LUF.PlaceModules(frame) LUF.ApplySettings(frame) end)
 	
-	--WOTLK backwards compat
-	self.db.profile.units["focus"] = nil
-	self.db.profile.units["focustarget"] = nil
-	self.db.profile.units["focustargettarget"] = nil
-	self.db.profile.units["arena"] = nil
-	self.db.profile.units["arenapet"] = nil
-	self.db.profile.units["arenatarget"] = nil
-	self.db.profile.units["boss"] = nil
+	--WOTLK/TBC backwards compat
+	if(oUF.isClassic) then
+		self.db.profile.units["focus"] = nil
+		self.db.profile.units["focustarget"] = nil
+		self.db.profile.units["focustargettarget"] = nil
+		self.db.profile.units["arena"] = nil
+		self.db.profile.units["arenapet"] = nil
+		self.db.profile.units["arenatarget"] = nil
+	end
+	if(not oUF.isWrath) then
+		self.db.profile.units["boss"] = nil
+	end
 
 	for unit, config in pairs(self.db.profile.units) do
 		if self.HeaderFrames[unit] then
 			if unit == "raid" then
-				for id=1,8 do
+				local raidCount = oUF.isClassic and 8 or 9
+				for id=1,raidCount do
 					local data = config.positions[id]
 					self.frameIndex["raid"..id] = oUF:SpawnHeader("LUFHeaderraid"..id, nil, nil, "oUF-initialConfigFunction", format(initialConfigFunction, "raid"))
 					self.frameIndex["raid"..id]:Show() --Set Show() early to allow child spawning
 					self.frameIndex["raid"..id]:SetAttribute("oUF-headerType", unit)
+				end
+			elseif ArenaAndFocusExists and unit:match("^arena.*") then
+				self.frameIndex[unit] = CreateFrame("Frame", "LUFHeader"..unit, UIParent, "SecureFrameTemplate")
+				self.frameIndex[unit]:SetAttribute("oUF-headerType", unit)
+				self.frameIndex[unit].isArena = true
+				self.frameIndex[unit]:SetHeight(1)
+				self.frameIndex[unit]:SetWidth(1)
+				for i=1, 5 do
+					if unit:match(".*target$") then
+						local frame = oUF:Spawn("arena"..i.."target", "LUFHeader"..unit.."UnitButton"..i)
+						frame:SetParent(_G["LUFHeader"..unit])
+					else
+						local frame = oUF:Spawn(unit..i, "LUFHeader"..unit.."UnitButton"..i)
+						frame:SetParent(_G["LUFHeader"..unit])
+					end
 				end
 			else
 				local template
@@ -1492,9 +1576,11 @@ function LUF:SpawnUnits()
 	self.stateMonitor:SetAttribute("hideParty", config.raid.hideParty)
 	self.stateMonitor:SetAttribute("showWhen", (not config.raid.showSolo and not config.raid.showPlayer and not config.raid.showParty) and "RAID" or nil)
 	RegisterStateDriver(self.stateMonitor, "raidstatus", "[target=raid6, exists] full; [target=raid1, exists] semi; none")
-	for i=1, 9 do
+	-- add one for pet raid frames
+	local raidCount = (oUF.isClassic and 8 or 9) + 1
+	for i=1, raidCount do
 		local frame
-		if i == 9 then
+		if i == raidCount then
 			frame = self.frameIndex["raidpet"]
 			self.stateMonitor:SetFrameRef("raidpet", frame)
 		else
@@ -1514,7 +1600,56 @@ function LUF:SpawnUnits()
 	self.frameIndex.target:HookScript("OnHide", LUF.overrides.Target.PostUpdate)
 end
 
+local function SetArenaHeader(header, config)
+	local point = config.attribPoint
+	local relativePoint, xOffsetMult, yOffsetMult = getRelativePointAnchor(point)
+	local xMultiplier, yMultiplier =  abs(xOffsetMult), abs(yOffsetMult)
+	local xMod = config.attribPoint == "LEFT" and 1 or config.attribPoint == "RIGHT" and -1 or 0
+	local yMod = config.attribPoint == "TOP" and -1 or config.attribPoint == "BOTTOM" and 1 or 0
+	local xOffset = config.offset * xMod
+	local yOffset = config.offset * yMod
+	local currentAnchor = header
+
+	local ButtonName = header:GetName() .. "UnitButton"
+	local num = 1
+	local frame = _G[ButtonName .. num]
+	while( frame ) do
+		if not LUF.InCombatLockdown then
+			if not config.enabled and frame:IsEnabled() then
+				frame:Disable()
+			elseif config.enabled and not frame:IsEnabled() then
+				frame:Enable()
+			end
+			
+			frame:ClearAllPoints()
+			if ( num == 1 ) then
+				frame:SetPoint(point, currentAnchor, point, 0, 0)
+			else
+				frame:SetPoint(point, currentAnchor, relativePoint, xMultiplier * xOffset, yMultiplier * yOffset)
+			end
+
+			frame:SetWidth(config.width)
+			frame:SetHeight(config.height)
+			frame:SetScale(config.scale)
+			
+			if config.enableFocus then
+				frame:SetAttribute("*type2", "focus")
+			else
+				frame:SetAttribute("*type2", "togglemenu")
+			end
+		end
+		LUF.PlaceModules(frame)
+		currentAnchor = frame
+		num = num + 1
+		frame = _G[ButtonName .. num]
+	end
+end
+
 local function SetHeaderAttributes(header, config)
+	if header.isArena then
+		SetArenaHeader(header, config)
+		return
+	end
 	if not config.enabled or config.filters and not config.filters[tonumber(strmatch(header:GetName(),".+(%d)"))] then
 		header:Hide()
 		header:SetAttribute("isEnabled", nil)
@@ -1607,16 +1742,32 @@ local function SetHeaderSettings(header)
 	end
 end
 
-local classOrder = {
-	[1] = "DRUID",
-	[2] = "HUNTER",
-	[3] = "MAGE",
-	[4] = "PALADIN,SHAMAN",
-	[5] = "PRIEST",
-	[6] = "ROGUE",
-	[7] = "WARLOCK",
-	[8] = "WARRIOR",
-}
+local classOrder
+
+if(oUF.isClassic) then
+	classOrder = {
+		[1] = "DRUID",
+		[2] = "HUNTER",
+		[3] = "MAGE",
+		[4] = "PALADIN,SHAMAN",
+		[5] = "PRIEST",
+		[6] = "ROGUE",
+		[7] = "WARLOCK",
+		[8] = "WARRIOR",
+	}
+else
+	classOrder = {
+		[1] = "DRUID",
+		[2] = "HUNTER",
+		[3] = "MAGE",
+		[4] = "PALADIN",
+		[5] = "PRIEST",
+		[6] = "ROGUE",
+		[7] = "SHAMAN",
+		[8] = "WARLOCK",
+		[9] = "WARRIOR",
+	}
+end
 
 function LUF:SetupHeader(headerUnit)
 	local header
@@ -1624,14 +1775,15 @@ function LUF:SetupHeader(headerUnit)
 	
 	if headerUnit == "raid" then
 		if not self.frameIndex["raid1"] then return end
-		for id=1,8 do
+		local raidCount = oUF.isClassic and 8 or 9
+		for id=1,raidCount do
 			header = self.frameIndex["raid"..id]
 			if config.groupBy == "GROUP" then
 				header:SetAttribute("groupFilter", tostring(id))
 				header.grpNumber:SetText(GROUP.." "..id)
 			else
 				header:SetAttribute("groupFilter", classOrder[id])
-				if id == 4 then
+				if oUF.isClassic and id == 4 then
 					if UnitFactionGroup("player") == "Horde" then
 						header.grpNumber:SetText(LOCALIZED_CLASS_NAMES_MALE["SHAMAN"])
 					else
@@ -1664,7 +1816,8 @@ function LUF:ReloadHeaderUnits(headerUnit)
 	
 	if headerUnit == "raid" then
 		if not self.frameIndex["raid1"] then return end
-		for id=1,8 do
+		local raidCount = oUF.isClassic and 8 or 9
+		for id=1,raidCount do
 			header = self.frameIndex["raid"..id]
 			SetHeaderSettings(header)
 		end
