@@ -32,6 +32,7 @@ Yawt.
 .largeDebuffSize....- Make your own bigger by this amount (number)
 .onlyShowPlayer     - Shows only auras created by player/vehicle (boolean)
 .showType           - Colors the border in the magic type color (boolean)
+.showSteal          - Display the white border around stealable buffs (boolean)
 .spacing            - Spacing between each icon. Defaults to 0 (number)
 .Anchor             - Anchor point for the icons. Defaults to 'BOTTOMLEFT' (string)
                       ""
@@ -333,14 +334,22 @@ local function updateIcon(element, unit, index, position, filter, isDebuff)
 			end
 
 			if(button.overlay) then
-					local color = element.showType and oUF.colors.debuff[debuffType] or {1,1,1}
-					button.overlay:SetVertexColor(color[1], color[2], color[3])
-				if element.overlay then
-					button.overlay:SetTexture(element.overlay)
-					button.overlay:SetTexCoord(0,1,0,1)
+				local color = element.showType and oUF.colors.debuff[debuffType] or {1,1,1}
+				if isStealable and element.showSteal then
+					button.overlay:SetVertexColor(1, 1, 1)
+					button.overlay:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Stealable")
+					button.overlay:SetTexCoord(0.1,0.95,0.1,0.95)
+					button.overlay:SetBlendMode("ADD")
 				else
-					button.overlay:SetTexture([[Interface\Buttons\UI-Debuff-Overlays]])
-					button.overlay:SetTexCoord(0.306875, 0.5703125, 0, 0.515625)
+					button.overlay:SetVertexColor(color[1], color[2], color[3])
+					button.overlay:SetBlendMode("BLEND")
+					if element.overlay then
+						button.overlay:SetTexture(element.overlay)
+						button.overlay:SetTexCoord(0,1,0,1)
+					else
+						button.overlay:SetTexture([[Interface\Buttons\UI-Debuff-Overlays]])
+						button.overlay:SetTexCoord(0.306875, 0.5703125, 0, 0.515625)
+					end
 				end
 			end
 
@@ -348,7 +357,8 @@ local function updateIcon(element, unit, index, position, filter, isDebuff)
 
 			button.count:SetText(count > 1 and count or "")
 			if(button.buffcountfontsize ~= element.buffcountfontsize) then
-				button.count:SetFont(button.count:GetFont(), element.buffcountfontsize or 10, "OUTLINE")
+				element.buffcountfontsize = element.buffcountfontsize or 10 
+				button.count:SetFont(button.count:GetFont(),  element.buffcountfontsize, "OUTLINE")
 				button.buffcountfontsize = element.buffcountfontsize
 			end
 				
