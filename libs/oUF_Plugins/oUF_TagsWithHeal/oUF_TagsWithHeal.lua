@@ -1282,9 +1282,9 @@ local tagStrings = {
 	end]],
 
 	["rep"] = [[function(unit)
-		local name, standing, min, max, value, factionID = GetWatchedFactionInfo()
-		if name then
-			return (value-min).."/"..(max-min).." "..name
+		local info = C_Reputation.GetWatchedFactionData()
+		if info and info.name then
+			return (info.currentStanding-info.currentReactionThreshold).."/"..(info.nextReactionThreshold-info.currentReactionThreshold).." "..info.name
 		end
 	end]],
 	
