@@ -83,7 +83,21 @@ local function Update(self, event)
 	end
 	minXP = math.min(0, currentXP)
 	
-	local name, reaction, minRep, maxRep, currentRep = GetWatchedFactionInfo()
+	local name, reaction, minRep, maxRep, currentRep = nil,0,0,0,0
+
+	if C_Reputation and C_Reputation.GetWatchedFactionData then
+		local info = C_Reputation.GetWatchedFactionData()
+		if info then
+			name = info.name
+			reaction = info.reaction
+			minRep = info.currentReactionThreshold
+			maxRep = info.nextReactionThreshold
+			currentRep = info.currentStanding
+		end
+	elseif GetWatchedFactionInfo then
+		name, reaction, minRep, maxRep, currentRep = GetWatchedFactionInfo()
+	end
+
 	currentRep = math.abs(minRep - currentRep)
 	maxRep = math.abs(minRep - maxRep)
 
