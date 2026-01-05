@@ -526,7 +526,7 @@ function LUF:CreateConfig()
 			["player"] = true,
 		},
 		["castBar"] = {
-			["pet"] = true,
+			--["pet"] = true,
 			["pettarget"] = true,
 			["pettargettarget"] = true,
 			["targettarget"] = true,
