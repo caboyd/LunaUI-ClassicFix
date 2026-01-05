@@ -561,7 +561,7 @@ local function Disable(self)
 			elseif (PlayerCastingBarFrame and PlayerCastingBarFrame.OnLoad) then
 				--tbc
 				PlayerCastingBarFrame:OnLoad()
-				PetCastingBarFrame:PetCastingBar_OnLoad()
+				PetCastingBarFrame:OnLoad()
 			end
 		end
 	end

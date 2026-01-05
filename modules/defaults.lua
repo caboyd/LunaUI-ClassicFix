@@ -303,6 +303,7 @@ function LUF:LoadDefaults()
 			enabled = true,
 			healthBar = { enabled = true, background = true, backgroundAlpha = 0.2, colorType = "happiness", reactionType="npc", height = 6, order = 10, posSlot = "CENTER"},
 			powerBar = { enabled = true, background = true, backgroundAlpha = 0.2, height = 4.5, order = 20, colorType = "type", posSlot = "CENTER" },
+			castBar = { enabled = false, background = true, backgroundAlpha = 0.2, height = 3, icon = "HIDE", shield = true, autoHide = true, order = 60, posSlot = "CENTER"},
 			portrait = {enabled = true, type = "3D", alignment = "LEFT", width = 0.22, height = 4, order = 15, posSlot = "CENTER"},
 			xpBar = { enabled = true, height = 2, order = 80, background = true, backgroundAlpha = 0.2, alpha = 1, autoHide = true, posSlot = "CENTER" },
 			emptyBar = { enabled = false, height = 3, order = 50, reactionType="npc", class = true, alpha = 0.2, posSlot = "CENTER"},
@@ -389,6 +390,21 @@ function LUF:LoadDefaults()
 					},
 					["right"] = {
 						tagline = "[pp]/[maxpp]",
+						size = 100,
+					},
+				},
+				["castBar"] = {
+					size = 10,
+					["left"] = {
+						tagline = "[castname]",
+						size = 100,
+					},
+					["center"] = {
+						tagline = "",
+						size = 100,
+					},
+					["right"] = {
+						tagline = "[casttime]",
 						size = 100,
 					},
 				},

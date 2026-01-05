@@ -239,6 +239,30 @@ local UnitSpecific = {
 		frame.modules.xpBar = xpBarFrame
 		frame.modules.xpBar.name = "XPRepBar"
 		frame.tags.xpBar = {}
+
+			-- Castbar
+		local Castbar = CreateFrame("StatusBar", nil, frame)
+
+		local Background = Castbar:CreateTexture(nil, "BACKGROUND")
+		Background:SetAllPoints(Castbar)
+
+		local Icon = Castbar:CreateTexture(nil, "OVERLAY")
+		Icon:SetSize(10, 10)
+		Icon:SetPoint("TOPLEFT", Castbar, "TOPLEFT")
+
+		local SafeZone = Castbar:CreateTexture(nil, "OVERLAY")
+		local Shield = Castbar:CreateTexture(nil, 'OVERLAY', nil, -1)
+		Shield:SetTexture([[Interface\CastingBar\UI-CastingBar-Arena-Shield]])
+
+		Castbar.Shield = Shield
+		Castbar.bg = Background
+		Castbar.Icon = Icon
+		Castbar.SafeZone = SafeZone
+		Castbar:SetScript("OnShow", LUF.PlaceModules)
+		Castbar:SetScript("OnHide", LUF.PlaceModules)
+		frame.Castbar = Castbar
+		frame.modules.castBar = Castbar
+		frame.modules.castBar.name = "Castbar"
 	end,
 
 	pettarget = function(frame)
