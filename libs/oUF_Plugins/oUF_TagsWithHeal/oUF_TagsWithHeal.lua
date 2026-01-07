@@ -756,10 +756,18 @@ local tagStrings = {
 		end
 	end]],
 
-	["maxpp"] = [[function(unit) return UnitPowerMax(unit, UnitPowerType(unit)) end]],
+	["maxpp"] = [[function(unit)
+		if UnitPowerType(unit) ==  Enum.PowerType.Rage then
+			return UnitPowerMax(unit)
+		end
+		return UnitPowerMax(unit, UnitPowerType(unit)) 
+	end]],
 
 	["smaxpp"] = [[function(unit)
 		local maxpower = UnitPowerMax(unit, UnitPowerType(unit))
+		if UnitPowerType(unit) ==  Enum.PowerType.Rage then
+			maxpower = maxpower / 10
+		end
 		if maxpower > 1000000 then
 			return (math.floor(maxpower/10000)/100).."M"
 		elseif maxpower > 1000 then
@@ -1457,10 +1465,8 @@ local tagEvents = {
 	["healthcolor"]         = "UNIT_HEALTH_FREQUENT UNIT_MAXHEALTH",
 	["color"]               = "PLAYER_LOGIN", -- Dummy
 	["br"]                  = "PLAYER_LOGIN", -- Dummy
-	["xp"]                  = "PLAYER_XP_UPDATE UPDATE_EXHAUSTION",
-	["percxp"]              = "PLAYER_XP_UPDATE",
-	["xpPet"]               = "UNIT_PET_EXPERIENCE UNIT_LEVEL",
-	["percxpPet"]           = "UNIT_PET_EXPERIENCE UNIT_LEVEL",
+	["xp"]                  = "PLAYER_XP_UPDATE UPDATE_EXHAUSTION UNIT_PET_EXPERIENCE",
+	["percxp"]              = "PLAYER_XP_UPDATE UNIT_PET_EXPERIENCE",
 	["rep"]                 = "UPDATE_FACTION",
 }
 
