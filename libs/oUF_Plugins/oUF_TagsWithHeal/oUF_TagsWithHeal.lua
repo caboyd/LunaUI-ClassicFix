@@ -1465,10 +1465,8 @@ local tagEvents = {
 	["healthcolor"]         = "UNIT_HEALTH_FREQUENT UNIT_MAXHEALTH",
 	["color"]               = "PLAYER_LOGIN", -- Dummy
 	["br"]                  = "PLAYER_LOGIN", -- Dummy
-	["xp"]                  = "PLAYER_XP_UPDATE UPDATE_EXHAUSTION",
-	["percxp"]              = "PLAYER_XP_UPDATE",
-	["xpPet"]               = "UNIT_PET_EXPERIENCE UNIT_LEVEL",
-	["percxpPet"]           = "UNIT_PET_EXPERIENCE UNIT_LEVEL",
+	["xp"]                  = "PLAYER_XP_UPDATE UPDATE_EXHAUSTION UNIT_PET_EXPERIENCE",
+	["percxp"]              = "PLAYER_XP_UPDATE UNIT_PET_EXPERIENCE",
 	["rep"]                 = "UPDATE_FACTION",
 }
 
