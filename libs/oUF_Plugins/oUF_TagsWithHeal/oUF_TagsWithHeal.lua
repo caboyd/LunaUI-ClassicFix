@@ -756,10 +756,18 @@ local tagStrings = {
 		end
 	end]],
 
-	["maxpp"] = [[function(unit) return UnitPowerMax(unit, UnitPowerType(unit)) end]],
+	["maxpp"] = [[function(unit)
+		if UnitPowerType(unit) ==  Enum.PowerType.Rage then
+			return UnitPowerMax(unit)
+		end
+		return UnitPowerMax(unit, UnitPowerType(unit)) 
+	end]],
 
 	["smaxpp"] = [[function(unit)
 		local maxpower = UnitPowerMax(unit, UnitPowerType(unit))
+		if UnitPowerType(unit) ==  Enum.PowerType.Rage then
+			maxpower = maxpower / 10
+		end
 		if maxpower > 1000000 then
 			return (math.floor(maxpower/10000)/100).."M"
 		elseif maxpower > 1000 then
