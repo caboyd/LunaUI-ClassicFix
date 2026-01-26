@@ -62,7 +62,7 @@ local function checkDispel(unit, index)
 	while name do
 		if canCure[debuffType] then
 			if found_index == index then
-				return oUF.UnitAura(unit, i, "HARMFUL")
+				return oUF.LCDUnitAura(unit, i, "HARMFUL")
 			end
 			found_index = found_index + 1
 		end
