@@ -1,7 +1,9 @@
 -- Luna Unit Frames 4.0 by Aviana, caboyd
 
 LUF = select(2, ...)
-LUF.version = C_AddOns.GetAddOnMetadata("LunaUnitFrames", "Version")
+LUF.version = C_AddOns.GetAddOnMetadata("LunaUnitFrames", "Version") .. "-" .. (
+    LUF.oUF.isTBC and "bcc" or LUF.oUF.isClassic and "classic" or "error"
+)
 
 local L = LUF.L
 local ACR = LibStub("AceConfigRegistry-3.0", true)
