@@ -1034,6 +1034,8 @@ function LUF.ApplySettings(frame)
 					for i,v in ipairs({strsplit(";", squarecfg[name].value or "")}) do
 						table.insert(indicator.nameID, {strsplit("/",v)})
 					end
+				elseif indicator.type == "dispel" then
+						indicator.dispel_index = tonumber(squarecfg[name].value) or 1
 				else
 					indicator.nameID = {strsplit(";", squarecfg[name].value or "")}
 				end
