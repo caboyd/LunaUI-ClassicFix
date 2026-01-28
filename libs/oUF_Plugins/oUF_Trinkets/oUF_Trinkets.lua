@@ -43,7 +43,6 @@ local function ClearCooldowns(self)
 end
 
 local function Update(self, event, unit, ...)
-	if (self.isForced and event ~= 'ElvUI_UpdateAllElements') or (self.unit ~= unit) then return end
 
 	local element = self.Trinket
 

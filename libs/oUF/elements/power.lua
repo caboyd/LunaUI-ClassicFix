@@ -202,8 +202,6 @@ local function Update(self, event, unit)
 end
 
 local function Path(self, event, ...)
-	if (self.isForced and event ~= 'ElvUI_UpdateAllElements') then return end -- ElvUI changed
-
 	--[[ Override: Power.Override(self, event, unit, ...)
 	Used to completely override the internal update function.
 
