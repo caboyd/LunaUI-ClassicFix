@@ -19,25 +19,7 @@ local callback, objects, headers = {}, {}, {}
 local elements = {}
 local activeElements = {}
 
--- updating of "invalid" units.
-local function enableTargetUpdate(object)
-	object.onUpdateFrequency = object.onUpdateFrequency or .1
-	object.__eventless = true
-
-	object:SetScript('OnUpdate', function(self, elapsed)
-		if(not self.unit) then
-			return
-		elseif self.elapsed and (self.elapsed > self.onUpdateFrequency) then
-			self:UpdateAllElements('OnUpdate')
-			self.elapsed = 0
-		end
-
-		self.elapsed = (self.elapsed or 0) + elapsed
-	end)
-end
-Private.enableTargetUpdate = enableTargetUpdate
-
-local function updateActiveUnit(self, event, unit)
+local function updateActiveUnit(self, event)
 	-- Calculate units to work with
 	local realUnit, modUnit = SecureButton_GetUnit(self), SecureButton_GetModifiedUnit(self)
 
@@ -48,13 +30,23 @@ local function updateActiveUnit(self, event, unit)
 		realUnit = 'target'
 	end
 
+	if(modUnit == 'pet' and realUnit ~= 'pet') then
+		modUnit = 'vehicle'
+	end
+
 	if(not unitExists(modUnit)) then return end
 
 	-- Change the active unit and run a full update.
 	if(Private.UpdateUnits(self, modUnit, realUnit)) then
-		self:UpdateAllElements('RefreshUnit')
+		self:UpdateAllElements(event or 'RefreshUnit')
 
 		return true
+	end
+end
+
+local function evalUnitAndUpdate(self, event)
+	if(not updateActiveUnit(self, event)) then
+		return self:UpdateAllElements(event)
 	end
 end
 
@@ -216,9 +208,7 @@ for k, v in next, {
 end
 
 local function onShow(self)
-	if(not updateActiveUnit(self, 'OnShow')) then
-		return self:UpdateAllElements('OnShow')
-	end
+	evalUnitAndUpdate(self, 'OnShow')
 end
 
 local function updatePet(self, event, unit)
@@ -233,9 +223,8 @@ local function updatePet(self, event, unit)
 	end
 
 	if(self.unit ~= petUnit) then return end
-	if(not updateActiveUnit(self, event)) then
-		return self:UpdateAllElements(event)
-	end
+
+	evalUnitAndUpdate(self, event)
 end
 
 local function updateRaid(self, event)
@@ -245,6 +234,20 @@ local function updateRaid(self, event)
 
 		self:UpdateAllElements(event)
 	end
+end
+
+-- boss6-10 exsist in some encounters, but unit event registration seems to be
+-- completely broken for them, so instead we use OnUpdate to update them.
+local eventlessUnits = {
+	boss6 = true,
+	boss7 = true,
+	boss8 = true,
+	boss9 = true,
+	boss10 = true,
+}
+
+local function isEventlessUnit(unit)
+	return unit:match('%w+target') or eventlessUnits[unit]
 end
 
 local function initObject(unit, style, styleFunc, header, ...)
@@ -270,7 +273,9 @@ local function initObject(unit, style, styleFunc, header, ...)
 			objectUnit = objectUnit .. suffix
 		end
 
-		if(not (suffix == 'target' or objectUnit and objectUnit:match('target'))) then
+		if(not isEventlessUnit(objectUnit)) then
+			object:RegisterEvent('UNIT_ENTERED_VEHICLE', evalUnitAndUpdate)
+			object:RegisterEvent('UNIT_EXITED_VEHICLE', evalUnitAndUpdate)
 			-- We don't need to register UNIT_PET for the player unit. We register it
 			-- mainly because UNIT_EXITED_VEHICLE and UNIT_ENTERED_VEHICLE doesn't always
 			-- have pet information when they fire for party and raid units.
@@ -284,9 +289,8 @@ local function initObject(unit, style, styleFunc, header, ...)
 			object:SetAttribute('*type1', 'target')
 			object:SetAttribute('*type2', 'togglemenu')
 
-			-- Other boss and target units are handled by :HandleUnit().
-			if(suffix == 'target') then
-				enableTargetUpdate(object)
+			if(isEventlessUnit(objectUnit)) then
+				oUF:HandleEventlessUnit(object)
 			else
 				oUF:HandleUnit(object)
 			end
@@ -304,7 +308,7 @@ local function initObject(unit, style, styleFunc, header, ...)
 			end
 
 			if(suffix == 'target') then
-				enableTargetUpdate(object)
+				oUF:HandleEventlessUnit(object)
 			end
 		end
 
