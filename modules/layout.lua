@@ -856,9 +856,19 @@ function LUF.InitializeUnit(frame, unit, notHeaderChild)
 			UnitFrame_OnLeave(self)
 		end
 	end)
-	
-	if not InCombatLockdown() then
+
+	local function InitializeSecureFrame(frame)
+		if frame.secureInitialized then return end
+		if not frame or frame:IsForbidden() then return end
 		frame:SetClampedToScreen(true)
+		frame:RegisterForClicks("AnyUp")
+		frame.secureInitialized = true
 	end
-	frame:RegisterForClicks("AnyUp")
+		
+	if InCombatLockdown() then
+		LUF:QueuePostCombatAction(frame, InitializeSecureFrame, frame)
+	else
+		InitializeSecureFrame(frame)
+	end
 end
+

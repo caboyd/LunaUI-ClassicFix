@@ -451,14 +451,15 @@ end
 
 local postCombatActionQueue = {}
 
---Queue up functions while in combat that can only be done outside combat
-local function QueuePostCombatAction(name, func,...)
-	-- prevent duplicate entries by checking for functions with same name
-    for _, job in ipairs(postCombatActionQueue) do
-        if job.name == name then
-            return -- already queued
-        end
-    end
+
+-- Post-combat action queue for protected functions
+function LUF:QueuePostCombatAction(name, func,...)
+	-- prevent duplicate entries by checking for functions with same name (string or table)
+	for _, job in ipairs(postCombatActionQueue) do
+		if job.name == name then
+			return -- already queued
+		end
+	end
 	table.insert(postCombatActionQueue, {name = name, fn = func, args = {...}})
 end
 
@@ -513,7 +514,7 @@ function LUF:HideBlizzardFrames()
 				end
 
 				if LUF.InCombatLockdown then
-					QueuePostCombatAction("hideRaidFrameProtectedByCombat",hideRaidFrameProtectedByCombat)
+					LUF:QueuePostCombatAction("hideRaidFrameProtectedByCombat",hideRaidFrameProtectedByCombat)
 				else
 					hideRaidFrameProtectedByCombat()
 				end
@@ -1880,7 +1881,6 @@ function LUF:IncrementStrata(strata)
 	return lookup[strata]
 end
 
-local queuedEvent
 local frame = CreateFrame("Frame")
 frame:RegisterEvent("PLAYER_LOGIN")
 frame:RegisterEvent("ADDON_LOADED")
@@ -1903,11 +1903,8 @@ frame:SetScript("OnEvent", function(self, event, addon)
 		end
 	elseif event == "PLAYER_REGEN_ENABLED" then
 		LUF.InCombatLockdown = nil
+		-- Run all functions that were queued during combat because they were prohibited
 		ProcessPostCombatActionQueue()
-		if queuedEvent then
-			LUF:AutoswitchProfile(queuedEvent)
-		end
-		queuedEvent = nil
 		if( ACR ) then
 			ACR:NotifyChange("LunaUnitFrames")
 		end
@@ -1915,19 +1912,18 @@ frame:SetScript("OnEvent", function(self, event, addon)
 		if not LUF.InCombatLockdown then
 			LUF:AutoswitchProfile(event)
 		else
-			queuedEvent = event
+			LUF:QueuePostCombatAction("AutoswitchProfile"..event, LUF.AutoswitchProfile, LUF, event)
 		end
 	elseif event == "GROUP_ROSTER_UPDATE" then
 		if not LUF.InCombatLockdown then
 			LUF:AutoswitchProfile(event)
 		else
-			queuedEvent = event
+			LUF:QueuePostCombatAction("AutoswitchProfile"..event, LUF.AutoswitchProfile, LUF, event)
 		end
 	end
 end)
 
 function LUF:AutoswitchProfileSetup()
-	queuedEvent = nil
 	frame:UnregisterEvent("DISPLAY_SIZE_CHANGED")
 	frame:UnregisterEvent("GROUP_ROSTER_UPDATE")
 	if self.db.char.switchtype == "RESOLUTION" then
