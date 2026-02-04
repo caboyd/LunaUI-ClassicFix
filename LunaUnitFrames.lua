@@ -558,6 +558,7 @@ function LUF:HideBlizzardFrames()
 
 	if( ArenaAndFocusExists and LUF.db.profile.hidden.focus and not active_hiddens.focus ) then
 		handleFrame(FocusFrame)
+		handleFrame(FocusFrameToT)
 	end
 
 	if( LUF.db.profile.hidden.target and not active_hiddens.target ) then
@@ -567,10 +568,17 @@ function LUF:HideBlizzardFrames()
 	end
 
 	if( LUF.db.profile.hidden.party and not active_hiddens.party ) then
-		for i = 1, MAX_PARTY_MEMBERS do
-			handleFrame(string.format("PartyMemberFrame%d", i))
+		if( PartyFrame ) then
+			handleFrame(PartyFrame)
+			for memberFrame in PartyFrame.PartyMemberFramePool:EnumerateActive() do
+				handleFrame(memberFrame)
+			end
+			PartyFrame.PartyMemberFramePool:ReleaseAll()
+		else
+			for i = 1, MAX_PARTY_MEMBERS do
+				handleFrame(string.format("PartyMemberFrame%d", i))
+			end
 		end
-		handleFrame(PartyFrame)
 	end
 
 	if( ArenaAndFocusExists and LUF.db.profile.hidden.arena and not active_hiddens.arena ) then
