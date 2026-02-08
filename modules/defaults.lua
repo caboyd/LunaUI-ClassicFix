@@ -34,7 +34,7 @@ function LUF:LoadDefaults()
 			omnicc = false,
 			blizzardcc = false,
 			strata = "MEDIUM",
-			range = { dist = 40, alpha = 0.4 },
+			range = { dist = 40, alpha = 0.4, noItems = true },
 		},
 	}
 

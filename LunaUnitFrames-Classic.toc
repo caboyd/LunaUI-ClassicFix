@@ -28,6 +28,7 @@ libs\LibAuraTypes\LibAuraTypes.lua
 libs\LibSpellLocks\LibSpellLocks.lua
 libs\LibTargeted\LibTargeted.lua
 libs\LibClassicDurations\LibClassicDurations.xml
+libs\LibRangeCheck-3.0\LibRangeCheck-3.0.lua
 
 # oUF
 libs\oUF\init.lua
