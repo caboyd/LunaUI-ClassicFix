@@ -32,3 +32,6 @@ externals:
 
 ignore:
   - README.md
+
+move-folders:
+    LunaUnitFrames/libs/LibRangeCheck-3.0/LibRangeCheck-3.0: LunaUnitFrames/libs/LibRangeCheck-3.0
