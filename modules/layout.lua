@@ -644,8 +644,7 @@ function LUF.InitializeUnit(frame, unit, notHeaderChild)
 -- Range
 	if unit ~= "player" then
 		frame.Range = {
-			range = 40,
-			Override = LUF.overrides["Range"].Update
+			range = LUF.db.profile.range.dist,
 		}
 	end
 

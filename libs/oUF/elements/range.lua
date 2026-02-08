@@ -27,6 +27,7 @@ Offline units are handled as if they are in range.
 
 local _, ns = ...
 local oUF = ns.oUF
+local RC = LibStub("LibRangeCheck-3.0")
 
 local _FRAMES = {}
 local OnRangeFrame
@@ -46,11 +47,13 @@ local function Update(self, event)
 		element:PreUpdate()
 	end
 
-	local inRange, checkedRange
+	local range
 	local connected = UnitIsConnected(unit)
 	if(connected) then
-		inRange, checkedRange = UnitInRange(unit)
-		if(checkedRange and not inRange) then
+		local minRange, maxRange = RC:GetRange(unit, true, LUF.db.profile.range.noItems) -- (unit, checkVisible, noItems)
+		range = maxRange or 100
+		element.__owner.currRange = range	
+		if(range > element.range) then	
 			self:SetAlpha(element.outsideAlpha)
 		else
 			self:SetAlpha(element.insideAlpha)

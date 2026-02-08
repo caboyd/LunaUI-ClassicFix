@@ -71,6 +71,7 @@ local Private = oUF.Private
 local LCC = LibStub('LibClassicCasterino', true)
 local LHC = LibStub("LibHealComm-4.0")
 local LT = LibStub("LibTargeted")
+local RC = LibStub("LibRangeCheck-3.0")
 
 local _PATTERN = '%[..-%]+'
 
@@ -191,6 +192,7 @@ local _ENV = {
 	InCombatLockdownRestriction = InCombatLockdownRestriction,
 	lastChannelSpellName = function() return oUF.lastChannelSpellName end,
 	lastChannelEndTime = function() return oUF.lastChannelSpellEndTime end,
+	rangeCheck = function(unit) return RC:GetRange(unit) end,
 }
 _ENV.ColorGradient = function(...)
 	return _ENV._FRAME:ColorGradient(...)
@@ -301,21 +303,13 @@ local tagStrings = {
 	end]],
 
 	["range"] = [[function(unit)
-		--Patch 1.15.1 - CheckInteractDistance is not able to be used on friendly targets in combat
-		local InCombat = InCombatLockdownRestriction(unit)
-		
-		if UnitIsUnit("player", unit) then
-			return "0"
-		elseif not InCombat and CheckInteractDistance(unit, 3) then
-			return "0-10"
-		elseif not InCombat and CheckInteractDistance(unit, 4) then
-			return "10-30"
-		elseif not InCombat and UnitInRange(unit) then
-			return "30-40"
-		elseif UnitInRange(unit) then
-			return "0-40"
-		else
+		local minRange, maxRange = rangeCheck(unit)
+		if not minRange then
 			return "~"
+		elseif not maxRange then
+			return ">"..minRange
+		else
+			return (minRange).." - "..(maxRange)
 		end
 	end]],
 

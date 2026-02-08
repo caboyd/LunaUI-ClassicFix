@@ -3,11 +3,58 @@ local Addon,LUF = ...
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local SML = SML or LibStub:GetLibrary("LibSharedMedia-3.0")
 local ACR = LibStub("AceConfigRegistry-3.0", true)
+local RC, RCminor = LibStub("LibRangeCheck-3.0")
 local L = LUF.L
 local oUF = LUF.oUF
 local resolutionselectvalue,groupselectvalue, profiledb = GetCurrentResolution(), "SOLO", {}
 
 local ArenaAndFocusExists = not oUF.isClassic
+
+function getRCCheckerList(unitType, inCombat)
+	local noItems = LUF.db.profile.range.noItems
+    if unitType == "friend" then
+        return (noItems and (inCombat and RC.friendNoItemsRCInCombat or RC.friendNoItemsRC)
+                        or (inCombat and RC.friendRCInCombat or RC.friendRC))
+    elseif unitType == "harm" then
+        return (noItems and (inCombat and RC.harmNoItemsRCInCombat or RC.harmNoItemsRC)
+                        or (inCombat and RC.harmRCInCombat or RC.harmRC))
+    elseif unitType == "pet" then
+        return inCombat and RC.petRCInCombat or RC.petRC
+    elseif unitType == "res" then
+        return inCombat and RC.resRCInCombat or RC.resRC
+    end
+end
+
+function buildCheckerList(unitType, inCombat)
+	RC:init()
+	local RCCheckerList = getRCCheckerList(unitType, inCombat)
+	local dist = LUF.db.profile.range.dist
+	local lines = {}
+	local found = false
+	for _, entry in ipairs(RCCheckerList) do
+		if entry.info and entry.range then
+			local info = entry.info
+			--localize the info text
+			info = info:gsub("spell", STAT_CATEGORY_SPELL , 1)
+			info = info:gsub("interact", UNIT_FRAME_DROPDOWN_SUBSECTION_TITLE_INTERACT, 1)
+			local itemID = tonumber(info:match("item:(%d+)"))  -- extract the number
+			if itemID then
+				-- Classic / cached version
+				local name = GetItemInfo(itemID)
+				info = HELPFRAME_ITEM_TITLE .. ":" .. (name or itemID)
+			end
+
+			info = L["Range"]..": " .. tostring(entry.range) .. "  " .. info
+			if entry.range <= dist and not found then
+                info = "|cff00ff00" .. info .. "|r"
+                found = true
+            end
+			lines[#lines + 1] = info
+		end
+	end
+	return table.concat(lines, "\n")
+end
+
 
 local InfoTags = {
 	["numtargeting"] = true,
@@ -937,6 +984,86 @@ function LUF:CreateConfig()
 					desc = L["Enable or disable range checking."],
 					type = "toggle",
 					order = 1,
+				},
+				friendlyH = {
+					name = FRIENDLY .. " " .. L["Range"],
+					type = "header",
+					order = 2,
+				},
+				friendly = {
+					name = function() return buildCheckerList("friend") end,
+					type = "description",
+					order = 3,
+				},
+				friendlyCH = {
+					name = FRIENDLY .." " .. COMBAT .. " " .. L["Range"],
+					type = "header",
+					order = 4,
+				},
+				friendlyC = {
+					name = function() return buildCheckerList("friend", true) end,
+					type = "description",
+					order = 5,
+				},
+				resH = {
+					name = RESURRECT .. " " .. L["Range"],
+					type = "header",
+					order = 6,
+				},
+				res = {
+					name = function() return buildCheckerList("res") end,
+					type = "description",
+					order = 7,
+				},
+				resCH = {
+					name = RESURRECT .." " .. COMBAT .. " " .. L["Range"],
+					type = "header",
+					order = 8,
+				},
+				resC = {
+					name = function() return buildCheckerList("res", true) end,
+					type = "description",
+					order = 9,
+				},
+				enemyH = {
+					name = ENEMY .. " " .. L["Range"],
+					type = "header",
+					order = 10,
+				},
+				enemy = {
+					name = function() return buildCheckerList("harm", false) end,
+					type = "description",
+					order = 11,
+				},
+				enemyCH = {
+					name = ENEMY .." " .. COMBAT .. " " .. L["Range"],
+					type = "header",
+					order = 12,
+				},
+				enemyC = {
+					name = function() return buildCheckerList("harm", true) end,
+					type = "description",
+					order = 13,
+				},
+				petH = {
+					name = PET .. " " .. L["Range"],
+					type = "header",
+					order = 14,
+				},
+				pet = {
+					name = function() return buildCheckerList("pet") end,
+					type = "description",
+					order = 15,
+				},
+				petCH = {
+					name = PET .." " .. COMBAT .. " " .. L["Range"],
+					type = "header",
+					order = 16,
+				},
+				petC = {
+					name = function() return buildCheckerList("pet", true) end,
+					type = "description",
+					order = 17,
 				},
 			},
 		},
@@ -4111,6 +4238,96 @@ function LUF:CreateConfig()
 					order = 11,
 					values = {["LEFT"] = L["Left Group"], ["RIGHT"] = L["Right Group"], ["CENTER"] = L["Center Group"]},
 				},
+				gap1 = {
+					type = "description",
+					name = " ",
+					order = 12,
+				},
+				colorMode = {
+					name = COLOR .. " " .. TYPE,
+					type = "select",
+					order = 13,
+					values = {
+						classic = CLASSIC_STYLE,
+						matchTotems = "Match Totem Colors",
+						custom  = CUSTOM,
+						totemCaddy = "Totem Caddy",
+					},
+					get = function()
+						return LUF.db.profile.units.player.totemBar.colorMode
+					end,
+					set = function(info, v)
+						LUF.db.profile.units.player.totemBar.colorMode = v
+						if v == "matchTotems" then
+							LUF.db.profile.colors.totems = CopyTable(LUF.defaults.profile.colors.totems)
+						elseif v == "classic" then
+							LUF.db.profile.colors.totems = CopyTable(LUF.defaults.profile.colors.totemsClassic)
+						elseif v == "totemCaddy" then
+							LUF.db.profile.colors.totems = CopyTable(LUF.defaults.profile.colors.totemsCaddy)
+						end
+						LUF:ReloadAll()
+					end,
+				},
+				gap2 = {
+					type = "description",
+					name = " ",
+					order = 14,
+				},
+				fireColor = {
+					name = BINDING_NAME_MULTICASTACTIONBUTTON2 or "Fire Totem",
+					type = "color",
+					order = 15,
+					disabled = function() return LUF.db.profile.units.player.totemBar.colorMode ~= "custom" end,
+					get = function()
+						local c = LUF.db.profile.colors.totems[1]; return c[1],c[2],c[3]
+					end,
+					set = function(info,r,g,b)
+						local c = LUF.db.profile.colors.totems[1]; c[1],c[2],c[3] = r,g,b
+						LUF:ReloadAll()
+					end,
+				},
+
+				earthColor = {
+					name = BINDING_NAME_MULTICASTACTIONBUTTON5 or "Earth Totem",
+					type = "color",
+					order = 16,
+					disabled = function() return LUF.db.profile.units.player.totemBar.colorMode ~= "custom" end,
+					get = function()
+						local c = LUF.db.profile.colors.totems[2]; return c[1],c[2],c[3]
+					end,
+					set = function(info,r,g,b)
+						local c = LUF.db.profile.colors.totems[2]; c[1],c[2],c[3] = r,g,b
+						LUF:ReloadAll()
+					end,
+				},
+
+				waterColor = {
+					name = BINDING_NAME_MULTICASTACTIONBUTTON3 or "Water Totem",
+					type = "color",
+					order = 17,
+					disabled = function() return LUF.db.profile.units.player.totemBar.colorMode ~= "custom" end,
+					get = function()
+						local c = LUF.db.profile.colors.totems[3]; return c[1],c[2],c[3]
+					end,
+					set = function(info,r,g,b)
+						local c = LUF.db.profile.colors.totems[3]; c[1],c[2],c[3] = r,g,b
+						LUF:ReloadAll()
+					end,
+				},
+
+				airColor = {
+					name = BINDING_NAME_MULTICASTACTIONBUTTON4 or "Air Totem",
+					type = "color",
+					order = 18,
+					disabled = function() return LUF.db.profile.units.player.totemBar.colorMode ~= "custom" end,
+					get = function()
+						local c = LUF.db.profile.colors.totems[4]; return c[1],c[2],c[3]
+					end,
+					set = function(info,r,g,b)
+						local c = LUF.db.profile.colors.totems[4]; c[1],c[2],c[3] = r,g,b
+						LUF:ReloadAll()
+					end,
+				},
 			},
 		},
 		["comboPoints"] = {
@@ -4396,18 +4613,29 @@ function LUF:CreateConfig()
 					},
 					range = {
 						name = L["Distance"],
-						desc = L["Distance to measure"],
-						type = "select",
+						desc = L["Distance to measure"] .. "\nLibRangeCheck-3.0." .. RCminor,
+						type = "range",
 						order = 20,
-						values = {[10] = L["Inspect distance"], [30] = L["Follow distance"], [40] = L["Spell based"], [100] = L["Is Visible"], },
+						min = 10,        -- minimum value
+						max = 100,       -- maximum value
+						step = 1,        -- increment step
+						bigStep = 5,     -- optional, for dragging
 						get = function(info) return LUF.db.profile.range.dist end,
 						set = function(info, value) LUF.db.profile.range.dist = value LUF:ReloadAll() end,
+					},
+					rangeNoItems = {
+						name = L["Distance"].. " ".. TYPE ,
+						type = "select",
+						order = 21,
+						values = {[true] = L["Spell based"], [false] = L["Spell based"].. " / " .. ITEMS .. " (" .. SLOW .. ")"},
+						get = function(info) return LUF.db.profile.range.noItems end, 
+						set = function(info, value) LUF.db.profile.range.noItems = value LUF:ReloadAll() end,
 					},
 					alpha = {
 						name = OPACITY,
 						desc = L["Set the alpha."],
 						type = "range",
-						order = 21,
+						order = 22,
 						min = 0,
 						max = 1,
 						step = 0.01,

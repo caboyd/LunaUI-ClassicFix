@@ -483,19 +483,13 @@ function LUF:HideBlizzardFrames()
 		LUF.db.profile.hidden = LUF.defaults.profile.hidden
 	end
 	
-	if( LUF.db.profile.hidden.cast ) then
+	if( LUF.db.profile.hidden.cast and not active_hiddens.cast ) then
 		if(CastingBarFrame) then
 			handleFrame(CastingBarFrame)
 		elseif(PlayerCastingBarFrame) then
 			handleFrame(PlayerCastingBarFrame)
 		end
 		active_hiddens.cast = true
-	elseif( not LUF.db.profile.hidden.cast and not active_hiddens.cast ) then
-		if(CastingBarFrame_OnLoad) then
-			CastingBarFrame_OnLoad(CastingBarFrame, "player", true, false) --restore castbar as oUF kills it
-		elseif PlayerCastingBarFrame and PlayerCastingBarFrame.OnLoad then
-			PlayerCastingBarFrame:OnLoad()
-		end
 	end
 
 	if( CompactRaidFrameManager ) then
@@ -558,6 +552,7 @@ function LUF:HideBlizzardFrames()
 
 	if( ArenaAndFocusExists and LUF.db.profile.hidden.focus and not active_hiddens.focus ) then
 		handleFrame(FocusFrame)
+		handleFrame(FocusFrameToT)
 	end
 
 	if( LUF.db.profile.hidden.target and not active_hiddens.target ) then
@@ -567,10 +562,17 @@ function LUF:HideBlizzardFrames()
 	end
 
 	if( LUF.db.profile.hidden.party and not active_hiddens.party ) then
-		for i = 1, MAX_PARTY_MEMBERS do
-			handleFrame(string.format("PartyMemberFrame%d", i))
+		if( PartyFrame ) then
+			handleFrame(PartyFrame)
+			for memberFrame in PartyFrame.PartyMemberFramePool:EnumerateActive() do
+				handleFrame(memberFrame)
+			end
+			PartyFrame.PartyMemberFramePool:ReleaseAll()
+		else
+			for i = 1, MAX_PARTY_MEMBERS do
+				handleFrame(string.format("PartyMemberFrame%d", i))
+			end
 		end
-		handleFrame(PartyFrame)
 	end
 
 	if( ArenaAndFocusExists and LUF.db.profile.hidden.arena and not active_hiddens.arena ) then
@@ -686,12 +688,7 @@ local moduleSettings = {
 	end,
 	totemBar = function(mod, config)
 		local texture = LUF:LoadMedia(SML.MediaType.STATUSBAR, config.statusbar)
-		local totemColors = {
-			[1] = {1,0,0},
-			[2] = {0.78,0.61,0.43},
-			[3] = {0,0,1},
-			[4] = {0.41,0.8,0.94},
-		}
+		local totemColors = LUF.db.profile.colors.totems
 		mod.Totems.disableTimer = not config.timer
 		for i=1, 4 do
 			local totem = mod.Totems[i]

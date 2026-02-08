@@ -3,10 +3,13 @@
 ## Title: Luna Unit Frames
 ## Notes: 
 ## Author: Aviana, caboyd
-## Version: 4413
+## Version: 4414
 ## Source: https://github.com/caboyd/LunaUI-ClassicFix
 ## SavedVariables: LunaUFDB
 ## OptionalDeps: Ace3, LibSharedMedia-3.0, AceGUI-3.0-SharedMediaWidgets, Clique
+## Category: Unit Frames
+## IconTexture: Interface\Addons\LunaUnitFrames\media\textures\icon.tga
+
 ## X-License: WTFPL (http://www.wtfpl.net/about/)
 ## X-Donate: https://ko-fi.com/caboyd
 
@@ -24,6 +27,7 @@ libs\LibHealComm-4.0\LibHealComm-4.0.xml
 libs\LibAuraTypes\LibAuraTypes.lua
 libs\LibSpellLocks\LibSpellLocks.lua
 libs\LibTargeted\LibTargeted.lua
+libs\LibRangeCheck-3.0\LibRangeCheck-3.0.lua
 
 # oUF
 libs\oUF\init.lua

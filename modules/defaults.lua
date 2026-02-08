@@ -34,7 +34,7 @@ function LUF:LoadDefaults()
 			omnicc = false,
 			blizzardcc = false,
 			strata = "MEDIUM",
-			range = { dist = 40, alpha = 0.4 },
+			range = { dist = 40, alpha = 0.4, noItems = true },
 		},
 	}
 
@@ -95,7 +95,25 @@ function LUF:LoadDefaults()
 		mouseover = {r = 0.75, g = 0.75, b = 0.50}, --???
 		ticker = {r = 1, g = 1, b = 1, a = 1},
 		tickerBG = {r = 0, g = 0, b = 0, a = 1},
-	}
+		totems = {
+			[1] = {0.90, 0.30, 0.15},
+			[2] = {0.15, 0.9, 0.21},
+			[3] = {0.15, 0.8, 0.9},
+			[4] = {0.28, 0.15, 0.9},
+		},
+		totemsClassic = {
+			[1] = {1,0,0},
+			[2] = {0.78,0.61,0.43},
+			[3] = {0,0,1},
+			[4] = {0.41,0.8,0.94},
+		},
+		totemsCaddy = {
+			[1] = {1,0.2,0},
+			[2] = {0.5,1,0.2},
+			[3] = {0.3,0.8,0.9},
+			[4] = {0.7,0.7,0.9},
+		},
+	}	
 	self.defaults.profile.units = {
 		player = {
 			enabled = true,
@@ -108,7 +126,7 @@ function LUF:LoadDefaults()
 			xpBar = { enabled = false, height = 2, order = 80, background = false, backgroundAlpha = 0.2, alpha = 1, autoHide = true, posSlot = "CENTER" },
 			emptyBar = { enabled = false, height = 3, order = 50, reactionType="npc", class = true, alpha = 0.2, posSlot = "CENTER"},
 			druidBar = {enabled = false, autoHide = true, order = 70, height = 3, background = true, backgroundAlpha = 0.2, posSlot = "CENTER" },
-			totemBar = {enabled = false, order = 70, height = 2, background = true, backgroundAlpha = 0.2, fontsize = 8, autoHide = true, posSlot = "CENTER"},
+			totemBar = {enabled = false, order = 70, height = 2, background = true, backgroundAlpha = 0.2, fontsize = 8, autoHide = true, posSlot = "CENTER", colorMode = "classic"},
 			comboPoints = {enabled = false, background = true, backgroundAlpha = 0.2, autoHide = true, order = 70, growth = "RIGHT", height = 2, posSlot = "CENTER"},
 			highlight = { enabled = true, debuff = 2 },
 			borders = { enabled = true, debuff = 2, size = 1 },
