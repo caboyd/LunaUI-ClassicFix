@@ -688,12 +688,7 @@ local moduleSettings = {
 	end,
 	totemBar = function(mod, config)
 		local texture = LUF:LoadMedia(SML.MediaType.STATUSBAR, config.statusbar)
-		local totemColors = {
-			[1] = {1,0,0},
-			[2] = {0.78,0.61,0.43},
-			[3] = {0,0,1},
-			[4] = {0.41,0.8,0.94},
-		}
+		local totemColors = LUF.db.profile.colors.totems
 		mod.Totems.disableTimer = not config.timer
 		for i=1, 4 do
 			local totem = mod.Totems[i]

@@ -4238,6 +4238,96 @@ function LUF:CreateConfig()
 					order = 11,
 					values = {["LEFT"] = L["Left Group"], ["RIGHT"] = L["Right Group"], ["CENTER"] = L["Center Group"]},
 				},
+				gap1 = {
+					type = "description",
+					name = " ",
+					order = 12,
+				},
+				colorMode = {
+					name = COLOR .. " " .. TYPE,
+					type = "select",
+					order = 13,
+					values = {
+						classic = CLASSIC_STYLE,
+						matchTotems = "Match Totem Colors",
+						custom  = CUSTOM,
+						totemCaddy = "Totem Caddy",
+					},
+					get = function()
+						return LUF.db.profile.units.player.totemBar.colorMode
+					end,
+					set = function(info, v)
+						LUF.db.profile.units.player.totemBar.colorMode = v
+						if v == "matchTotems" then
+							LUF.db.profile.colors.totems = CopyTable(LUF.defaults.profile.colors.totems)
+						elseif v == "classic" then
+							LUF.db.profile.colors.totems = CopyTable(LUF.defaults.profile.colors.totemsClassic)
+						elseif v == "totemCaddy" then
+							LUF.db.profile.colors.totems = CopyTable(LUF.defaults.profile.colors.totemsCaddy)
+						end
+						LUF:ReloadAll()
+					end,
+				},
+				gap2 = {
+					type = "description",
+					name = " ",
+					order = 14,
+				},
+				fireColor = {
+					name = BINDING_NAME_MULTICASTACTIONBUTTON2 or "Fire Totem",
+					type = "color",
+					order = 15,
+					disabled = function() return LUF.db.profile.units.player.totemBar.colorMode ~= "custom" end,
+					get = function()
+						local c = LUF.db.profile.colors.totems[1]; return c[1],c[2],c[3]
+					end,
+					set = function(info,r,g,b)
+						local c = LUF.db.profile.colors.totems[1]; c[1],c[2],c[3] = r,g,b
+						LUF:ReloadAll()
+					end,
+				},
+
+				earthColor = {
+					name = BINDING_NAME_MULTICASTACTIONBUTTON5 or "Earth Totem",
+					type = "color",
+					order = 16,
+					disabled = function() return LUF.db.profile.units.player.totemBar.colorMode ~= "custom" end,
+					get = function()
+						local c = LUF.db.profile.colors.totems[2]; return c[1],c[2],c[3]
+					end,
+					set = function(info,r,g,b)
+						local c = LUF.db.profile.colors.totems[2]; c[1],c[2],c[3] = r,g,b
+						LUF:ReloadAll()
+					end,
+				},
+
+				waterColor = {
+					name = BINDING_NAME_MULTICASTACTIONBUTTON3 or "Water Totem",
+					type = "color",
+					order = 17,
+					disabled = function() return LUF.db.profile.units.player.totemBar.colorMode ~= "custom" end,
+					get = function()
+						local c = LUF.db.profile.colors.totems[3]; return c[1],c[2],c[3]
+					end,
+					set = function(info,r,g,b)
+						local c = LUF.db.profile.colors.totems[3]; c[1],c[2],c[3] = r,g,b
+						LUF:ReloadAll()
+					end,
+				},
+
+				airColor = {
+					name = BINDING_NAME_MULTICASTACTIONBUTTON4 or "Air Totem",
+					type = "color",
+					order = 18,
+					disabled = function() return LUF.db.profile.units.player.totemBar.colorMode ~= "custom" end,
+					get = function()
+						local c = LUF.db.profile.colors.totems[4]; return c[1],c[2],c[3]
+					end,
+					set = function(info,r,g,b)
+						local c = LUF.db.profile.colors.totems[4]; c[1],c[2],c[3] = r,g,b
+						LUF:ReloadAll()
+					end,
+				},
 			},
 		},
 		["comboPoints"] = {
