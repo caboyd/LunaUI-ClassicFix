@@ -993,7 +993,7 @@ function LUF:CreateConfig()
 					order = 20,
 				},
 				partyraid = {
-					name = function() return L["Range"].. ":40 UnitInRange(unit)" end,
+					name = function() return "|cff00ff00" .. L["Range"].. ":40 UnitInRange(unit)|r" end,
 					type = "description",
 					order = 30,
 				},
