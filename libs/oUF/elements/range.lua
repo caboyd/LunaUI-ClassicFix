@@ -47,17 +47,27 @@ local function Update(self, event)
 		element:PreUpdate()
 	end
 
-	local range
+	
+	local inRange, checkedRange = false, false
 	local connected = UnitIsConnected(unit)
-	if(connected) then
-		local minRange, maxRange = RC:GetRange(unit, true, LUF.db.profile.range.noItems) -- (unit, checkVisible, noItems)
-		range = maxRange or 100
-		element.__owner.currRange = range	
-		if(range > element.range) then	
-			self:SetAlpha(element.outsideAlpha)
+	if connected then
+		local minRange, maxRange = RC:GetRange(unit, true, LUF.db.profile.range.noItems)
+
+		if maxRange then
+			distance = maxRange
+			inRange = distance <= element.range
+			checkedRange = true
 		else
-			self:SetAlpha(element.insideAlpha)
+			-- party/raid units
+			local ir, cr = UnitInRange(unit)
+			if cr then
+				inRange, checkedRange = ir, cr
+				distance = ir and 40 or 1000
+			end
 		end
+
+		element.__owner.currRange = distance
+		self:SetAlpha(inRange and element.insideAlpha or element.outsideAlpha)
 	else
 		self:SetAlpha(element.insideAlpha)
 	end

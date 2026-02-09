@@ -22,6 +22,8 @@ function getRCCheckerList(unitType, inCombat)
         return inCombat and RC.petRCInCombat or RC.petRC
     elseif unitType == "res" then
         return inCombat and RC.resRCInCombat or RC.resRC
+	elseif unitType == "misc" then
+        return inCombat and RC.miscRCInCombat or RC.miscRC
     end
 end
 
@@ -44,7 +46,7 @@ function buildCheckerList(unitType, inCombat)
 				info = HELPFRAME_ITEM_TITLE .. ":" .. (name or itemID)
 			end
 
-			info = L["Range"]..": " .. tostring(entry.range) .. "  " .. info
+			info = L["Range"]..":" .. tostring(entry.range) .. " " .. info
 			if entry.range <= dist and not found then
                 info = "|cff00ff00" .. info .. "|r"
                 found = true
@@ -985,6 +987,16 @@ function LUF:CreateConfig()
 					type = "toggle",
 					order = 1,
 				},
+				partyraidH = {
+					name = RAID .. "/" .. PARTY .. " " .. L["Range"],
+					type = "header",
+					order = 2,
+				},
+				partyraid = {
+					name = function() return L["Range"].. ":40 UnitInRange(unit)" end,
+					type = "description",
+					order = 3,
+				},
 				friendlyH = {
 					name = FRIENDLY .. " " .. L["Range"],
 					type = "header",
@@ -1062,6 +1074,26 @@ function LUF:CreateConfig()
 				},
 				petC = {
 					name = function() return buildCheckerList("pet", true) end,
+					type = "description",
+					order = 17,
+				},
+				miscH = {
+					name = NPC .. "/" .. DEAD .. " " .. L["Range"],
+					type = "header",
+					order = 14,
+				},
+				misc = {
+					name = function() return buildCheckerList("misc") end,
+					type = "description",
+					order = 15,
+				},
+				miscCH = {
+					name = NPC .. "/" .. DEAD .. " " .. COMBAT .. " " .. L["Range"],
+					type = "header",
+					order = 16,
+				},
+				miscC = {
+					name = function() return buildCheckerList("misc", true) end,
 					type = "description",
 					order = 17,
 				},
