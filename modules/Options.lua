@@ -1078,7 +1078,7 @@ function LUF:CreateConfig()
 					order = 17,
 				},
 				miscH = {
-					name = NPC .. "/" .. DEAD .. " " .. L["Range"],
+					name = NPC_NAMES_DROPDOWN_ALL  .. "/" .. DEAD .. " " .. L["Range"],
 					type = "header",
 					order = 14,
 				},
@@ -1088,7 +1088,7 @@ function LUF:CreateConfig()
 					order = 15,
 				},
 				miscCH = {
-					name = NPC .. "/" .. DEAD .. " " .. COMBAT .. " " .. L["Range"],
+					name = NPC_NAMES_DROPDOWN_ALL  .. "/" .. DEAD .. " " .. COMBAT .. " " .. L["Range"],
 					type = "header",
 					order = 16,
 				},
