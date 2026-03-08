@@ -3,7 +3,7 @@
 ## Title: Luna Unit Frames
 ## Notes: 
 ## Author: Aviana, caboyd
-## Version: 4414
+## Version: 4415
 ## Source: https://github.com/caboyd/LunaUI-ClassicFix
 ## SavedVariables: LunaUFDB
 ## OptionalDeps: Ace3, LibSharedMedia-3.0, AceGUI-3.0-SharedMediaWidgets, Clique
@@ -48,6 +48,7 @@ libs\oUF\elements\masterlooterindicator.lua
 libs\oUF\elements\power.lua
 libs\oUF\elements\powerprediction.lua
 libs\oUF\elements\pvpindicator.lua
+libs\oUF\elements\grouproleindicator.lua
 libs\oUF\elements\raidroleindicator.lua
 libs\oUF\elements\raidtargetindicator.lua
 libs\oUF\elements\range.lua
