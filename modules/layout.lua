@@ -548,6 +548,7 @@ LUF.IndicatorData = {
 	status = { name = "StatusIndicator", layer = "OVERLAY" },
 	rezz = { name = "ResurrectIndicator", layer = "OVERLAY" },
 	role = { name = "RaidRoleIndicator", layer = "OVERLAY" },
+	groupRole = { name = "GroupRoleIndicator", layer = "OVERLAY" },
 }
 
 function LUF.InitializeUnit(frame, unit, notHeaderChild)
