@@ -471,6 +471,15 @@ local L = {
 ["Search Results"] = "搜尋結果",
 ["No auras added yet"] = "此篩選器中尚未新增光環。使用上方的搜尋來查找和新增光環。",
 ["Filter name already exists"] = "已存在同名篩選器。請選擇其他名稱。",
+["Select filter lists to apply to buffs"] = "選擇套用於增益的篩選列表",
+["Select filter lists to apply to debuffs"] = "選擇套用於減益的篩選列表",
+["Rename"] = "重新命名",
+["Rename this filter list"] = "為此篩選列表輸入新名稱",
+["Export"] = "匯出",
+["Export string desc"] = "複製此字串以分享篩選列表。全選並複製（Ctrl+C）。",
+["Import"] = "匯入",
+["Import desc"] = "在此處貼上匯出的篩選字串。格式：篩選器名稱:id1,id2,id3",
+["Import format error"] = "匯入格式無效。預期格式：篩選器名稱:id1,id2,id3",
 }
 
 local LUF = select(2, ...)

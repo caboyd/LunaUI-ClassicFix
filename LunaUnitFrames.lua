@@ -958,11 +958,32 @@ function LUF.ApplySettings(frame)
 		-- Spell ID Filters
 		local auraFilters = AuraConfig.filters
 		if auraFilters then
-			local buffListName = auraFilters.buffs
-			local debuffListName = auraFilters.debuffs
-			Auras.buffFilterList = (buffListName and buffListName ~= "" and auraFilters.buffMode and auraFilters.buffMode ~= "disabled") and LUF.db.profile.filters[buffListName] or nil
+			-- Helper to merge multiple filter lists into one lookup table
+			local function mergeFilterLists(listNames, mode)
+				if not listNames or mode == "disabled" then return nil end
+				-- Support legacy single string or new table of strings
+				if type(listNames) == "string" then
+					if listNames == "" then return nil end
+					return LUF.db.profile.filters and LUF.db.profile.filters[listNames] or nil
+				end
+				-- Table of list names
+				if type(listNames) ~= "table" or not next(listNames) then return nil end
+				local merged = {}
+				local hasAny = false
+				for _, name in pairs(listNames) do
+					local list = LUF.db.profile.filters and LUF.db.profile.filters[name]
+					if list then
+						for spellId in pairs(list) do
+							merged[spellId] = true
+							hasAny = true
+						end
+					end
+				end
+				return hasAny and merged or nil
+			end
+			Auras.buffFilterList = mergeFilterLists(auraFilters.buffs, auraFilters.buffMode)
 			Auras.buffFilterMode = auraFilters.buffMode or "disabled"
-			Auras.debuffFilterList = (debuffListName and debuffListName ~= "" and auraFilters.debuffMode and auraFilters.debuffMode ~= "disabled") and LUF.db.profile.filters[debuffListName] or nil
+			Auras.debuffFilterList = mergeFilterLists(auraFilters.debuffs, auraFilters.debuffMode)
 			Auras.debuffFilterMode = auraFilters.debuffMode or "disabled"
 		else
 			Auras.buffFilterList = nil

@@ -1441,26 +1441,52 @@ function LUF:CreateConfig()
 					inline = true,
 					args = {
 						filterbufflist = {
-							name = L["Buff Filter List"],
-							desc = L["Select a filter list to apply to buffs"],
-							type = "select",
+							name = L["Select filter lists to apply to buffs"],
+							type = "multiselect",
 							order = 1,
 							width = "double",
 							values = function()
-								local t = {[""] = L["No Filter"]}
+								local t = {}
 								for name in pairs(LUF.db.profile.filters or {}) do
 									t[name] = name
 								end
 								return t
 							end,
-							get = function(info)
+							get = function(info, key)
 								local db = LUF.db.profile.units[info[1]].auras.filters
-								return db and db.buffs or ""
+								if not db or not db.buffs then return false end
+								-- Legacy string support
+								if type(db.buffs) == "string" then return db.buffs == key end
+								if type(db.buffs) == "table" then
+									for _, v in pairs(db.buffs) do
+										if v == key then return true end
+									end
+								end
+								return false
 							end,
-							set = function(info, value)
+							set = function(info, key, value)
 								local auras = LUF.db.profile.units[info[1]].auras
 								if not auras.filters then auras.filters = {} end
-								auras.filters.buffs = value
+								-- Migrate legacy string to table
+								if type(auras.filters.buffs) == "string" then
+									local old = auras.filters.buffs
+									auras.filters.buffs = {}
+									if old ~= "" then tinsert(auras.filters.buffs, old) end
+								end
+								if not auras.filters.buffs then auras.filters.buffs = {} end
+								if value then
+									-- Add if not already present
+									local found = false
+									for _, v in pairs(auras.filters.buffs) do
+										if v == key then found = true break end
+									end
+									if not found then tinsert(auras.filters.buffs, key) end
+								else
+									-- Remove
+									for i, v in ipairs(auras.filters.buffs) do
+										if v == key then tremove(auras.filters.buffs, i) break end
+									end
+								end
 								LUF:Reload(info[1])
 							end,
 						},
@@ -1483,7 +1509,11 @@ function LUF:CreateConfig()
 							end,
 							hidden = function(info)
 								local db = LUF.db.profile.units[info[1]].auras.filters
-								return not db or not db.buffs or db.buffs == ""
+								if not db then return true end
+								local buffs = db.buffs
+								if type(buffs) == "string" then return buffs == "" end
+								if type(buffs) == "table" then return not next(buffs) end
+								return true
 							end,
 						},
 					},
@@ -1495,26 +1525,48 @@ function LUF:CreateConfig()
 					inline = true,
 					args = {
 						filterdebufflist = {
-							name = L["Debuff Filter List"],
-							desc = L["Select a filter list to apply to debuffs"],
-							type = "select",
+							name = L["Select filter lists to apply to debuffs"],
+							type = "multiselect",
 							order = 1,
 							width = "double",
 							values = function()
-								local t = {[""] = L["No Filter"]}
+								local t = {}
 								for name in pairs(LUF.db.profile.filters or {}) do
 									t[name] = name
 								end
 								return t
 							end,
-							get = function(info)
+							get = function(info, key)
 								local db = LUF.db.profile.units[info[1]].auras.filters
-								return db and db.debuffs or ""
+								if not db or not db.debuffs then return false end
+								if type(db.debuffs) == "string" then return db.debuffs == key end
+								if type(db.debuffs) == "table" then
+									for _, v in pairs(db.debuffs) do
+										if v == key then return true end
+									end
+								end
+								return false
 							end,
-							set = function(info, value)
+							set = function(info, key, value)
 								local auras = LUF.db.profile.units[info[1]].auras
 								if not auras.filters then auras.filters = {} end
-								auras.filters.debuffs = value
+								if type(auras.filters.debuffs) == "string" then
+									local old = auras.filters.debuffs
+									auras.filters.debuffs = {}
+									if old ~= "" then tinsert(auras.filters.debuffs, old) end
+								end
+								if not auras.filters.debuffs then auras.filters.debuffs = {} end
+								if value then
+									local found = false
+									for _, v in pairs(auras.filters.debuffs) do
+										if v == key then found = true break end
+									end
+									if not found then tinsert(auras.filters.debuffs, key) end
+								else
+									for i, v in ipairs(auras.filters.debuffs) do
+										if v == key then tremove(auras.filters.debuffs, i) break end
+									end
+								end
 								LUF:Reload(info[1])
 							end,
 						},
@@ -1537,7 +1589,11 @@ function LUF:CreateConfig()
 							end,
 							hidden = function(info)
 								local db = LUF.db.profile.units[info[1]].auras.filters
-								return not db or not db.debuffs or db.debuffs == ""
+								if not db then return true end
+								local debuffs = db.debuffs
+								if type(debuffs) == "string" then return debuffs == "" end
+								if type(debuffs) == "table" then return not next(debuffs) end
+								return true
 							end,
 						},
 					},
@@ -10422,16 +10478,29 @@ function LUF:CreateConfig()
 						hidden = function() return not LUF._selectedFilter end,
 						func = function()
 							if LUF._selectedFilter and LUF.db.profile.filters then
-								LUF.db.profile.filters[LUF._selectedFilter] = nil
+								local delName = LUF._selectedFilter
+								LUF.db.profile.filters[delName] = nil
+								-- Clean up references in all unit configs (supports both string and table)
 								for _, unitCfg in pairs(LUF.db.profile.units) do
 									if unitCfg.auras and unitCfg.auras.filters then
-										if unitCfg.auras.filters.buffs == LUF._selectedFilter then
-											unitCfg.auras.filters.buffs = ""
-											unitCfg.auras.filters.buffMode = "disabled"
+										local f = unitCfg.auras.filters
+										if type(f.buffs) == "string" and f.buffs == delName then
+											f.buffs = ""
+											f.buffMode = "disabled"
+										elseif type(f.buffs) == "table" then
+											for i, v in ipairs(f.buffs) do
+												if v == delName then tremove(f.buffs, i) break end
+											end
+											if not next(f.buffs) then f.buffMode = "disabled" end
 										end
-										if unitCfg.auras.filters.debuffs == LUF._selectedFilter then
-											unitCfg.auras.filters.debuffs = ""
-											unitCfg.auras.filters.debuffMode = "disabled"
+										if type(f.debuffs) == "string" and f.debuffs == delName then
+											f.debuffs = ""
+											f.debuffMode = "disabled"
+										elseif type(f.debuffs) == "table" then
+											for i, v in ipairs(f.debuffs) do
+												if v == delName then tremove(f.debuffs, i) break end
+											end
+											if not next(f.debuffs) then f.debuffMode = "disabled" end
 										end
 									end
 								end
@@ -10440,6 +10509,156 @@ function LUF:CreateConfig()
 								ACR:NotifyChange("LunaUnitFrames")
 							end
 						end,
+					},
+					renameheader = {
+						name = "",
+						type = "header",
+						order = 5.5,
+						hidden = function() return not LUF._selectedFilter end,
+					},
+					renameinput = {
+						name = L["Rename"],
+						desc = L["Rename this filter list"],
+						type = "input",
+						order = 6,
+						hidden = function() return not LUF._selectedFilter end,
+						get = function() return LUF._renameFilterName or "" end,
+						set = function(info, value) LUF._renameFilterName = value LUF._renameFilterError = nil end,
+					},
+					renameerror = {
+						name = function() return "|cffff4444" .. (LUF._renameFilterError or "") .. "|r" end,
+						type = "description",
+						order = 6.3,
+						hidden = function() return not LUF._renameFilterError end,
+					},
+					renameconfirm = {
+						name = L["Rename"],
+						type = "execute",
+						order = 6.5,
+						width = "half",
+						hidden = function() return not LUF._selectedFilter end,
+						disabled = function() return not LUF._renameFilterName or LUF._renameFilterName == "" end,
+						func = function()
+							local oldName = LUF._selectedFilter
+							local newName = LUF._renameFilterName
+							if not oldName or not newName or newName == "" then return end
+							if not LUF.db.profile.filters or not LUF.db.profile.filters[oldName] then return end
+							if newName == oldName then return end
+							if LUF.db.profile.filters[newName] then
+								LUF._renameFilterError = L["Filter name already exists"]
+								ACR:NotifyChange("LunaUnitFrames")
+								return
+							end
+							-- Move data
+							LUF.db.profile.filters[newName] = LUF.db.profile.filters[oldName]
+							LUF.db.profile.filters[oldName] = nil
+							-- Update all unit config references
+							for _, unitCfg in pairs(LUF.db.profile.units) do
+								if unitCfg.auras and unitCfg.auras.filters then
+									local f = unitCfg.auras.filters
+									if type(f.buffs) == "string" and f.buffs == oldName then
+										f.buffs = newName
+									elseif type(f.buffs) == "table" then
+										for i, v in ipairs(f.buffs) do
+											if v == oldName then f.buffs[i] = newName break end
+										end
+									end
+									if type(f.debuffs) == "string" and f.debuffs == oldName then
+										f.debuffs = newName
+									elseif type(f.debuffs) == "table" then
+										for i, v in ipairs(f.debuffs) do
+											if v == oldName then f.debuffs[i] = newName break end
+										end
+									end
+								end
+							end
+							LUF._selectedFilter = newName
+							LUF._renameFilterName = nil
+							LUF._renameFilterError = nil
+							LUF:ReloadAll()
+							ACR:NotifyChange("LunaUnitFrames")
+						end,
+					},
+					exportheader = {
+						name = L["Export"],
+						type = "header",
+						order = 7,
+						hidden = function() return not LUF._selectedFilter end,
+					},
+					exportstring = {
+						name = L["Export"],
+						desc = L["Export string desc"],
+						type = "input",
+						order = 7.5,
+						width = "full",
+						hidden = function() return not LUF._selectedFilter end,
+						get = function()
+							if not LUF._selectedFilter or not LUF.db.profile.filters then return "" end
+							local list = LUF.db.profile.filters[LUF._selectedFilter]
+							if not list then return "" end
+							local ids = {}
+							for id in pairs(list) do
+								tinsert(ids, tostring(id))
+							end
+							table.sort(ids, function(a,b) return tonumber(a) < tonumber(b) end)
+							return LUF._selectedFilter .. ":" .. table.concat(ids, ",")
+						end,
+						set = function() end, -- read-only
+					},
+					importheader = {
+						name = L["Import"],
+						type = "header",
+						order = 7.8,
+					},
+					importstring = {
+						name = L["Import"],
+						desc = L["Import desc"],
+						type = "input",
+						order = 8,
+						width = "full",
+						get = function() return "" end,
+						set = function(info, value)
+							if not value or value == "" then return end
+							-- Format: "FilterName:id1,id2,id3"
+							local name, idStr = value:match("^(.+):(.+)$")
+							if not name or not idStr then
+								LUF._importError = L["Import format error"]
+								ACR:NotifyChange("LunaUnitFrames")
+								return
+							end
+							name = strtrim(name)
+							if name == "" then
+								LUF._importError = L["Import format error"]
+								ACR:NotifyChange("LunaUnitFrames")
+								return
+							end
+							local newList = {}
+							local count = 0
+							for idPart in idStr:gmatch("[^,]+") do
+								local id = tonumber(strtrim(idPart))
+								if id then
+									newList[id] = true
+									count = count + 1
+								end
+							end
+							if count == 0 then
+								LUF._importError = L["Import format error"]
+								ACR:NotifyChange("LunaUnitFrames")
+								return
+							end
+							if not LUF.db.profile.filters then LUF.db.profile.filters = {} end
+							LUF.db.profile.filters[name] = newList
+							LUF._selectedFilter = name
+							LUF._importError = nil
+							LUF:ReloadAll()
+							ACR:NotifyChange("LunaUnitFrames")
+						end,
+					},
+					importerror = {
+						name = function() return "|cffff4444" .. (LUF._importError or "") .. "|r" end,
+						type = "description",
+						order = 8.5,
+						hidden = function() return not LUF._importError end,
 					},
 					spellsheader = {
 						name = L["Add Aura"],

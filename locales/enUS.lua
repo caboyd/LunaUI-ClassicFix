@@ -471,6 +471,15 @@ local L = {
 ["Search Results"] = "Search Results",
 ["No auras added yet"] = "No auras added to this filter yet. Use the search above to find and add auras.",
 ["Filter name already exists"] = "A filter with this name already exists. Please choose a different name.",
+["Select filter lists to apply to buffs"] = "Select filter lists to apply to buffs",
+["Select filter lists to apply to debuffs"] = "Select filter lists to apply to debuffs",
+["Rename"] = "Rename",
+["Rename this filter list"] = "Enter a new name for this filter list",
+["Export"] = "Export",
+["Export string desc"] = "Copy this string to share the filter list. Select all and copy (Ctrl+C).",
+["Import"] = "Import",
+["Import desc"] = "Paste an exported filter string here to import it. Format: FilterName:id1,id2,id3",
+["Import format error"] = "Invalid import format. Expected: FilterName:id1,id2,id3",
 }
 
 LUF.L = L

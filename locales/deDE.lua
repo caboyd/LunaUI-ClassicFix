@@ -472,6 +472,15 @@ local L = {
 ["Search Results"] = "Suchergebnisse",
 ["No auras added yet"] = "Noch keine Auren in diesem Filter. Verwende die Suche oben, um Auren zu finden und hinzuzuf\195\188gen.",
 ["Filter name already exists"] = "Ein Filter mit diesem Namen existiert bereits. Bitte w\195\164hle einen anderen Namen.",
+["Select filter lists to apply to buffs"] = "Filterlisten f\195\188r Buffs ausw\195\164hlen",
+["Select filter lists to apply to debuffs"] = "Filterlisten f\195\188r Debuffs ausw\195\164hlen",
+["Rename"] = "Umbenennen",
+["Rename this filter list"] = "Einen neuen Namen f\195\188r diese Filterliste eingeben",
+["Export"] = "Exportieren",
+["Export string desc"] = "Kopiere diese Zeichenkette, um die Filterliste zu teilen. Alles ausw\195\164hlen und kopieren (Strg+C).",
+["Import"] = "Importieren",
+["Import desc"] = "F\195\188ge eine exportierte Filterzeichenkette hier ein. Format: Filtername:id1,id2,id3",
+["Import format error"] = "Ung\195\188ltiges Importformat. Erwartet: Filtername:id1,id2,id3",
 }
 
 local LUF = select(2, ...)

@@ -469,6 +469,15 @@ local L = {
 ["Search Results"] = "검색 결과",
 ["No auras added yet"] = "이 필터에 아직 오라가 추가되지 않았습니다. 위의 검색을 사용하여 오라를 찾고 추가하세요.",
 ["Filter name already exists"] = "이 이름의 필터가 이미 존재합니다. 다른 이름을 선택해 주세요.",
+["Select filter lists to apply to buffs"] = "버프에 적용할 필터 목록 선택",
+["Select filter lists to apply to debuffs"] = "디버프에 적용할 필터 목록 선택",
+["Rename"] = "이름 변경",
+["Rename this filter list"] = "이 필터 목록의 새 이름을 입력하세요",
+["Export"] = "내보내기",
+["Export string desc"] = "이 문자열을 복사하여 필터 목록을 공유하세요. 전체 선택 후 복사 (Ctrl+C).",
+["Import"] = "가져오기",
+["Import desc"] = "내보낸 필터 문자열을 여기에 붙여넣으세요. 형식: 필터이름:id1,id2,id3",
+["Import format error"] = "잘못된 가져오기 형식입니다. 예상 형식: 필터이름:id1,id2,id3",
 }
 
 local LUF = select(2, ...)
