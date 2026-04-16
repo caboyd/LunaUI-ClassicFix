@@ -480,6 +480,8 @@ local L = {
 ["Import"] = "匯入",
 ["Import desc"] = "在此處貼上匯出的篩選字串。格式：篩選器名稱:id1,id2,id3",
 ["Import format error"] = "匯入格式無效。預期格式：篩選器名稱:id1,id2,id3",
+["Hide Create Form"] = "隱藏建立",
+["Hide Import"] = "隱藏匯入",
 }
 
 local LUF = select(2, ...)

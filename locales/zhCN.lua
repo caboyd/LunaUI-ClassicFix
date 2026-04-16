@@ -478,6 +478,8 @@ local L = {
 ["Import"] = "导入",
 ["Import desc"] = "在此处粘贴导出的过滤字符串。格式：过滤器名称:id1,id2,id3",
 ["Import format error"] = "导入格式无效。预期格式：过滤器名称:id1,id2,id3",
+["Hide Create Form"] = "隐藏创建",
+["Hide Import"] = "隐藏导入",
 }
 
 local LUF = select(2, ...)

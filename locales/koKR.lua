@@ -478,6 +478,8 @@ local L = {
 ["Import"] = "가져오기",
 ["Import desc"] = "내보낸 필터 문자열을 여기에 붙여넣으세요. 형식: 필터이름:id1,id2,id3",
 ["Import format error"] = "잘못된 가져오기 형식입니다. 예상 형식: 필터이름:id1,id2,id3",
+["Hide Create Form"] = "생성 숨기기",
+["Hide Import"] = "가져오기 숨기기",
 }
 
 local LUF = select(2, ...)

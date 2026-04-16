@@ -10392,58 +10392,148 @@ function LUF:CreateConfig()
 						type = "description",
 						order = 0.6,
 					},
-					newheader = {
-						name = L["New Filter List"],
-						type = "header",
+					togglecreate = {
+						name = function() return LUF._showCreateForm and L["Hide Create Form"] or L["New Filter List"] end,
+						type = "execute",
 						order = 1,
-					},
-					newname = {
-						name = L["New Filter List"],
-						desc = L["Name for the new filter list"],
-						type = "input",
-						order = 2,
-						get = function() return LUF._newFilterName or "" end,
-						set = function(info, value)
-							LUF._newFilterName = value
+						width = "normal",
+						func = function()
+							LUF._showCreateForm = not LUF._showCreateForm
 							LUF._filterNameError = nil
 							ACR:NotifyChange("LunaUnitFrames")
 						end,
 					},
-					nameerror = {
-						name = function()
-							return "|cffff4444" .. (LUF._filterNameError or "") .. "|r"
-						end,
-						type = "description",
-						order = 2.5,
-						hidden = function() return not LUF._filterNameError end,
-					},
-					create = {
-						name = L["Create"],
-						desc = L["Create a new filter list"],
+					toggleimport = {
+						name = function() return LUF._showImportForm and L["Hide Import"] or L["Import"] end,
 						type = "execute",
-						order = 3,
-						disabled = function() return not LUF._newFilterName or LUF._newFilterName == "" end,
+						order = 1.1,
+						width = "normal",
 						func = function()
-							local name = LUF._newFilterName
-							if name and name ~= "" then
-								if not LUF.db.profile.filters then LUF.db.profile.filters = {} end
-								if LUF.db.profile.filters[name] then
-									LUF._filterNameError = L["Filter name already exists"]
-									ACR:NotifyChange("LunaUnitFrames")
-									return
-								end
-								LUF.db.profile.filters[name] = {}
-								LUF._newFilterName = nil
-								LUF._filterNameError = nil
-								LUF._selectedFilter = name
-								ACR:NotifyChange("LunaUnitFrames")
-							end
+							LUF._showImportForm = not LUF._showImportForm
+							LUF._importError = nil
+							ACR:NotifyChange("LunaUnitFrames")
 						end,
 					},
+					-- Create form (toggled)
+					creategroup = {
+						name = L["New Filter List"],
+						type = "group",
+						order = 2,
+						inline = true,
+						hidden = function() return not LUF._showCreateForm end,
+						args = {
+							newname = {
+								name = L["Name for the new filter list"],
+								type = "input",
+								order = 1,
+								get = function() return LUF._newFilterName or "" end,
+								set = function(info, value)
+									LUF._newFilterName = value
+									LUF._filterNameError = nil
+									ACR:NotifyChange("LunaUnitFrames")
+								end,
+							},
+							create = {
+								name = L["Create"],
+								type = "execute",
+								order = 2,
+								width = "half",
+								disabled = function() return not LUF._newFilterName or LUF._newFilterName == "" end,
+								func = function()
+									local name = LUF._newFilterName
+									if name and name ~= "" then
+										if not LUF.db.profile.filters then LUF.db.profile.filters = {} end
+										if LUF.db.profile.filters[name] then
+											LUF._filterNameError = L["Filter name already exists"]
+											ACR:NotifyChange("LunaUnitFrames")
+											return
+										end
+										LUF.db.profile.filters[name] = {}
+										LUF._newFilterName = nil
+										LUF._filterNameError = nil
+										LUF._selectedFilter = name
+										LUF._showCreateForm = false
+										ACR:NotifyChange("LunaUnitFrames")
+									end
+								end,
+							},
+							nameerror = {
+								name = function() return "|cffff4444" .. (LUF._filterNameError or "") .. "|r" end,
+								type = "description",
+								order = 3,
+								hidden = function() return not LUF._filterNameError end,
+							},
+						},
+					},
+					-- Import form (toggled)
+					importgroup = {
+						name = L["Import"],
+						type = "group",
+						order = 2.5,
+						inline = true,
+						hidden = function() return not LUF._showImportForm end,
+						args = {
+							importdesc = {
+								name = "|cff888888" .. L["Import desc"] .. "|r",
+								type = "description",
+								order = 0,
+							},
+							importstring = {
+								name = L["Import"],
+								type = "input",
+								order = 1,
+								width = "double",
+								get = function() return "" end,
+								set = function(info, value)
+									if not value or value == "" then return end
+									local name, idStr = value:match("^(.+):(.+)$")
+									if not name or not idStr then
+										LUF._importError = L["Import format error"]
+										ACR:NotifyChange("LunaUnitFrames")
+										return
+									end
+									name = strtrim(name)
+									if name == "" then
+										LUF._importError = L["Import format error"]
+										ACR:NotifyChange("LunaUnitFrames")
+										return
+									end
+									local newList = {}
+									local count = 0
+									for idPart in idStr:gmatch("[^,]+") do
+										local id = tonumber(strtrim(idPart))
+										if id then
+											newList[id] = true
+											count = count + 1
+										end
+									end
+									if count == 0 then
+										LUF._importError = L["Import format error"]
+										ACR:NotifyChange("LunaUnitFrames")
+										return
+									end
+									if not LUF.db.profile.filters then LUF.db.profile.filters = {} end
+									LUF.db.profile.filters[name] = newList
+									LUF._selectedFilter = name
+									LUF._importError = nil
+									LUF._showImportForm = false
+									LUF:ReloadAll()
+									ACR:NotifyChange("LunaUnitFrames")
+								end,
+							},
+							importerror = {
+								name = function() return "|cffff4444" .. (LUF._importError or "") .. "|r" end,
+								type = "description",
+								order = 2,
+								hidden = function() return not LUF._importError end,
+							},
+						},
+					},
+					-- Filter selection + management bar
 					listheader = {
 						name = L["Filter Lists"],
 						type = "header",
-						order = 3.5,
+						order = 3,
 						hidden = function()
 							if not LUF.db.profile.filters then return true end
 							return not next(LUF.db.profile.filters)
@@ -10466,13 +10556,20 @@ function LUF:CreateConfig()
 							return t
 						end,
 						get = function() return LUF._selectedFilter end,
-						set = function(info, value) LUF._selectedFilter = value LUF._spellSearchText = nil LUF._spellSearchResults = nil ACR:NotifyChange("LunaUnitFrames") end,
+						set = function(info, value)
+							LUF._selectedFilter = value
+							LUF._spellSearchText = nil
+							LUF._spellSearchResults = nil
+							LUF._renameFilterName = nil
+							LUF._renameFilterError = nil
+							ACR:NotifyChange("LunaUnitFrames")
+						end,
 					},
 					deletefilter = {
-						name = "|cffff3333" .. L["Delete"] .. "|r",
+						name = L["Delete"],
 						desc = L["Delete this filter list"],
 						type = "execute",
-						order = 5,
+						order = 4.1,
 						width = "half",
 						confirm = true,
 						hidden = function() return not LUF._selectedFilter end,
@@ -10480,7 +10577,6 @@ function LUF:CreateConfig()
 							if LUF._selectedFilter and LUF.db.profile.filters then
 								local delName = LUF._selectedFilter
 								LUF.db.profile.filters[delName] = nil
-								-- Clean up references in all unit configs (supports both string and table)
 								for _, unitCfg in pairs(LUF.db.profile.units) do
 									if unitCfg.auras and unitCfg.auras.filters then
 										local f = unitCfg.auras.filters
@@ -10510,31 +10606,54 @@ function LUF:CreateConfig()
 							end
 						end,
 					},
-					renameheader = {
-						name = "",
-						type = "header",
-						order = 5.5,
+					exportbtn = {
+						name = L["Export"],
+						desc = L["Export string desc"],
+						type = "execute",
+						order = 4.2,
+						width = "half",
 						hidden = function() return not LUF._selectedFilter end,
+						func = function()
+							if LUF._exportString then
+								LUF._exportString = nil
+								ACR:NotifyChange("LunaUnitFrames")
+								return
+							end
+							if not LUF._selectedFilter or not LUF.db.profile.filters then return end
+							local list = LUF.db.profile.filters[LUF._selectedFilter]
+							if not list then return end
+							local ids = {}
+							for id in pairs(list) do
+								tinsert(ids, tostring(id))
+							end
+							table.sort(ids, function(a,b) return tonumber(a) < tonumber(b) end)
+							LUF._exportString = LUF._selectedFilter .. ":" .. table.concat(ids, ",")
+							ACR:NotifyChange("LunaUnitFrames")
+						end,
 					},
+					exportcopybox = {
+						name = L["Export"],
+						type = "input",
+						order = 4.8,
+						width = "full",
+						hidden = function() return not LUF._exportString end,
+						get = function() return LUF._exportString or "" end,
+						set = function() LUF._exportString = nil ACR:NotifyChange("LunaUnitFrames") end,
+					},
+					-- Rename inline
 					renameinput = {
 						name = L["Rename"],
 						desc = L["Rename this filter list"],
 						type = "input",
-						order = 6,
+						order = 4.5,
 						hidden = function() return not LUF._selectedFilter end,
 						get = function() return LUF._renameFilterName or "" end,
 						set = function(info, value) LUF._renameFilterName = value LUF._renameFilterError = nil end,
 					},
-					renameerror = {
-						name = function() return "|cffff4444" .. (LUF._renameFilterError or "") .. "|r" end,
-						type = "description",
-						order = 6.3,
-						hidden = function() return not LUF._renameFilterError end,
-					},
 					renameconfirm = {
 						name = L["Rename"],
 						type = "execute",
-						order = 6.5,
+						order = 4.6,
 						width = "half",
 						hidden = function() return not LUF._selectedFilter end,
 						disabled = function() return not LUF._renameFilterName or LUF._renameFilterName == "" end,
@@ -10549,10 +10668,8 @@ function LUF:CreateConfig()
 								ACR:NotifyChange("LunaUnitFrames")
 								return
 							end
-							-- Move data
 							LUF.db.profile.filters[newName] = LUF.db.profile.filters[oldName]
 							LUF.db.profile.filters[oldName] = nil
-							-- Update all unit config references
 							for _, unitCfg in pairs(LUF.db.profile.units) do
 								if unitCfg.auras and unitCfg.auras.filters then
 									local f = unitCfg.auras.filters
@@ -10579,87 +10696,13 @@ function LUF:CreateConfig()
 							ACR:NotifyChange("LunaUnitFrames")
 						end,
 					},
-					exportheader = {
-						name = L["Export"],
-						type = "header",
-						order = 7,
-						hidden = function() return not LUF._selectedFilter end,
-					},
-					exportstring = {
-						name = L["Export"],
-						desc = L["Export string desc"],
-						type = "input",
-						order = 7.5,
-						width = "full",
-						hidden = function() return not LUF._selectedFilter end,
-						get = function()
-							if not LUF._selectedFilter or not LUF.db.profile.filters then return "" end
-							local list = LUF.db.profile.filters[LUF._selectedFilter]
-							if not list then return "" end
-							local ids = {}
-							for id in pairs(list) do
-								tinsert(ids, tostring(id))
-							end
-							table.sort(ids, function(a,b) return tonumber(a) < tonumber(b) end)
-							return LUF._selectedFilter .. ":" .. table.concat(ids, ",")
-						end,
-						set = function() end, -- read-only
-					},
-					importheader = {
-						name = L["Import"],
-						type = "header",
-						order = 7.8,
-					},
-					importstring = {
-						name = L["Import"],
-						desc = L["Import desc"],
-						type = "input",
-						order = 8,
-						width = "full",
-						get = function() return "" end,
-						set = function(info, value)
-							if not value or value == "" then return end
-							-- Format: "FilterName:id1,id2,id3"
-							local name, idStr = value:match("^(.+):(.+)$")
-							if not name or not idStr then
-								LUF._importError = L["Import format error"]
-								ACR:NotifyChange("LunaUnitFrames")
-								return
-							end
-							name = strtrim(name)
-							if name == "" then
-								LUF._importError = L["Import format error"]
-								ACR:NotifyChange("LunaUnitFrames")
-								return
-							end
-							local newList = {}
-							local count = 0
-							for idPart in idStr:gmatch("[^,]+") do
-								local id = tonumber(strtrim(idPart))
-								if id then
-									newList[id] = true
-									count = count + 1
-								end
-							end
-							if count == 0 then
-								LUF._importError = L["Import format error"]
-								ACR:NotifyChange("LunaUnitFrames")
-								return
-							end
-							if not LUF.db.profile.filters then LUF.db.profile.filters = {} end
-							LUF.db.profile.filters[name] = newList
-							LUF._selectedFilter = name
-							LUF._importError = nil
-							LUF:ReloadAll()
-							ACR:NotifyChange("LunaUnitFrames")
-						end,
-					},
-					importerror = {
-						name = function() return "|cffff4444" .. (LUF._importError or "") .. "|r" end,
+					renameerror = {
+						name = function() return "|cffff4444" .. (LUF._renameFilterError or "") .. "|r" end,
 						type = "description",
-						order = 8.5,
-						hidden = function() return not LUF._importError end,
+						order = 4.7,
+						hidden = function() return not LUF._renameFilterError end,
 					},
+					-- Search & add auras
 					spellsheader = {
 						name = L["Add Aura"],
 						type = "header",
@@ -10680,7 +10723,6 @@ function LUF:CreateConfig()
 							LUF._spellSearchSelected = nil
 							local id = tonumber(value)
 							if id then
-								-- Direct spell ID lookup - works for any spell in the game
 								local name, _, icon = GetSpellInfo(id)
 								if name then
 									LUF._spellSearchResults = { [id] = { name = name, spellID = id, iconID = icon } }
@@ -10691,10 +10733,8 @@ function LUF:CreateConfig()
 								LUF._spellSearchResults = {}
 								if value and value ~= "" then
 									local searchLower = strlower(value)
-									-- Build global spell cache on first use
 									if not LUF._spellNameCache then
 										LUF._spellNameCache = {}
-										-- Scan all spell IDs; Classic goes up to ~35000, BCC/Wrath up to ~55000
 										local maxID = 100000
 										for sid = 1, maxID do
 											local sname, _, sicon = GetSpellInfo(sid)
@@ -10703,7 +10743,6 @@ function LUF:CreateConfig()
 												if not LUF._spellNameCache[lower] then
 													LUF._spellNameCache[lower] = {}
 												end
-												-- Store only first occurrence per name to avoid duplicates
 												local dominated = false
 												for _, existing in ipairs(LUF._spellNameCache[lower]) do
 													if existing.id == sid then dominated = true break end
@@ -10714,7 +10753,6 @@ function LUF:CreateConfig()
 											end
 										end
 									end
-									-- Search cache for partial matches
 									local count = 0
 									for cachedLower, entries in pairs(LUF._spellNameCache) do
 										if cachedLower:find(searchLower, 1, true) then
@@ -10778,6 +10816,7 @@ function LUF:CreateConfig()
 							ACR:NotifyChange("LunaUnitFrames")
 						end,
 					},
+					-- Aura list
 					spelllistheader = {
 						name = L["Auras in Filter"],
 						type = "header",
@@ -11025,34 +11064,28 @@ function LUF:CreateConfig()
 				local spellName, _, spellIcon = GetSpellInfo(spellId)
 				spellName = spellName or ("Aura #" .. spellId)
 				spellIcon = spellIcon or 134400
-				local key = "spell_" .. spellId
-				spells[key] = {
-					name = "",
-					type = "group",
+				spells["info_" .. spellId] = {
+					name = "|T" .. spellIcon .. ":18:18:0:0|t " .. spellName .. " |cff888888(" .. spellId .. ")|r",
+					type = "description",
 					order = order,
-					inline = true,
-					args = {
-						info = {
-							name = "|T" .. spellIcon .. ":20:20:0:0|t  " .. spellName .. "\n       |cff888888ID: " .. spellId .. "|r",
-							type = "description",
-							order = 1,
-							width = "double",
-							fontSize = "medium",
-						},
-						remove = {
-							name = "|TInterface\\Buttons\\UI-GroupLoot-Pass-Up:14:14:0:0|t",
-							desc = L["Remove this aura from the filter list"],
-							type = "execute",
-							order = 2,
-							width = "half",
-							func = function()
-								LUF.db.profile.filters[filterName][spellId] = nil
-								LUF:ReloadAll()
-								ACR:NotifyChange("LunaUnitFrames")
-							end,
-							confirm = true,
-						},
-					},
+					width = "normal",
+					fontSize = "medium",
+				}
+				spells["del_" .. spellId] = {
+					name = "",
+					desc = L["Remove this aura from the filter list"],
+					type = "execute",
+					image = "Interface\\Buttons\\UI-GroupLoot-Pass-Up",
+					imageWidth = 14,
+					imageHeight = 14,
+					order = order + 0.1,
+					width = "half",
+					func = function()
+						LUF.db.profile.filters[filterName][spellId] = nil
+						LUF:ReloadAll()
+						ACR:NotifyChange("LunaUnitFrames")
+					end,
+					confirm = true,
 				}
 				order = order + 1
 			end

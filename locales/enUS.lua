@@ -480,6 +480,8 @@ local L = {
 ["Import"] = "Import",
 ["Import desc"] = "Paste an exported filter string here to import it. Format: FilterName:id1,id2,id3",
 ["Import format error"] = "Invalid import format. Expected: FilterName:id1,id2,id3",
+["Hide Create Form"] = "Hide Create Form",
+["Hide Import"] = "Hide Import",
 }
 
 LUF.L = L

@@ -481,6 +481,8 @@ local L = {
 ["Import"] = "Importieren",
 ["Import desc"] = "F\195\188ge eine exportierte Filterzeichenkette hier ein. Format: Filtername:id1,id2,id3",
 ["Import format error"] = "Ung\195\188ltiges Importformat. Erwartet: Filtername:id1,id2,id3",
+["Hide Create Form"] = "Erstellung ausblenden",
+["Hide Import"] = "Import ausblenden",
 }
 
 local LUF = select(2, ...)
