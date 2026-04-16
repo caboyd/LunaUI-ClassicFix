@@ -955,6 +955,43 @@ function LUF.ApplySettings(frame)
 		Auras.disableOCC = LUF.db.profile.omnicc
 		Auras.disableBCC = LUF.db.profile.blizzardcc
 		
+		-- Spell ID Filters
+		local auraFilters = AuraConfig.filters
+		if auraFilters then
+			-- Helper to merge multiple filter lists into one lookup table
+			local function mergeFilterLists(listNames, mode)
+				if not listNames or mode == "disabled" then return nil end
+				-- Support legacy single string or new table of strings
+				if type(listNames) == "string" then
+					if listNames == "" then return nil end
+					return LUF.db.profile.filters and LUF.db.profile.filters[listNames] or nil
+				end
+				-- Table of list names
+				if type(listNames) ~= "table" or not next(listNames) then return nil end
+				local merged = {}
+				local hasAny = false
+				for _, name in pairs(listNames) do
+					local list = LUF.db.profile.filters and LUF.db.profile.filters[name]
+					if list then
+						for spellId in pairs(list) do
+							merged[spellId] = true
+							hasAny = true
+						end
+					end
+				end
+				return hasAny and merged or nil
+			end
+			Auras.buffFilterList = mergeFilterLists(auraFilters.buffs, auraFilters.buffMode)
+			Auras.buffFilterMode = auraFilters.buffMode or "disabled"
+			Auras.debuffFilterList = mergeFilterLists(auraFilters.debuffs, auraFilters.debuffMode)
+			Auras.debuffFilterMode = auraFilters.debuffMode or "disabled"
+		else
+			Auras.buffFilterList = nil
+			Auras.buffFilterMode = "disabled"
+			Auras.debuffFilterList = nil
+			Auras.debuffFilterMode = "disabled"
+		end
+
 		local auraborderType = LUF.db.profile.auraborderType
 		Auras.overlay = auraborderType and auraborderType ~= "blizzard" and "Interface\\AddOns\\LunaUnitFrames\\media\\textures\\borders\\border-" .. auraborderType
 	else

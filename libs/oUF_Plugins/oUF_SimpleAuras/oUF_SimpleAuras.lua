@@ -454,7 +454,18 @@ local function updateIcon(element, unit, index, position, filter, isDebuff)
 	end
 end
 
-local function UpdateAuras(self, event, unit)
+	local function ShouldShowAura(spellID, filterList, filterMode)
+		if not filterList or filterMode == "disabled" then return true end
+		local inList = filterList[spellID]
+		if filterMode == "whitelist" then
+			return inList
+		elseif filterMode == "blacklist" then
+			return not inList
+		end
+		return true
+	end
+
+	local function UpdateAuras(self, event, unit)
 	if(self.unit ~= unit) then return end
 
 	local element = self.SimpleAuras
@@ -475,11 +486,13 @@ local function UpdateAuras(self, event, unit)
 		local button
 		if element.buffs then
 			for i=1,(element.maxBuffs or 32) do
-				local name, _, _, _, _, _, caster = oUF.LCDUnitAura(self.unit, i, filter)
+				local name, _, _, _, _, _, caster, _, _, spellID = oUF.LCDUnitAura(self.unit, i, filter)
 				if name or element.forceShow then
 					if element.buffFilter ~= 2 or caster == "player" then
-						updateIcon(element, self.unit, i, currentSlot, filter, false)
-						currentSlot = currentSlot + 1
+						if element.forceShow or ShouldShowAura(spellID, element.buffFilterList, element.buffFilterMode) then
+							updateIcon(element, self.unit, i, currentSlot, filter, false)
+							currentSlot = currentSlot + 1
+						end
 					end
 				else
 					break
@@ -507,11 +520,13 @@ local function UpdateAuras(self, event, unit)
 		filter = "HARMFUL"..(element.debuffFilter == 3 and "|RAID" or "")
 		if element.debuffs then
 			for i=1,(element.maxDebuffs or 40) do
-				local name, _, _, _, _, _, caster = oUF.LCDUnitAura(self.unit, i, filter)
+				local name, _, _, _, _, _, caster, _, _, spellID = oUF.LCDUnitAura(self.unit, i, filter)
 				if name or element.forceShow then
 					if element.debuffFilter ~= 2 or caster == "player" then
-						updateIcon(element, self.unit, i, currentSlot, filter, true)
-						currentSlot = currentSlot + 1
+						if element.forceShow or ShouldShowAura(spellID, element.debuffFilterList, element.debuffFilterMode) then
+							updateIcon(element, self.unit, i, currentSlot, filter, true)
+							currentSlot = currentSlot + 1
+						end
 					end
 				else
 					break
