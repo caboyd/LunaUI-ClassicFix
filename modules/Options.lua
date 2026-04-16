@@ -10306,8 +10306,19 @@ function LUF:CreateConfig()
 				order = 26.5,
 				args = {
 					desc = {
-						name = L["Create and manage reusable spell ID filter lists"],
+						name = L["Create and manage reusable aura filter lists"],
 						type = "description",
+						order = 0.5,
+						fontSize = "medium",
+					},
+					helptip = {
+						name = "|cff888888" .. L["Filters help tip"] .. "|r",
+						type = "description",
+						order = 0.6,
+					},
+					newheader = {
+						name = L["New Filter List"],
+						type = "header",
 						order = 1,
 					},
 					newname = {
@@ -10323,6 +10334,7 @@ function LUF:CreateConfig()
 						desc = L["Create a new filter list"],
 						type = "execute",
 						order = 3,
+						disabled = function() return not LUF._newFilterName or LUF._newFilterName == "" end,
 						func = function()
 							local name = LUF._newFilterName
 							if name and name ~= "" then
@@ -10336,11 +10348,24 @@ function LUF:CreateConfig()
 							end
 						end,
 					},
+					listheader = {
+						name = L["Filter Lists"],
+						type = "header",
+						order = 3.5,
+						hidden = function()
+							if not LUF.db.profile.filters then return true end
+							return not next(LUF.db.profile.filters)
+						end,
+					},
 					selectfilter = {
 						name = L["Filter Lists"],
-						desc = L["Select a filter list to apply to buffs"],
+						desc = L["Select a filter list to edit"],
 						type = "select",
 						order = 4,
+						hidden = function()
+							if not LUF.db.profile.filters then return true end
+							return not next(LUF.db.profile.filters)
+						end,
 						values = function()
 							local t = {}
 							for name in pairs(LUF.db.profile.filters or {}) do
@@ -10349,19 +10374,19 @@ function LUF:CreateConfig()
 							return t
 						end,
 						get = function() return LUF._selectedFilter end,
-						set = function(info, value) LUF._selectedFilter = value ACR:NotifyChange("LunaUnitFrames") end,
+						set = function(info, value) LUF._selectedFilter = value LUF._spellSearchText = nil LUF._spellSearchResults = nil ACR:NotifyChange("LunaUnitFrames") end,
 					},
 					deletefilter = {
-						name = L["Delete"],
+						name = "|cffff3333" .. L["Delete"] .. "|r",
 						desc = L["Delete this filter list"],
 						type = "execute",
 						order = 5,
+						width = "half",
 						confirm = true,
 						hidden = function() return not LUF._selectedFilter end,
 						func = function()
 							if LUF._selectedFilter and LUF.db.profile.filters then
 								LUF.db.profile.filters[LUF._selectedFilter] = nil
-								-- Clear references in unit aura configs
 								for _, unitCfg in pairs(LUF.db.profile.units) do
 									if unitCfg.auras and unitCfg.auras.filters then
 										if unitCfg.auras.filters.buffs == LUF._selectedFilter then
@@ -10381,41 +10406,133 @@ function LUF:CreateConfig()
 						end,
 					},
 					spellsheader = {
-						name = L["Spells"],
+						name = L["Add Aura"],
 						type = "header",
 						order = 10,
 						hidden = function() return not LUF._selectedFilter end,
 					},
-					addspell = {
-						name = L["Add Spell"],
-						desc = L["Search by spell name or enter a spell ID"],
+					searchinput = {
+						name = L["Search by aura name or enter an aura ID"],
+						desc = L["Aura search desc"],
 						type = "input",
 						order = 11,
 						width = "double",
 						hidden = function() return not LUF._selectedFilter end,
+						get = function() return LUF._spellSearchText or "" end,
 						set = function(info, value)
 							if not LUF._selectedFilter then return end
-							local list = LUF.db.profile.filters[LUF._selectedFilter]
-							if not list then return end
+							LUF._spellSearchText = value
+							LUF._spellSearchSelected = nil
 							local id = tonumber(value)
 							if id then
-								list[id] = true
+								-- Direct spell ID lookup - works for any spell in the game
+								local name, _, icon = GetSpellInfo(id)
+								if name then
+									LUF._spellSearchResults = { [id] = { name = name, spellID = id, iconID = icon } }
+								else
+									LUF._spellSearchResults = { [id] = { name = "Aura #" .. id, spellID = id, iconID = 134400 } }
+								end
 							else
-								-- Search by name using WoW API
-								local spellInfo = C_Spell.GetSpellInfo(value)
-								if spellInfo and spellInfo.spellID then
-									list[spellInfo.spellID] = true
+								LUF._spellSearchResults = {}
+								if value and value ~= "" then
+									local searchLower = strlower(value)
+									-- Build global spell cache on first use
+									if not LUF._spellNameCache then
+										LUF._spellNameCache = {}
+										-- Scan all spell IDs; Classic goes up to ~35000, BCC/Wrath up to ~55000
+										local maxID = 100000
+										for sid = 1, maxID do
+											local sname, _, sicon = GetSpellInfo(sid)
+											if sname then
+												local lower = strlower(sname)
+												if not LUF._spellNameCache[lower] then
+													LUF._spellNameCache[lower] = {}
+												end
+												-- Store only first occurrence per name to avoid duplicates
+												local dominated = false
+												for _, existing in ipairs(LUF._spellNameCache[lower]) do
+													if existing.id == sid then dominated = true break end
+												end
+												if not dominated then
+													tinsert(LUF._spellNameCache[lower], { id = sid, name = sname, icon = sicon })
+												end
+											end
+										end
+									end
+									-- Search cache for partial matches
+									local count = 0
+									for cachedLower, entries in pairs(LUF._spellNameCache) do
+										if cachedLower:find(searchLower, 1, true) then
+											for _, entry in ipairs(entries) do
+												if not LUF._spellSearchResults[entry.id] then
+													LUF._spellSearchResults[entry.id] = { name = entry.name, spellID = entry.id, iconID = entry.icon }
+													count = count + 1
+													if count >= 25 then break end
+												end
+											end
+										end
+										if count >= 25 then break end
+									end
 								end
 							end
+							ACR:NotifyChange("LunaUnitFrames")
+						end,
+					},
+					searchresults = {
+						name = L["Search Results"],
+						type = "select",
+						order = 12,
+						width = "double",
+						hidden = function() return not LUF._selectedFilter or not LUF._spellSearchResults or not next(LUF._spellSearchResults) end,
+						values = function()
+							local t = {}
+							if LUF._spellSearchResults then
+								for spellId, info in pairs(LUF._spellSearchResults) do
+									local icon = info.iconID or 134400
+									local name = info.name or ("Aura #" .. spellId)
+									t[tostring(spellId)] = "|T" .. icon .. ":16:16:0:0|t  " .. name .. "  |cff888888(ID: " .. spellId .. ")|r"
+								end
+							end
+							return t
+						end,
+						get = function() return LUF._spellSearchSelected end,
+						set = function(info, value)
+							LUF._spellSearchSelected = value
+						end,
+					},
+					addselected = {
+						name = L["Add"],
+						desc = L["Add this aura to the filter list"],
+						type = "execute",
+						order = 13,
+						width = "half",
+						hidden = function() return not LUF._selectedFilter or not LUF._spellSearchResults or not next(LUF._spellSearchResults) end,
+						disabled = function() return not LUF._spellSearchSelected end,
+						func = function()
+							if not LUF._selectedFilter or not LUF._spellSearchSelected then return end
+							local list = LUF.db.profile.filters[LUF._selectedFilter]
+							if not list then return end
+							local id = tonumber(LUF._spellSearchSelected)
+							if id then
+								list[id] = true
+							end
+							LUF._spellSearchText = nil
+							LUF._spellSearchResults = nil
+							LUF._spellSearchSelected = nil
 							LUF:ReloadAll()
 							ACR:NotifyChange("LunaUnitFrames")
 						end,
-						get = function() return "" end,
+					},
+					spelllistheader = {
+						name = L["Auras in Filter"],
+						type = "header",
+						order = 19,
+						hidden = function() return not LUF._selectedFilter end,
 					},
 					spelllist = {
-						name = L["Spells"],
+						name = "",
 						type = "group",
-						order = 12,
+						order = 20,
 						inline = true,
 						hidden = function() return not LUF._selectedFilter end,
 						args = {},
@@ -10650,22 +10767,46 @@ function LUF:CreateConfig()
 		if filterName and LUF.db.profile.filters and LUF.db.profile.filters[filterName] then
 			local order = 1
 			for spellId in pairs(LUF.db.profile.filters[filterName]) do
-				local spellInfo = C_Spell and C_Spell.GetSpellInfo(spellId)
-				local spellName = spellInfo and spellInfo.name or ("Spell #" .. spellId)
-				local spellIcon = spellInfo and spellInfo.iconID or 134400
-				spells["spell_" .. spellId] = {
-					name = "|T" .. spellIcon .. ":16:16:0:0|t " .. spellName .. " (ID: " .. spellId .. ")",
-					desc = L["Remove this spell from the filter list"],
-					type = "execute",
+				local spellName, _, spellIcon = GetSpellInfo(spellId)
+				spellName = spellName or ("Aura #" .. spellId)
+				spellIcon = spellIcon or 134400
+				local key = "spell_" .. spellId
+				spells[key] = {
+					name = "",
+					type = "group",
 					order = order,
-					func = function()
-						LUF.db.profile.filters[filterName][spellId] = nil
-						LUF:ReloadAll()
-						ACR:NotifyChange("LunaUnitFrames")
-					end,
-					confirm = true,
+					inline = true,
+					args = {
+						info = {
+							name = "|T" .. spellIcon .. ":20:20:0:0|t  " .. spellName .. "\n       |cff888888ID: " .. spellId .. "|r",
+							type = "description",
+							order = 1,
+							width = "double",
+							fontSize = "medium",
+						},
+						remove = {
+							name = "|TInterface\\Buttons\\UI-GroupLoot-Pass-Up:14:14:0:0|t",
+							desc = L["Remove this aura from the filter list"],
+							type = "execute",
+							order = 2,
+							width = "half",
+							func = function()
+								LUF.db.profile.filters[filterName][spellId] = nil
+								LUF:ReloadAll()
+								ACR:NotifyChange("LunaUnitFrames")
+							end,
+							confirm = true,
+						},
+					},
 				}
 				order = order + 1
+			end
+			if order == 1 then
+				spells["empty"] = {
+					name = "|cff666666" .. L["No auras added yet"] .. "|r",
+					type = "description",
+					order = 1,
+				}
 			end
 		end
 		aceoptions.args.filters.args.spelllist.plugins.spells = spells
