@@ -468,6 +468,7 @@ local L = {
 ["Aura search desc"] = "输入光环名称搜索所有游戏光环，或直接输入光环ID。按回车搜索，然后选择结果并点击添加。首次搜索可能需要一些时间来构建索引。",
 ["Search Results"] = "搜索结果",
 ["No auras added yet"] = "此过滤器中尚未添加光环。使用上方的搜索来查找和添加光环。",
+["Filter name already exists"] = "已存在同名过滤器。请选择其他名称。",
 }
 
 local LUF = select(2, ...)

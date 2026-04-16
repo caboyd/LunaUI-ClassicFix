@@ -468,6 +468,7 @@ local L = {
 ["Aura search desc"] = "오라 이름을 입력하여 모든 게임 오라를 검색하거나 오라 ID를 직접 입력하세요. Enter를 눌러 검색한 다음, 결과를 선택하고 추가를 클릭하세요. 첫 번째 검색은 색인을 구축하는 데 시간이 걸릴 수 있습니다.",
 ["Search Results"] = "검색 결과",
 ["No auras added yet"] = "이 필터에 아직 오라가 추가되지 않았습니다. 위의 검색을 사용하여 오라를 찾고 추가하세요.",
+["Filter name already exists"] = "이 이름의 필터가 이미 존재합니다. 다른 이름을 선택해 주세요.",
 }
 
 local LUF = select(2, ...)

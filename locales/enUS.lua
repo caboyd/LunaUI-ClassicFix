@@ -470,6 +470,7 @@ local L = {
 ["Aura search desc"] = "Type an aura name to search all game auras, or enter an aura/spell ID directly. Press Enter to search, then select a result and click Add. The first search may take a moment to build the index.",
 ["Search Results"] = "Search Results",
 ["No auras added yet"] = "No auras added to this filter yet. Use the search above to find and add auras.",
+["Filter name already exists"] = "A filter with this name already exists. Please choose a different name.",
 }
 
 LUF.L = L

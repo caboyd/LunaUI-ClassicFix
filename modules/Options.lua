@@ -1434,93 +1434,113 @@ function LUF:CreateConfig()
 					type = "header",
 					order = 28,
 				},
-				filterbufflist = {
+				filterbuffgroup = {
 					name = L["Buff Filter List"],
-					desc = L["Select a filter list to apply to buffs"],
-					type = "select",
+					type = "group",
 					order = 29,
-					values = function()
-						local t = {[""] = L["No Filter"]}
-						for name in pairs(LUF.db.profile.filters or {}) do
-							t[name] = name
-						end
-						return t
-					end,
-					get = function(info)
-						local db = LUF.db.profile.units[info[1]].auras.filters
-						return db and db.buffs or ""
-					end,
-					set = function(info, value)
-						local auras = LUF.db.profile.units[info[1]].auras
-						if not auras.filters then auras.filters = {} end
-						auras.filters.buffs = value
-						LUF:Reload(info[1])
-					end,
+					inline = true,
+					args = {
+						filterbufflist = {
+							name = L["Buff Filter List"],
+							desc = L["Select a filter list to apply to buffs"],
+							type = "select",
+							order = 1,
+							width = "double",
+							values = function()
+								local t = {[""] = L["No Filter"]}
+								for name in pairs(LUF.db.profile.filters or {}) do
+									t[name] = name
+								end
+								return t
+							end,
+							get = function(info)
+								local db = LUF.db.profile.units[info[1]].auras.filters
+								return db and db.buffs or ""
+							end,
+							set = function(info, value)
+								local auras = LUF.db.profile.units[info[1]].auras
+								if not auras.filters then auras.filters = {} end
+								auras.filters.buffs = value
+								LUF:Reload(info[1])
+							end,
+						},
+						filterbuffmode = {
+							name = L["Buff Filter Mode"],
+							desc = L["How to apply the buff filter list"],
+							type = "select",
+							order = 2,
+							width = "double",
+							values = {["disabled"] = L["Disabled"], ["whitelist"] = L["Whitelist"], ["blacklist"] = L["Blacklist"]},
+							get = function(info)
+								local db = LUF.db.profile.units[info[1]].auras.filters
+								return db and db.buffMode or "disabled"
+							end,
+							set = function(info, value)
+								local auras = LUF.db.profile.units[info[1]].auras
+								if not auras.filters then auras.filters = {} end
+								auras.filters.buffMode = value
+								LUF:Reload(info[1])
+							end,
+							hidden = function(info)
+								local db = LUF.db.profile.units[info[1]].auras.filters
+								return not db or not db.buffs or db.buffs == ""
+							end,
+						},
+					},
 				},
-				filterbuffmode = {
-					name = L["Buff Filter Mode"],
-					desc = L["How to apply the buff filter list"],
-					type = "select",
-					order = 30,
-					values = {["disabled"] = L["Disabled"], ["whitelist"] = L["Whitelist"], ["blacklist"] = L["Blacklist"]},
-					get = function(info)
-						local db = LUF.db.profile.units[info[1]].auras.filters
-						return db and db.buffMode or "disabled"
-					end,
-					set = function(info, value)
-						local auras = LUF.db.profile.units[info[1]].auras
-						if not auras.filters then auras.filters = {} end
-						auras.filters.buffMode = value
-						LUF:Reload(info[1])
-					end,
-					hidden = function(info)
-						local db = LUF.db.profile.units[info[1]].auras.filters
-						return not db or not db.buffs or db.buffs == ""
-					end,
-				},
-				filterdebufflist = {
+				filterdebuffgroup = {
 					name = L["Debuff Filter List"],
-					desc = L["Select a filter list to apply to debuffs"],
-					type = "select",
-					order = 31,
-					values = function()
-						local t = {[""] = L["No Filter"]}
-						for name in pairs(LUF.db.profile.filters or {}) do
-							t[name] = name
-						end
-						return t
-					end,
-					get = function(info)
-						local db = LUF.db.profile.units[info[1]].auras.filters
-						return db and db.debuffs or ""
-					end,
-					set = function(info, value)
-						local auras = LUF.db.profile.units[info[1]].auras
-						if not auras.filters then auras.filters = {} end
-						auras.filters.debuffs = value
-						LUF:Reload(info[1])
-					end,
-				},
-				filterdebuffmode = {
-					name = L["Debuff Filter Mode"],
-					desc = L["How to apply the debuff filter list"],
-					type = "select",
-					order = 32,
-					values = {["disabled"] = L["Disabled"], ["whitelist"] = L["Whitelist"], ["blacklist"] = L["Blacklist"]},
-					get = function(info)
-						local db = LUF.db.profile.units[info[1]].auras.filters
-						return db and db.debuffMode or "disabled"
-					end,
-					set = function(info, value)
-						local auras = LUF.db.profile.units[info[1]].auras
-						if not auras.filters then auras.filters = {} end
-						auras.filters.debuffMode = value
-						LUF:Reload(info[1])
-					end,
-					hidden = function(info)
-						local db = LUF.db.profile.units[info[1]].auras.filters
-						return not db or not db.debuffs or db.debuffs == ""
-					end,
+					type = "group",
+					order = 30,
+					inline = true,
+					args = {
+						filterdebufflist = {
+							name = L["Debuff Filter List"],
+							desc = L["Select a filter list to apply to debuffs"],
+							type = "select",
+							order = 1,
+							width = "double",
+							values = function()
+								local t = {[""] = L["No Filter"]}
+								for name in pairs(LUF.db.profile.filters or {}) do
+									t[name] = name
+								end
+								return t
+							end,
+							get = function(info)
+								local db = LUF.db.profile.units[info[1]].auras.filters
+								return db and db.debuffs or ""
+							end,
+							set = function(info, value)
+								local auras = LUF.db.profile.units[info[1]].auras
+								if not auras.filters then auras.filters = {} end
+								auras.filters.debuffs = value
+								LUF:Reload(info[1])
+							end,
+						},
+						filterdebuffmode = {
+							name = L["Debuff Filter Mode"],
+							desc = L["How to apply the debuff filter list"],
+							type = "select",
+							order = 2,
+							width = "double",
+							values = {["disabled"] = L["Disabled"], ["whitelist"] = L["Whitelist"], ["blacklist"] = L["Blacklist"]},
+							get = function(info)
+								local db = LUF.db.profile.units[info[1]].auras.filters
+								return db and db.debuffMode or "disabled"
+							end,
+							set = function(info, value)
+								local auras = LUF.db.profile.units[info[1]].auras
+								if not auras.filters then auras.filters = {} end
+								auras.filters.debuffMode = value
+								LUF:Reload(info[1])
+							end,
+							hidden = function(info)
+								local db = LUF.db.profile.units[info[1]].auras.filters
+								return not db or not db.debuffs or db.debuffs == ""
+							end,
+						},
+					},
 				},
 			},
 		},
@@ -10327,7 +10347,19 @@ function LUF:CreateConfig()
 						type = "input",
 						order = 2,
 						get = function() return LUF._newFilterName or "" end,
-						set = function(info, value) LUF._newFilterName = value end,
+						set = function(info, value)
+							LUF._newFilterName = value
+							LUF._filterNameError = nil
+							ACR:NotifyChange("LunaUnitFrames")
+						end,
+					},
+					nameerror = {
+						name = function()
+							return "|cffff4444" .. (LUF._filterNameError or "") .. "|r"
+						end,
+						type = "description",
+						order = 2.5,
+						hidden = function() return not LUF._filterNameError end,
 					},
 					create = {
 						name = L["Create"],
@@ -10339,10 +10371,14 @@ function LUF:CreateConfig()
 							local name = LUF._newFilterName
 							if name and name ~= "" then
 								if not LUF.db.profile.filters then LUF.db.profile.filters = {} end
-								if not LUF.db.profile.filters[name] then
-									LUF.db.profile.filters[name] = {}
+								if LUF.db.profile.filters[name] then
+									LUF._filterNameError = L["Filter name already exists"]
+									ACR:NotifyChange("LunaUnitFrames")
+									return
 								end
+								LUF.db.profile.filters[name] = {}
 								LUF._newFilterName = nil
+								LUF._filterNameError = nil
 								LUF._selectedFilter = name
 								ACR:NotifyChange("LunaUnitFrames")
 							end
