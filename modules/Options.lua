@@ -1429,6 +1429,99 @@ function LUF:CreateConfig()
 					max = 40,
 					step = 1,
 				},
+				filterheader = {
+					name = L["Filter Lists"],
+					type = "header",
+					order = 28,
+				},
+				filterbufflist = {
+					name = L["Buff Filter List"],
+					desc = L["Select a filter list to apply to buffs"],
+					type = "select",
+					order = 29,
+					values = function()
+						local t = {[""] = L["No Filter"]}
+						for name in pairs(LUF.db.profile.filters or {}) do
+							t[name] = name
+						end
+						return t
+					end,
+					get = function(info)
+						local db = LUF.db.profile.units[info[1]].auras.filters
+						return db and db.buffs or ""
+					end,
+					set = function(info, value)
+						local auras = LUF.db.profile.units[info[1]].auras
+						if not auras.filters then auras.filters = {} end
+						auras.filters.buffs = value
+						LUF:Reload(info[1])
+					end,
+				},
+				filterbuffmode = {
+					name = L["Buff Filter Mode"],
+					desc = L["How to apply the buff filter list"],
+					type = "select",
+					order = 30,
+					values = {["disabled"] = L["Disabled"], ["whitelist"] = L["Whitelist"], ["blacklist"] = L["Blacklist"]},
+					get = function(info)
+						local db = LUF.db.profile.units[info[1]].auras.filters
+						return db and db.buffMode or "disabled"
+					end,
+					set = function(info, value)
+						local auras = LUF.db.profile.units[info[1]].auras
+						if not auras.filters then auras.filters = {} end
+						auras.filters.buffMode = value
+						LUF:Reload(info[1])
+					end,
+					hidden = function(info)
+						local db = LUF.db.profile.units[info[1]].auras.filters
+						return not db or not db.buffs or db.buffs == ""
+					end,
+				},
+				filterdebufflist = {
+					name = L["Debuff Filter List"],
+					desc = L["Select a filter list to apply to debuffs"],
+					type = "select",
+					order = 31,
+					values = function()
+						local t = {[""] = L["No Filter"]}
+						for name in pairs(LUF.db.profile.filters or {}) do
+							t[name] = name
+						end
+						return t
+					end,
+					get = function(info)
+						local db = LUF.db.profile.units[info[1]].auras.filters
+						return db and db.debuffs or ""
+					end,
+					set = function(info, value)
+						local auras = LUF.db.profile.units[info[1]].auras
+						if not auras.filters then auras.filters = {} end
+						auras.filters.debuffs = value
+						LUF:Reload(info[1])
+					end,
+				},
+				filterdebuffmode = {
+					name = L["Debuff Filter Mode"],
+					desc = L["How to apply the debuff filter list"],
+					type = "select",
+					order = 32,
+					values = {["disabled"] = L["Disabled"], ["whitelist"] = L["Whitelist"], ["blacklist"] = L["Blacklist"]},
+					get = function(info)
+						local db = LUF.db.profile.units[info[1]].auras.filters
+						return db and db.debuffMode or "disabled"
+					end,
+					set = function(info, value)
+						local auras = LUF.db.profile.units[info[1]].auras
+						if not auras.filters then auras.filters = {} end
+						auras.filters.debuffMode = value
+						LUF:Reload(info[1])
+					end,
+					hidden = function(info)
+						local db = LUF.db.profile.units[info[1]].auras.filters
+						return not db or not db.debuffs or db.debuffs == ""
+					end,
+				},
 			},
 		},
 		["borders"] = {
@@ -10207,6 +10300,131 @@ function LUF:CreateConfig()
 					},
 				},
 			} or nil,
+			filters = {
+				name = L["Filters"],
+				type = "group",
+				order = 26.5,
+				args = {
+					desc = {
+						name = L["Create and manage reusable spell ID filter lists"],
+						type = "description",
+						order = 1,
+					},
+					newname = {
+						name = L["New Filter List"],
+						desc = L["Name for the new filter list"],
+						type = "input",
+						order = 2,
+						get = function() return LUF._newFilterName or "" end,
+						set = function(info, value) LUF._newFilterName = value end,
+					},
+					create = {
+						name = L["Create"],
+						desc = L["Create a new filter list"],
+						type = "execute",
+						order = 3,
+						func = function()
+							local name = LUF._newFilterName
+							if name and name ~= "" then
+								if not LUF.db.profile.filters then LUF.db.profile.filters = {} end
+								if not LUF.db.profile.filters[name] then
+									LUF.db.profile.filters[name] = {}
+								end
+								LUF._newFilterName = nil
+								LUF._selectedFilter = name
+								ACR:NotifyChange("LunaUnitFrames")
+							end
+						end,
+					},
+					selectfilter = {
+						name = L["Filter Lists"],
+						desc = L["Select a filter list to apply to buffs"],
+						type = "select",
+						order = 4,
+						values = function()
+							local t = {}
+							for name in pairs(LUF.db.profile.filters or {}) do
+								t[name] = name
+							end
+							return t
+						end,
+						get = function() return LUF._selectedFilter end,
+						set = function(info, value) LUF._selectedFilter = value ACR:NotifyChange("LunaUnitFrames") end,
+					},
+					deletefilter = {
+						name = L["Delete"],
+						desc = L["Delete this filter list"],
+						type = "execute",
+						order = 5,
+						confirm = true,
+						hidden = function() return not LUF._selectedFilter end,
+						func = function()
+							if LUF._selectedFilter and LUF.db.profile.filters then
+								LUF.db.profile.filters[LUF._selectedFilter] = nil
+								-- Clear references in unit aura configs
+								for _, unitCfg in pairs(LUF.db.profile.units) do
+									if unitCfg.auras and unitCfg.auras.filters then
+										if unitCfg.auras.filters.buffs == LUF._selectedFilter then
+											unitCfg.auras.filters.buffs = ""
+											unitCfg.auras.filters.buffMode = "disabled"
+										end
+										if unitCfg.auras.filters.debuffs == LUF._selectedFilter then
+											unitCfg.auras.filters.debuffs = ""
+											unitCfg.auras.filters.debuffMode = "disabled"
+										end
+									end
+								end
+								LUF._selectedFilter = nil
+								LUF:ReloadAll()
+								ACR:NotifyChange("LunaUnitFrames")
+							end
+						end,
+					},
+					spellsheader = {
+						name = L["Spells"],
+						type = "header",
+						order = 10,
+						hidden = function() return not LUF._selectedFilter end,
+					},
+					addspell = {
+						name = L["Add Spell"],
+						desc = L["Search by spell name or enter a spell ID"],
+						type = "input",
+						order = 11,
+						width = "double",
+						hidden = function() return not LUF._selectedFilter end,
+						set = function(info, value)
+							if not LUF._selectedFilter then return end
+							local list = LUF.db.profile.filters[LUF._selectedFilter]
+							if not list then return end
+							local id = tonumber(value)
+							if id then
+								list[id] = true
+							else
+								-- Search by name using WoW API
+								local spellInfo = C_Spell.GetSpellInfo(value)
+								if spellInfo and spellInfo.spellID then
+									list[spellInfo.spellID] = true
+								end
+							end
+							LUF:ReloadAll()
+							ACR:NotifyChange("LunaUnitFrames")
+						end,
+						get = function() return "" end,
+					},
+					spelllist = {
+						name = L["Spells"],
+						type = "group",
+						order = 12,
+						inline = true,
+						hidden = function() return not LUF._selectedFilter end,
+						args = {},
+						plugins = {
+							spells = {},
+						},
+					},
+				},
+			},
 			hidden = {
 				name = L["Hide Blizzard"],
 				type = "group",
@@ -10421,6 +10639,44 @@ function LUF:CreateConfig()
 			end
 		end
 	end
+
+	-- Dynamic spell list builder for Filters panel
+	local updatingFilterList = false
+	local function UpdateFilterSpellList()
+		if updatingFilterList then return end
+		updatingFilterList = true
+		local spells = {}
+		local filterName = LUF._selectedFilter
+		if filterName and LUF.db.profile.filters and LUF.db.profile.filters[filterName] then
+			local order = 1
+			for spellId in pairs(LUF.db.profile.filters[filterName]) do
+				local spellInfo = C_Spell and C_Spell.GetSpellInfo(spellId)
+				local spellName = spellInfo and spellInfo.name or ("Spell #" .. spellId)
+				local spellIcon = spellInfo and spellInfo.iconID or 134400
+				spells["spell_" .. spellId] = {
+					name = "|T" .. spellIcon .. ":16:16:0:0|t " .. spellName .. " (ID: " .. spellId .. ")",
+					desc = L["Remove this spell from the filter list"],
+					type = "execute",
+					order = order,
+					func = function()
+						LUF.db.profile.filters[filterName][spellId] = nil
+						LUF:ReloadAll()
+						ACR:NotifyChange("LunaUnitFrames")
+					end,
+					confirm = true,
+				}
+				order = order + 1
+			end
+		end
+		aceoptions.args.filters.args.spelllist.plugins.spells = spells
+		updatingFilterList = false
+	end
+	ACR.RegisterCallback(self, "ConfigTableChange", function() UpdateFilterSpellList() end)
+	hooksecurefunc(ACR, "NotifyChange", function(_, name)
+		if name == "LunaUnitFrames" then UpdateFilterSpellList() end
+	end)
+	UpdateFilterSpellList()
+
 	local i = 3
 	for k in pairs(InfoTags) do
 		aceoptions.args.help.args[k] = {
@@ -10471,6 +10727,7 @@ function LUF:CreateConfig()
 		AceConfigDialog:AddToBlizOptions(Addon, L[unit], Addon, unit)
 	end
 	AceConfigDialog:AddToBlizOptions(Addon, L["Hide Blizzard"], Addon, "hidden")
+	AceConfigDialog:AddToBlizOptions(Addon, L["Filters"], Addon, "filters")
 	AceConfigDialog:AddToBlizOptions(Addon, L["Tag Help"], Addon, "help")
 	AceConfigDialog:AddToBlizOptions(Addon, L["Auto Profiles"], Addon, "autoprofiles")
 	AceConfigDialog:AddToBlizOptions(Addon, L["Profiles"], Addon, "profile")

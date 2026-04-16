@@ -35,6 +35,9 @@ function LUF:LoadDefaults()
 			blizzardcc = false,
 			strata = "MEDIUM",
 			range = { dist = 40, alpha = 0.4, noItems = true },
+			filters = {
+				-- Named spell-ID lists: { ["My List"] = { [spellId] = true, ... }, ... }
+			},
 		},
 	}
 
@@ -167,6 +170,10 @@ function LUF:LoadDefaults()
 				wrapdebuff = 1,
 				buffcount = 32,
 				debuffcount = 40,
+				filters = {
+					buffs = "",
+					debuffs = "",
+				},
 			},
 			tags = {
 				["top"] = {
@@ -365,6 +372,10 @@ function LUF:LoadDefaults()
 				wrapdebuff = 1,
 				buffcount = 32,
 				debuffcount = 40,
+				filters = {
+					buffs = "",
+					debuffs = "",
+				},
 			},
 			tags = {
 				["top"] = {
@@ -539,6 +550,10 @@ function LUF:LoadDefaults()
 				wrapdebuff = 1,
 				buffcount = 32,
 				debuffcount = 40,
+				filters = {
+					buffs = "",
+					debuffs = "",
+				},
 			},
 			tags = {
 				["top"] = {
@@ -684,6 +699,10 @@ function LUF:LoadDefaults()
 				wrapdebuff = 1,
 				buffcount = 32,
 				debuffcount = 40,
+				filters = {
+					buffs = "",
+					debuffs = "",
+				},
 			},
 			tags = {
 				["top"] = {
@@ -831,6 +850,10 @@ function LUF:LoadDefaults()
 				wrapdebuff = 1,
 				buffcount = 32,
 				debuffcount = 40,
+				filters = {
+					buffs = "",
+					debuffs = "",
+				},
 			},
 			tags = {
 				["top"] = {
@@ -995,6 +1018,10 @@ function LUF:LoadDefaults()
 				wrapdebuff = 1,
 				buffcount = 32,
 				debuffcount = 40,
+				filters = {
+					buffs = "",
+					debuffs = "",
+				},
 			},
 			tags = {
 				["top"] = {
@@ -1144,6 +1171,10 @@ function LUF:LoadDefaults()
 				wrapdebuff = 1,
 				buffcount = 32,
 				debuffcount = 40,
+				filters = {
+					buffs = "",
+					debuffs = "",
+				},
 			},
 			tags = {
 				["top"] = {
@@ -1930,6 +1961,10 @@ function LUF:LoadDefaults()
 				wrapdebuff = 1,
 				buffcount = 32,
 				debuffcount = 40,
+				filters = {
+					buffs = "",
+					debuffs = "",
+				},
 			},
 			tags = {
 				["top"] = {
@@ -2235,6 +2270,10 @@ function LUF:LoadDefaults()
 				wrapdebuff = 1,
 				buffcount = 32,
 				debuffcount = 40,
+				filters = {
+					buffs = "",
+					debuffs = "",
+				},
 			},
 			tags = {
 				["top"] = {
@@ -2430,6 +2469,10 @@ function LUF:LoadDefaults()
 				wrapdebuff = 1,
 				buffcount = 32,
 				debuffcount = 40,
+				filters = {
+					buffs = "",
+					debuffs = "",
+				},
 			},
 			tags = {
 				["top"] = {

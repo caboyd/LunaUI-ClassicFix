@@ -955,6 +955,22 @@ function LUF.ApplySettings(frame)
 		Auras.disableOCC = LUF.db.profile.omnicc
 		Auras.disableBCC = LUF.db.profile.blizzardcc
 		
+		-- Spell ID Filters
+		local auraFilters = AuraConfig.filters
+		if auraFilters then
+			local buffListName = auraFilters.buffs
+			local debuffListName = auraFilters.debuffs
+			Auras.buffFilterList = (buffListName and buffListName ~= "" and auraFilters.buffMode and auraFilters.buffMode ~= "disabled") and LUF.db.profile.filters[buffListName] or nil
+			Auras.buffFilterMode = auraFilters.buffMode or "disabled"
+			Auras.debuffFilterList = (debuffListName and debuffListName ~= "" and auraFilters.debuffMode and auraFilters.debuffMode ~= "disabled") and LUF.db.profile.filters[debuffListName] or nil
+			Auras.debuffFilterMode = auraFilters.debuffMode or "disabled"
+		else
+			Auras.buffFilterList = nil
+			Auras.buffFilterMode = "disabled"
+			Auras.debuffFilterList = nil
+			Auras.debuffFilterMode = "disabled"
+		end
+
 		local auraborderType = LUF.db.profile.auraborderType
 		Auras.overlay = auraborderType and auraborderType ~= "blizzard" and "Interface\\AddOns\\LunaUnitFrames\\media\\textures\\borders\\border-" .. auraborderType
 	else
