@@ -469,6 +469,7 @@ local L = {
 ["Filters help tip"] = "Create filter lists below, then assign them to specific unit frames in each unit's Auras settings. Use Whitelist mode to show only listed auras, or Blacklist mode to hide them.",
 ["Aura search desc"] = "Type an aura name to search all game auras, or enter an aura/spell ID directly. Press Enter to search, then select a result and click Add. The first search may take a moment to build the index.",
 ["Search Results"] = "Search Results",
+["Page %d/%d (%d results)"] = "Page %d/%d (%d results)",
 ["No auras added yet"] = "No auras added to this filter yet. Use the search above to find and add auras.",
 ["Filter name already exists"] = "A filter with this name already exists. Please choose a different name.",
 ["Select filter lists to apply to buffs"] = "Select filter lists to apply to buffs",

@@ -467,6 +467,7 @@ local L = {
 ["Filters help tip"] = "在下方创建过滤列表，然后在每个单位的光环设置中将其分配给特定的单位框架。使用白名单模式仅显示列出的光环，或使用黑名单模式隐藏它们。",
 ["Aura search desc"] = "输入光环名称搜索所有游戏光环，或直接输入光环ID。按回车搜索，然后选择结果并点击添加。首次搜索可能需要一些时间来构建索引。",
 ["Search Results"] = "搜索结果",
+["Page %d/%d (%d results)"] = "第 %d/%d 页（共 %d 个结果）",
 ["No auras added yet"] = "此过滤器中尚未添加光环。使用上方的搜索来查找和添加光环。",
 ["Filter name already exists"] = "已存在同名过滤器。请选择其他名称。",
 ["Select filter lists to apply to buffs"] = "选择应用于增益的过滤列表",

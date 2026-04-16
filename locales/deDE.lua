@@ -470,6 +470,7 @@ local L = {
 ["Filters help tip"] = "Erstelle unten Filterlisten und weise sie dann in den Aura-Einstellungen einzelner Einheitenfenster zu. Verwende den Positivlisten-Modus, um nur aufgef\195\188hrte Auren anzuzeigen, oder den Negativlisten-Modus, um sie auszublenden.",
 ["Aura search desc"] = "Gib einen Aura-Namen ein, um alle Spielauren zu durchsuchen, oder gib direkt eine Aura-ID ein. Dr\195\188cke Enter zum Suchen, w\195\164hle dann ein Ergebnis und klicke auf Hinzuf\195\188gen. Die erste Suche kann einen Moment dauern, um den Index aufzubauen.",
 ["Search Results"] = "Suchergebnisse",
+["Page %d/%d (%d results)"] = "Seite %d/%d (%d Ergebnisse)",
 ["No auras added yet"] = "Noch keine Auren in diesem Filter. Verwende die Suche oben, um Auren zu finden und hinzuzuf\195\188gen.",
 ["Filter name already exists"] = "Ein Filter mit diesem Namen existiert bereits. Bitte w\195\164hle einen anderen Namen.",
 ["Select filter lists to apply to buffs"] = "Filterlisten f\195\188r Buffs ausw\195\164hlen",

@@ -10559,7 +10559,9 @@ function LUF:CreateConfig()
 						set = function(info, value)
 							LUF._selectedFilter = value
 							LUF._spellSearchText = nil
-							LUF._spellSearchResults = nil
+							LUF._spellSearchResultsList = nil
+							LUF._spellSearchSelected = nil
+							LUF._searchPage = 1
 							LUF._renameFilterName = nil
 							LUF._renameFilterError = nil
 							ACR:NotifyChange("LunaUnitFrames")
@@ -10721,16 +10723,17 @@ function LUF:CreateConfig()
 							if not LUF._selectedFilter then return end
 							LUF._spellSearchText = value
 							LUF._spellSearchSelected = nil
+							LUF._searchPage = 1
 							local id = tonumber(value)
 							if id then
 								local name, _, icon = GetSpellInfo(id)
 								if name then
-									LUF._spellSearchResults = { [id] = { name = name, spellID = id, iconID = icon } }
+									LUF._spellSearchResultsList = { { id = id, name = name, icon = icon } }
 								else
-									LUF._spellSearchResults = { [id] = { name = "Aura #" .. id, spellID = id, iconID = 134400 } }
+									LUF._spellSearchResultsList = { { id = id, name = "Aura #" .. id, icon = 134400 } }
 								end
 							else
-								LUF._spellSearchResults = {}
+								LUF._spellSearchResultsList = {}
 								if value and value ~= "" then
 									local searchLower = strlower(value)
 									if not LUF._spellNameCache then
@@ -10753,21 +10756,72 @@ function LUF:CreateConfig()
 											end
 										end
 									end
-									local count = 0
+									local seen = {}
 									for cachedLower, entries in pairs(LUF._spellNameCache) do
 										if cachedLower:find(searchLower, 1, true) then
 											for _, entry in ipairs(entries) do
-												if not LUF._spellSearchResults[entry.id] then
-													LUF._spellSearchResults[entry.id] = { name = entry.name, spellID = entry.id, iconID = entry.icon }
-													count = count + 1
-													if count >= 25 then break end
+												if not seen[entry.id] then
+													seen[entry.id] = true
+													tinsert(LUF._spellSearchResultsList, { id = entry.id, name = entry.name, icon = entry.icon })
 												end
 											end
 										end
-										if count >= 25 then break end
 									end
+									-- Sort by name then ID for consistent ordering
+									table.sort(LUF._spellSearchResultsList, function(a, b)
+										if a.name == b.name then return a.id < b.id end
+										return a.name < b.name
+									end)
 								end
 							end
+							ACR:NotifyChange("LunaUnitFrames")
+						end,
+					},
+					searchpageinfo = {
+						name = function()
+							local results = LUF._spellSearchResultsList
+							if not results or #results == 0 then return "" end
+							local perPage = 25
+							local total = #results
+							local page = LUF._searchPage or 1
+							local maxPage = math.ceil(total / perPage)
+							return "|cffcccccc" .. string.format(L["Page %d/%d (%d results)"], page, maxPage, total) .. "|r"
+						end,
+						type = "description",
+						order = 11.5,
+						hidden = function() return not LUF._selectedFilter or not LUF._spellSearchResultsList or #LUF._spellSearchResultsList == 0 end,
+					},
+					searchprevpage = {
+						name = "<",
+						type = "execute",
+						order = 11.6,
+						width = "half",
+						hidden = function() return not LUF._selectedFilter or not LUF._spellSearchResultsList or #LUF._spellSearchResultsList <= 25 end,
+						disabled = function() return (LUF._searchPage or 1) <= 1 end,
+						func = function()
+							LUF._searchPage = math.max(1, (LUF._searchPage or 1) - 1)
+							LUF._spellSearchSelected = nil
+							ACR:NotifyChange("LunaUnitFrames")
+						end,
+					},
+					searchnextpage = {
+						name = ">",
+						type = "execute",
+						order = 11.7,
+						width = "half",
+						hidden = function() return not LUF._selectedFilter or not LUF._spellSearchResultsList or #LUF._spellSearchResultsList <= 25 end,
+						disabled = function()
+							local results = LUF._spellSearchResultsList
+							if not results then return true end
+							local maxPage = math.ceil(#results / 25)
+							return (LUF._searchPage or 1) >= maxPage
+						end,
+						func = function()
+							local results = LUF._spellSearchResultsList
+							if not results then return end
+							local maxPage = math.ceil(#results / 25)
+							LUF._searchPage = math.min(maxPage, (LUF._searchPage or 1) + 1)
+							LUF._spellSearchSelected = nil
 							ACR:NotifyChange("LunaUnitFrames")
 						end,
 					},
@@ -10776,14 +10830,19 @@ function LUF:CreateConfig()
 						type = "select",
 						order = 12,
 						width = "double",
-						hidden = function() return not LUF._selectedFilter or not LUF._spellSearchResults or not next(LUF._spellSearchResults) end,
+						hidden = function() return not LUF._selectedFilter or not LUF._spellSearchResultsList or #LUF._spellSearchResultsList == 0 end,
 						values = function()
 							local t = {}
-							if LUF._spellSearchResults then
-								for spellId, info in pairs(LUF._spellSearchResults) do
-									local icon = info.iconID or 134400
-									local name = info.name or ("Aura #" .. spellId)
-									t[tostring(spellId)] = "|T" .. icon .. ":16:16:0:0|t  " .. name .. "  |cff888888(ID: " .. spellId .. ")|r"
+							local results = LUF._spellSearchResultsList
+							if not results then return t end
+							local perPage = 25
+							local page = LUF._searchPage or 1
+							local startIdx = (page - 1) * perPage + 1
+							local endIdx = math.min(page * perPage, #results)
+							for i = startIdx, endIdx do
+								local entry = results[i]
+								if entry then
+									t[tostring(entry.id)] = "|T" .. (entry.icon or 134400) .. ":16:16:0:0|t  " .. entry.name .. "  |cff888888(ID: " .. entry.id .. ")|r"
 								end
 							end
 							return t
@@ -10799,7 +10858,7 @@ function LUF:CreateConfig()
 						type = "execute",
 						order = 13,
 						width = "half",
-						hidden = function() return not LUF._selectedFilter or not LUF._spellSearchResults or not next(LUF._spellSearchResults) end,
+						hidden = function() return not LUF._selectedFilter or not LUF._spellSearchResultsList or #LUF._spellSearchResultsList == 0 end,
 						disabled = function() return not LUF._spellSearchSelected end,
 						func = function()
 							if not LUF._selectedFilter or not LUF._spellSearchSelected then return end
@@ -10810,8 +10869,9 @@ function LUF:CreateConfig()
 								list[id] = true
 							end
 							LUF._spellSearchText = nil
-							LUF._spellSearchResults = nil
+							LUF._spellSearchResultsList = nil
 							LUF._spellSearchSelected = nil
+							LUF._searchPage = 1
 							LUF:ReloadAll()
 							ACR:NotifyChange("LunaUnitFrames")
 						end,
