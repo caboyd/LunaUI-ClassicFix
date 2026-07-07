@@ -65,6 +65,7 @@ locales\zhCN.lua
 locales\zhTW.lua
 locales\ruRU.lua
 
+modules\compat.lua
 modules\options.lua
 modules\overrides.lua
 modules\defaults.lua
