@@ -13,6 +13,8 @@
 ## X-License: WTFPL (http://www.wtfpl.net/about/)
 ## X-Donate: https://ko-fi.com/caboyd
 
+modules\compat.lua
+
 #@no-lib-strip@
 libs\LibStub\LibStub.lua
 libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
@@ -65,7 +67,6 @@ locales\zhCN.lua
 locales\zhTW.lua
 locales\ruRU.lua
 
-modules\compat.lua
 modules\options.lua
 modules\overrides.lua
 modules\defaults.lua
