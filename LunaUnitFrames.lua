@@ -867,7 +867,7 @@ function LUF.ApplySettings(frame)
 					fstring:SetPoint("TOP", frame, "BOTTOM", fstringoffsets[side], barconfig[side].offset or 0)
 				end
 			end
-			fstring:SetFont(LUF:LoadMedia(SML.MediaType.FONT, barconfig.font), barconfig.size, (barconfig.outline or LUF.db.profile.fontoutline) and "OUTLINE")
+			fstring:SetFont(LUF:LoadMedia(SML.MediaType.FONT, barconfig.font), barconfig.size, (barconfig.outline or LUF.db.profile.fontoutline) and "OUTLINE" or "")
 			if barconfig.shadow or LUF.db.profile.fontshadow then
 				fstring:SetShadowColor(0, 0, 0, 1.0)
 				fstring:SetShadowOffset(0.80, -0.80)

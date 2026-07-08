@@ -51,7 +51,7 @@ local function customClassColors()
 end
 
 if(not customClassColors()) then
-	for classToken, color in next, RAID_CLASS_COLORS do
+	for classToken, color in next, RAID_CLASS_COLORS or {} do
 		colors.class[classToken] = {color.r, color.g, color.b}
 	end
 
@@ -66,15 +66,15 @@ if(not customClassColors()) then
 	end)
 end
 
-for debuffType, color in next, DebuffTypeColor do
+for debuffType, color in next, DebuffTypeColor or {} do
 	colors.debuff[debuffType] = {color.r, color.g, color.b}
 end
 
-for eclass, color in next, FACTION_BAR_COLORS do
+for eclass, color in next, FACTION_BAR_COLORS or {} do
 	colors.reaction[eclass] = {color.r, color.g, color.b}
 end
 
-for power, color in next, PowerBarColor do
+for power, color in next, PowerBarColor or {} do
 	if (type(power) == 'string') then
 		if(type(select(2, next(color))) == 'table') then
 			colors.power[power] = {}
