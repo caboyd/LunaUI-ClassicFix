@@ -361,7 +361,7 @@ local function updateIcon(element, unit, index, position, filter, isDebuff)
 			end
 
 			if(button.overlay) then
-				local color = element.showType and oUF.colors.debuff[debuffType] or {1,1,1}
+				local color = element.showType and oUF.colors.dispel[debuffType] or {1,1,1}
 				if isStealable and element.showSteal then
 					button.overlay:SetVertexColor(1, 1, 1)
 					button.overlay:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Stealable")

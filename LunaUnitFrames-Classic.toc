@@ -1,9 +1,9 @@
-## Interface: 11508
+## Interface: 11509
 
 ## Title: Luna Unit Frames
 ## Notes: 
 ## Author: Aviana, caboyd
-## Version: 4415
+## Version: 4417
 ## Source: https://github.com/caboyd/LunaUI-ClassicFix
 ## SavedVariables: LunaUFDB
 ## OptionalDeps: Ace3, LibSharedMedia-3.0, AceGUI-3.0-SharedMediaWidgets, Clique
@@ -12,8 +12,6 @@
 
 ## X-License: WTFPL (http://www.wtfpl.net/about/)
 ## X-Donate: https://ko-fi.com/caboyd
-
-modules\compat.lua
 
 #@no-lib-strip@
 libs\LibStub\LibStub.lua
@@ -40,6 +38,7 @@ libs\oUF\events.lua
 libs\oUF\factory.lua
 libs\oUF\blizzard.lua
 libs\oUF\units.lua
+libs\oUF\enums.lua
 libs\oUF\colors.lua
 libs\oUF\elements\additionalpower.lua
 libs\oUF\elements\assistantindicator.lua

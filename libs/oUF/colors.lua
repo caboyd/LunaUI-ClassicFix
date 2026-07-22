@@ -3,14 +3,87 @@ local oUF = ns.oUF
 local Private = oUF.Private
 
 local frame_metatable = Private.frame_metatable
+local nierror = Private.nierror
+
+local colorMixin = {
+	SetAtlas = function(self, atlas)
+		local info = C_Texture.GetAtlasInfo(atlas)
+		if(not info) then
+			return nierror(string.format('"%s" is an invalid atlas.', atlas))
+		end
+
+		self.atlas = atlas
+	end,
+	GetAtlas = function(self)
+		return self.atlas
+	end,
+	SetCurve = function(self, ...)
+		if(...) then
+			if(self.curve) then
+				self.curve:ClearPoints()
+			else
+				self.curve = C_CurveUtil.CreateColorCurve()
+			end
+
+			if(type(...) == 'table') then
+				for x, y in next, (...) do
+					self.curve:AddPoint(x, y)
+				end
+			else
+				for i = 1, select('#', ...), 2 do
+					self.curve:AddPoint(select(i, ...), select(i+1, ...))
+				end
+			end
+		else
+			self.curve = nil
+		end
+	end,
+	GetCurve = function(self)
+		return self.curve
+	end,
+}
+
+--[[ Colors: oUF:CreateColor(r, g, b[, a])
+Wrapper for [Blizzard_SharedXMLBase/Color.lua's ColorMixin](https://warcraft.wiki.gg/wiki/ColorMixin), extended with extra methods for dealing with
+atlases and curves.
+
+The rgb values can be either normalized (0-1) or bytes (0-255).
+
+* self - the global oUF object
+* r    - value used as represent the red color (number)
+* g    - value used to represent the green color (number)
+* b    - value used to represent the blue color (number)
+* a    - value used to represent the opacity (number, optional)
+
+## Returns
+
+* color - the ColorMixin-based object
+--]]
+function oUF:CreateColor(r, g, b, a)
+	if(r > 1 or g > 1 or b > 1) then
+		r, g, b = r / 255, g / 255, b / 255
+	end
+
+	local color = Mixin({}, ColorMixin, colorMixin)
+	color:SetRGBA(r, g, b, a)
+
+	-- provide a default curve for smooth colors
+	color:SetCurve({
+		[  0] = CreateColor(1, 0, 0),
+		[0.5] = CreateColor(1, 1, 0),
+		[  1] = CreateColor(0, 1, 0),
+	})
+
+	return color
+end
 
 local colors = {
 	smooth = { 1, 0, 0, 1, 1, 0, 0, 1, 0 },
-	health = {49 / 255, 207 / 255, 37 / 255},
-	disconnected = { 0.6, 0.6, 0.6 },
-	tapped = {0.6, 0.6, 0.6},
+	health = oUF:CreateColor(49, 207, 37),
+	disconnected = oUF:CreateColor(0.6, 0.6, 0.6),
+	tapped = oUF:CreateColor(0.6, 0.6, 0.6),
 	class = {},
-	debuff = {},
+	dispel = {},
 	reaction = {},
 	power = {},
 	happiness = {
@@ -51,7 +124,7 @@ local function customClassColors()
 end
 
 if(not customClassColors()) then
-	for classToken, color in next, RAID_CLASS_COLORS or {} do
+	for classToken, color in next, RAID_CLASS_COLORS do
 		colors.class[classToken] = {color.r, color.g, color.b}
 	end
 
@@ -66,15 +139,20 @@ if(not customClassColors()) then
 	end)
 end
 
-for debuffType, color in next, DebuffTypeColor or {} do
-	colors.debuff[debuffType] = {color.r, color.g, color.b}
+-- copy of DEBUFF_DISPLAY_INFO from AuraUtil
+colors.dispel[oUF.Enum.DispelType.None] = _G.DEBUFF_TYPE_NONE_COLOR
+colors.dispel[oUF.Enum.DispelType.Magic] = _G.DEBUFF_TYPE_MAGIC_COLOR
+colors.dispel[oUF.Enum.DispelType.Curse] = _G.DEBUFF_TYPE_CURSE_COLOR
+colors.dispel[oUF.Enum.DispelType.Disease] = _G.DEBUFF_TYPE_DISEASE_COLOR
+colors.dispel[oUF.Enum.DispelType.Poison] = _G.DEBUFF_TYPE_POISON_COLOR
+colors.dispel[oUF.Enum.DispelType.Bleed] = _G.DEBUFF_TYPE_BLEED_COLOR
+colors.dispel[oUF.Enum.DispelType.Enrage] = oUF:CreateColor(243, 95, 245)
+
+for eclass, color in next, _G.FACTION_BAR_COLORS do
+	colors.reaction[eclass] = oUF:CreateColor(color.r, color.g, color.b)
 end
 
-for eclass, color in next, FACTION_BAR_COLORS or {} do
-	colors.reaction[eclass] = {color.r, color.g, color.b}
-end
-
-for power, color in next, PowerBarColor or {} do
+for power, color in next, PowerBarColor do
 	if (type(power) == 'string') then
 		if(type(select(2, next(color))) == 'table') then
 			colors.power[power] = {}
@@ -88,12 +166,13 @@ for power, color in next, PowerBarColor or {} do
 	end
 end
 
--- sourced from FrameXML/Constants.lua
-colors.power[0] = colors.power.MANA
-colors.power[1] = colors.power.RAGE
-colors.power[2] = colors.power.FOCUS
-colors.power[3] = colors.power.ENERGY
-colors.power[4] = colors.power.COMBO_POINTS
+-- fallback integer index to named index
+-- sourced from PowerBarColor - Blizzard_UnitFrame/Mainline/PowerBarColorUtil.lua
+colors.power[Enum.PowerType.Mana or 0] = colors.power.MANA
+colors.power[Enum.PowerType.Rage or 1] = colors.power.RAGE
+colors.power[Enum.PowerType.Focus or 2] = colors.power.FOCUS
+colors.power[Enum.PowerType.Energy or 3] = colors.power.ENERGY
+colors.power[Enum.PowerType.ComboPoints or 4] = colors.power.COMBO_POINTS
 
 local function colorsAndPercent(a, b, ...)
 	if(a <= 0 or b == 0) then
