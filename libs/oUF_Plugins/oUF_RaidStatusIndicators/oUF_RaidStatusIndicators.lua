@@ -96,17 +96,23 @@ local function checkMissingBuff(unit, spells)
 			end
 			if not found then
 				missingSpell = spell
-				spell = tonumber(spell) or C_Spell.GetSpellInfo(spell).spellID
-				if not spell then
+				local spellInfo = C_Spell.GetSpellInfo(spell)
+				local spellID = tonumber(spell) or (spellInfo and spellInfo.spellID)
+
+				if not spellID then
 					found = true
 				else
-					local i, spellID = 1, select(10,UnitAura(unit, 1))
-					while spellID do
-						if spellID == spell then
+					local i = 1
+					local aura = C_UnitAuras.GetAuraDataByIndex(unit, i)
+
+					while aura do
+						if aura.spellId == spellID then
 							found = true
+							break
 						end
+
 						i = i + 1
-						spellID = select(10, UnitAura(unit, i))
+						aura = C_UnitAuras.GetAuraDataByIndex(unit, i)
 					end
 				end
 			end
@@ -218,7 +224,7 @@ local function Update(self, event, unit)
 							indicator.texture:SetTexture(hasicon)
 							indicator.texture:SetVertexColor(1,1,1)
 						else
-							local color = oUF.colors.debuff[Type]
+							local color = oUF.colors.dispel[Type]
 							indicator.texture:SetTexture([[Interface\Buttons\WHITE8X8]])
 							if color then
 								indicator.texture:SetVertexColor(unpack(color))
@@ -252,7 +258,7 @@ local function Update(self, event, unit)
 							indicator.texture:SetTexture(dispelIcon)
 							indicator.texture:SetVertexColor(1,1,1)
 						else
-							local color = oUF.colors.debuff[dispelType]
+							local color = oUF.colors.dispel[dispelType]
 							indicator.texture:SetTexture([[Interface\Buttons\WHITE8X8]])
 							indicator.texture:SetVertexColor(unpack(color))
 						end
@@ -275,7 +281,7 @@ local function Update(self, event, unit)
 							indicator.texture:SetVertexColor(1,1,1)
 						else
 							indicator.texture:SetTexture([[Interface\Buttons\WHITE8X8]])
-							local color = oUF.colors.debuff["none"]
+							local color = oUF.colors.dispel["none"]
 							if not color then
 								indicator.texture:SetVertexColor(0,0,0)
 							else
@@ -294,7 +300,7 @@ local function Update(self, event, unit)
 							indicator.texture:SetVertexColor(1,1,1)
 						else
 							indicator.texture:SetTexture([[Interface\Buttons\WHITE8X8]])
-							local color = oUF.colors.debuff[debuffType]
+							local color = oUF.colors.dispel[debuffType]
 							if not color then
 								indicator.texture:SetVertexColor(0,0,0)
 							else
@@ -415,13 +421,7 @@ local function Enable(self)
 			Vex.RegisterCallback(element, "Vexation_lost", LegacyThreatUpdate)
 		end
 
-		self:RegisterEvent("UNIT_AURA", Path)
-		self:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE", Path)
-		if(oUF.isClassic) then
-			self:RegisterEvent("LEARNED_SPELL_IN_TAB", checkCurableSpells, true)
-		elseif(oUF.isTBC) then
-			self:RegisterEvent("LEARNED_SPELL_IN_SKILL_LINE", checkCurableSpells, true)
-		end
+		self:RegisterEvent("SPELLS_CHANGED", checkCurableSpells, true)
 		self:RegisterEvent("PLAYER_LOGIN", checkCurableSpells, true)
 		self:RegisterEvent("UNIT_PET", checkCurableSpells, true)
 
@@ -442,12 +442,7 @@ local function Disable(self)
 
 		self:UnregisterEvent("UNIT_AURA", Path)
 		self:UnregisterEvent("UNIT_THREAT_SITUATION_UPDATE", Path)
-
-		if(oUF.isClassic) then
-			self:UnregisterEvent("LEARNED_SPELL_IN_TAB", checkCurableSpells)
-		elseif(oUF.isTBC) then
-			self:UnregisterEvent("LEARNED_SPELL_IN_SKILL_LINE", checkCurableSpells)
-		end
+		self:UnregisterEvent("SPELLS_CHANGED", checkCurableSpells)
 		self:UnregisterEvent("PLAYER_LOGIN", checkCurableSpells)
 		self:UnregisterEvent("UNIT_PET", checkCurableSpells)
 		

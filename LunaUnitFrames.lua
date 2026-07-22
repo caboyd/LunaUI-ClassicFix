@@ -280,9 +280,7 @@ function LUF:OnLoad()
 	self:UpdateMovers()
 	self:PlaceAllFrames()
 	self:AutoswitchProfileSetup()
-	if self.db.global.switchtype == "RESOLUTION" then
-		self:AutoswitchProfile("DISPLAY_SIZE_CHANGED")
-	elseif self.db.global.switchtype == "GROUP" then
+	if self.db.global.switchtype == "GROUP" then
 		self:AutoswitchProfile("GROUP_ROSTER_UPDATE")
 	end
 end
@@ -362,10 +360,7 @@ end
 
 function LUF:AutoswitchProfile(event)
 	local profile
-	if event == "DISPLAY_SIZE_CHANGED" and self.db.char.switchtype == "RESOLUTION" then
-		local resolutions = {GetScreenResolutions()}
-		profile = self.db.char.resdb[resolutions[GetCurrentResolution()]]
-	elseif event == "GROUP_ROSTER_UPDATE" and self.db.char.switchtype == "GROUP" then
+	if event == "GROUP_ROSTER_UPDATE" and self.db.char.switchtype == "GROUP" then
 		local groupType
 		if IsInRaid() then
 			local maxGrp = 1
@@ -1833,7 +1828,6 @@ end
 function LUF:ReloadSingleUnit(unit)
 	local frame = self.frameIndex[unit]
 	local config = self.db.profile.units[unit]
-	--local res = GetScreenHeight() / strmatch(({GetScreenResolutions()})[GetCurrentResolution()], "(%d+)$")
 	
 	if not LUF.InCombatLockdown then
 		frame:SetWidth(config.width)
@@ -1923,9 +1917,7 @@ end)
 function LUF:AutoswitchProfileSetup()
 	frame:UnregisterEvent("DISPLAY_SIZE_CHANGED")
 	frame:UnregisterEvent("GROUP_ROSTER_UPDATE")
-	if self.db.char.switchtype == "RESOLUTION" then
-		frame:RegisterEvent("DISPLAY_SIZE_CHANGED")
-	elseif self.db.char.switchtype == "GROUP" then
+	if self.db.char.switchtype == "GROUP" then
 		frame:RegisterEvent("GROUP_ROSTER_UPDATE")
 	end
 end

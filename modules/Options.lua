@@ -6,7 +6,7 @@ local ACR = LibStub("AceConfigRegistry-3.0", true)
 local RC, RCminor = LibStub("LibRangeCheck-3.0")
 local L = LUF.L
 local oUF = LUF.oUF
-local resolutionselectvalue,groupselectvalue, profiledb = GetCurrentResolution(), "SOLO", {}
+local groupselectvalue, profiledb = "SOLO", {}
 
 local ArenaAndFocusExists = not oUF.isClassic
 
@@ -10339,19 +10339,9 @@ function LUF:CreateConfig()
 						desc = L["Type of event to switch to"],
 						type = "select",
 						order = 2,
-						values = {["DISABLED"] = ADDON_DISABLED, ["RESOLUTION"] = L["Screen Resolution"],["GROUP"] = L["Size of Group"]},
+						values = {["DISABLED"] = ADDON_DISABLED, ["GROUP"] = L["Size of Group"]},
 						get = function(info) return LUF.db.char.switchtype end,
 						set = function(info, value) LUF.db.char.switchtype = value LUF:AutoswitchProfileSetup() end,
-					},
-					resolutionselect = {
-						name = L["Screen Resolution"],
-						desc = L["Resolution to assign a profile to"],
-						type = "select",
-						order = 3,
-						hidden = function() return LUF.db.char.switchtype ~= "RESOLUTION" end,
-						values = {GetScreenResolutions()},
-						get = function(info) return resolutionselectvalue end,
-						set = function(info, value) resolutionselectvalue = value end,
 					},
 					groupselect = {
 						name = L["Size of Group"],
@@ -10373,41 +10363,18 @@ function LUF:CreateConfig()
 						get = function(info)
 							LUF.db:GetProfiles(profiledb)
 							profiledb["NIL"] = NONE
-							if LUF.db.char.switchtype == "RESOLUTION" then
-								local resolutions = {GetScreenResolutions()}
-								for k,v in pairs(resolutions) do
-									if k == resolutionselectvalue then
-										for i,j in pairs(profiledb) do
-											if LUF.db.char.resdb[v] == j then
-												return i
-											end
-										end
-									end
+							for k,v in pairs(profiledb) do
+								if v == LUF.db.char.grpdb[groupselectvalue] then
+									return k
 								end
-								return "NIL"
-							else
-								for k,v in pairs(profiledb) do
-									if v == LUF.db.char.grpdb[groupselectvalue] then
-										return k
-									end
-								end
-								return "NIL"
 							end
+							return "NIL"
+							
 						end,
 						set = function(info, value)
 							LUF.db:GetProfiles(profiledb)
 							profiledb["NIL"] = NONE
-							if LUF.db.char.switchtype == "RESOLUTION" then
-								local resolutions = {GetScreenResolutions()}
-								for k,v in pairs(resolutions) do
-									if k == resolutionselectvalue then
-										LUF.db.char.resdb[v] = value ~= "NIL" and profiledb[value] or nil
-										return
-									end
-								end
-							else
-								LUF.db.char.grpdb[groupselectvalue] = value ~= "NIL" and profiledb[value] or nil
-							end
+							LUF.db.char.grpdb[groupselectvalue] = value ~= "NIL" and profiledb[value] or nil
 						end,
 					},
 				},
