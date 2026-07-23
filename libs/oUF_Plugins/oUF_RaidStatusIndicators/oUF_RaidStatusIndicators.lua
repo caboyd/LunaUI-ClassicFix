@@ -421,6 +421,8 @@ local function Enable(self)
 			Vex.RegisterCallback(element, "Vexation_lost", LegacyThreatUpdate)
 		end
 
+		self:RegisterEvent("UNIT_AURA", Path)
+		self:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE", Path)
 		self:RegisterEvent("SPELLS_CHANGED", checkCurableSpells, true)
 		self:RegisterEvent("PLAYER_LOGIN", checkCurableSpells, true)
 		self:RegisterEvent("UNIT_PET", checkCurableSpells, true)
