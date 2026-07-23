@@ -83,7 +83,15 @@ local colors = {
 	disconnected = oUF:CreateColor(0.6, 0.6, 0.6),
 	tapped = oUF:CreateColor(0.6, 0.6, 0.6),
 	class = {},
-	dispel = {},
+	dispel = {
+		None    = { _G.DEBUFF_TYPE_NONE_COLOR:GetRGB() },
+		Magic   = { _G.DEBUFF_TYPE_MAGIC_COLOR:GetRGB() },
+		Curse   = { _G.DEBUFF_TYPE_CURSE_COLOR:GetRGB() },
+		Disease = { _G.DEBUFF_TYPE_DISEASE_COLOR:GetRGB() },
+		Poison  = { _G.DEBUFF_TYPE_POISON_COLOR:GetRGB() },
+		Bleed   = { _G.DEBUFF_TYPE_BLEED_COLOR:GetRGB() },
+		Enrage  = { oUF:CreateColor(243, 95, 245):GetRGB() },
+	},
 	reaction = {},
 	power = {},
 	happiness = {
@@ -139,14 +147,6 @@ if(not customClassColors()) then
 	end)
 end
 
--- copy of DEBUFF_DISPLAY_INFO from AuraUtil
-colors.dispel[oUF.Enum.DispelType.None] = _G.DEBUFF_TYPE_NONE_COLOR
-colors.dispel[oUF.Enum.DispelType.Magic] = _G.DEBUFF_TYPE_MAGIC_COLOR
-colors.dispel[oUF.Enum.DispelType.Curse] = _G.DEBUFF_TYPE_CURSE_COLOR
-colors.dispel[oUF.Enum.DispelType.Disease] = _G.DEBUFF_TYPE_DISEASE_COLOR
-colors.dispel[oUF.Enum.DispelType.Poison] = _G.DEBUFF_TYPE_POISON_COLOR
-colors.dispel[oUF.Enum.DispelType.Bleed] = _G.DEBUFF_TYPE_BLEED_COLOR
-colors.dispel[oUF.Enum.DispelType.Enrage] = oUF:CreateColor(243, 95, 245)
 
 for eclass, color in next, _G.FACTION_BAR_COLORS do
 	colors.reaction[eclass] = oUF:CreateColor(color.r, color.g, color.b)
