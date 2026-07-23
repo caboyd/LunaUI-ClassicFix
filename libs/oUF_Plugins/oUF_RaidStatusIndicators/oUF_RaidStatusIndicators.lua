@@ -281,7 +281,7 @@ local function Update(self, event, unit)
 							indicator.texture:SetVertexColor(1,1,1)
 						else
 							indicator.texture:SetTexture([[Interface\Buttons\WHITE8X8]])
-							local color = oUF.colors.dispel["none"]
+							local color = oUF.colors.dispel["None"]
 							if not color then
 								indicator.texture:SetVertexColor(0,0,0)
 							else
