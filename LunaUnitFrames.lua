@@ -277,13 +277,18 @@ function LUF:OnLoad()
 	self:SpawnUnits()
 	self:HideBlizzardFrames()
 	self:CreateConfig()
-	self:UpdateMovers()
-	LUF.deferFrameSetup = nil
 	self:PlaceAllFrames()
-	self:AutoswitchProfileSetup()
-	if self.db.global.switchtype == "GROUP" then
-		self:AutoswitchProfile("GROUP_ROSTER_UPDATE")
-	end
+	-- Defer movers+ReloadAll to the next frame so they don't share spawn's script budget.
+	local finishLoad = CreateFrame("Frame")
+	finishLoad:SetScript("OnUpdate", function(self)
+		self:SetScript("OnUpdate", nil)
+		LUF:UpdateMovers()
+		LUF.deferFrameSetup = nil
+		LUF:AutoswitchProfileSetup()
+		if LUF.db.global.switchtype == "GROUP" then
+			LUF:AutoswitchProfile("GROUP_ROSTER_UPDATE")
+		end
+	end)
 end
 
 local mediaNeeded = {}
@@ -863,7 +868,7 @@ function LUF.ApplySettings(frame)
 		if frame.modules[barname] and not config[barname].enabled then
 			for side,fstring in pairs(fstrings) do
 				if fstring._lufTagline then
-					frame:Tag(fstring, "")
+					frame:Untag(fstring)
 					fstring._lufTagline = nil
 				end
 			end
@@ -976,7 +981,11 @@ function LUF.ApplySettings(frame)
 		
 		Auras.timer = AuraConfig.timer
 		Auras.spacing = AuraConfig.padding
-		Auras.forceShow = LUF.db.profile.previewauras and not LUF.db.profile.locked
+		-- Keep forceShow off during UpdateAllElements; preview icons are deferred so
+		-- ReloadAll doesn't create maxBuffs/maxDebuffs on every frame in the same script.
+		local wantPreview = LUF.db.profile.previewauras and not LUF.db.profile.locked
+		Auras.forceShow = false
+		Auras._wantPreview = wantPreview
 		Auras.showType = AuraConfig.bordercolor
 		Auras.disableOCC = LUF.db.profile.omnicc
 		Auras.disableBCC = LUF.db.profile.blizzardcc
@@ -1126,6 +1135,40 @@ function LUF.ApplySettings(frame)
 	end
 
 	frame:UpdateAllElements("RefreshUnit")
+
+	local auras = frame.SimpleAuras
+	if auras and auras._wantPreview then
+		auras._wantPreview = nil
+		LUF:QueuePreviewAuras(frame)
+	end
+end
+
+local previewAuraQueue, previewAuraIndex, previewAuraDriver
+function LUF:QueuePreviewAuras(frame)
+	if not previewAuraQueue then
+		previewAuraQueue = {}
+		previewAuraIndex = 1
+		previewAuraDriver = CreateFrame("Frame")
+		previewAuraDriver:SetScript("OnUpdate", function(self)
+			-- One unit frame's full preview set per tick keeps script time safe.
+			if previewAuraIndex <= #previewAuraQueue then
+				local unitFrame = previewAuraQueue[previewAuraIndex]
+				previewAuraIndex = previewAuraIndex + 1
+				local auras = unitFrame and unitFrame.SimpleAuras
+				if auras and auras.ForceUpdate and LUF.db.profile.previewauras and not LUF.db.profile.locked then
+					auras.forceShow = true
+					auras:ForceUpdate()
+				end
+			end
+			if previewAuraIndex > #previewAuraQueue then
+				wipe(previewAuraQueue)
+				previewAuraIndex = 1
+				self:Hide()
+			end
+		end)
+	end
+	previewAuraQueue[#previewAuraQueue + 1] = frame
+	previewAuraDriver:Show()
 end
 
 local sortUp = function(a, b) return a.order < b.order end
@@ -1767,6 +1810,9 @@ local function SetHeaderAttributes(header, config)
 end
 
 local function SetHeaderSettings(header)
+	if not header.isArena and not header:GetAttribute("isEnabled") then
+		return
+	end
 	if header.grpNumber then
 		if LUF.db.profile.units.raid.groupnumbers then
 			header.grpNumber:Show()
