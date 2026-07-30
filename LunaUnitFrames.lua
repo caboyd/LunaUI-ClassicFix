@@ -1150,8 +1150,11 @@ function LUF:QueuePreviewAuras(frame)
 		previewAuraIndex = 1
 		previewAuraDriver = CreateFrame("Frame")
 		previewAuraDriver:SetScript("OnUpdate", function(self)
-			-- One unit frame's full preview set per tick keeps script time safe.
-			if previewAuraIndex <= #previewAuraQueue then
+			local updates_per_tick = 4
+			for _ = 1, updates_per_tick do
+				if previewAuraIndex > #previewAuraQueue then
+					break
+				end
 				local unitFrame = previewAuraQueue[previewAuraIndex]
 				previewAuraIndex = previewAuraIndex + 1
 				local auras = unitFrame and unitFrame.SimpleAuras
