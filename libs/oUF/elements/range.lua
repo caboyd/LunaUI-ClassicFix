@@ -47,7 +47,18 @@ local function Update(self, event)
 		element:PreUpdate()
 	end
 
-	
+	-- Always consider the player's own frame in range.
+	if UnitIsUnit(unit, "player") then
+		element.__owner.currRange = 0
+		self:SetAlpha(element.insideAlpha)
+
+		if(element.PostUpdate) then
+			return element:PostUpdate(self, true, true, true)
+		end
+
+		return
+	end
+
 	local inRange, checkedRange = false, false
 	local connected = UnitIsConnected(unit)
 	if connected then
@@ -119,6 +130,14 @@ local function Enable(self)
 		element.insideAlpha = element.insideAlpha or 1
 		element.outsideAlpha = element.outsideAlpha or 0.55
 
+		self:RegisterEvent('UNIT_IN_RANGE_UPDATE', Path)
+		self:RegisterEvent('UNIT_CONNECTION', Path)
+
+		if(unit == 'party' or unit == 'raid') then
+			self:RegisterEvent('PARTY_MEMBER_ENABLE', Path)
+			self:RegisterEvent('PARTY_MEMBER_DISABLE', Path)
+		end
+
 		if(not OnRangeFrame) then
 			OnRangeFrame = CreateFrame('Frame')
 			OnRangeFrame:SetScript('OnUpdate', OnRangeUpdate)
@@ -145,6 +164,11 @@ local function Disable(self)
 		if(#_FRAMES == 0) then
 			OnRangeFrame:Hide()
 		end
+
+		self:UnregisterEvent('UNIT_IN_RANGE_UPDATE', Path)
+		self:UnregisterEvent('UNIT_CONNECTION', Path)
+		self:UnregisterEvent('PARTY_MEMBER_ENABLE', Path)
+		self:UnregisterEvent('PARTY_MEMBER_DISABLE', Path)
 	end
 end
 

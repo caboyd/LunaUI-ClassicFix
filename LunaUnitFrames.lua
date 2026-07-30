@@ -487,42 +487,55 @@ function LUF:HideBlizzardFrames()
 		active_hiddens.cast = true
 	end
 
-	if( CompactRaidFrameManager ) then
-		if( LUF.db.profile.hidden.raid and not active_hiddens.raid ) then
-			active_hiddens.raid = true
-			local function hideRaid()
-				CompactRaidFrameManager:UnregisterAllEvents()
-				CompactRaidFrameContainer:UnregisterAllEvents()
+	if (CompactRaidFrameManager) then
+		local function hideRaidFrames()
+			CompactRaidFrameContainer:UnregisterAllEvents()
+			CompactRaidFrameContainer:Hide()
+		end
 
-				local function hideRaidFrameProtectedByCombat()
-					CompactRaidFrameManager:Hide()
-					local shown = CompactRaidFrameManager_GetSetting("IsShown")
-					if( shown and shown ~= "0" ) then
-						CompactRaidFrameManager_SetSetting("IsShown", "0")
-					end
-				end
+		local function hideRaidSidebar()
+			CompactRaidFrameManager:UnregisterAllEvents()
 
-				if LUF.InCombatLockdown then
-					LUF:QueuePostCombatAction("hideRaidFrameProtectedByCombat",hideRaidFrameProtectedByCombat)
-				else
-					hideRaidFrameProtectedByCombat()
+			local function hideProtected()
+				CompactRaidFrameManager:Hide()
+
+				local shown = CompactRaidFrameManager_GetSetting("IsShown")
+				if shown and shown ~= "0" then
+					CompactRaidFrameManager_SetSetting("IsShown", "0")
 				end
 			end
-			
-			hooksecurefunc("CompactRaidFrameManager_UpdateShown", function()
-				if LUF.db.profile.hidden and type(LUF.db.profile.hidden) == "table" then
-					if LUF.db.profile.hidden.raid then
-						hideRaid()
-					end
-				else
-					--sometimes LUF.db.profile.hidden is bugged and doesn't contain a table so set it back to default
-					LUF.db.profile.hidden = LUF.defaults.profile.hidden
-				end
-			end)
-			
-			hideRaid()
-			CompactRaidFrameContainer:HookScript("OnShow", hideRaid)
-			CompactRaidFrameManager:HookScript("OnShow", hideRaid)
+
+			if LUF.InCombatLockdown then
+				LUF:QueuePostCombatAction("hideRaidSidebar", hideProtected)
+			else
+				hideProtected()
+			end
+		end
+
+		hooksecurefunc("CompactRaidFrameManager_UpdateShown", function()
+			local hidden = LUF.db.profile.hidden
+			if type(hidden) ~= "table" then
+				LUF.db.profile.hidden = LUF.defaults.profile.hidden
+				return
+			end
+
+			if hidden.raid then
+				hideRaidFrames()
+			end
+
+			if hidden.raidSidebar then
+				hideRaidSidebar()
+			end
+		end)
+
+		if LUF.db.profile.hidden.raidFrames then
+			hideRaidFrames()
+			CompactRaidFrameContainer:HookScript("OnShow", hideRaidFrames)
+		end
+
+		if LUF.db.profile.hidden.raidSidebar then
+			hideRaidSidebar()
+			CompactRaidFrameManager:HookScript("OnShow", hideRaidSidebar)
 		end
 	end
 
@@ -1514,6 +1527,7 @@ function LUF:SpawnUnits()
 	if(not oUF.isWrath) then
 		self.db.profile.units["boss"] = nil
 	end
+	
 
 	for unit, config in pairs(self.db.profile.units) do
 		if self.HeaderFrames[unit] then
