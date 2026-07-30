@@ -24,7 +24,7 @@ function LUF:LoadDefaults()
 		},
 		profile = {
 			locked = false,
-			previewauras = true,
+			previewauras = false,
 			tooltipCombat = true,
 			hidden = {cast = true, buffs = false, party = true, raid = true, player = true, pet = true, target = true, focus = true, arena = true},
 			statusbar = "Minimalist",
