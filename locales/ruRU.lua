@@ -436,6 +436,7 @@ local L = {
 ["BuffCountFontSizeText"] = "Установить размер шрифта счётчика для баффов с несколькими стаками",
 ["IndexOfDispel"] = "Индекс снятия",
 ["IndexOfDispelDesc"] = "Чтобы показать первое найденное снятие, оставьте пустым или используйте 1, второе — 2, 3 и т.д.",
+["RaidManager"] = "Raid Manager",
 }
 
 local LUF = select(2, ...)

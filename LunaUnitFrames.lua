@@ -277,12 +277,18 @@ function LUF:OnLoad()
 	self:SpawnUnits()
 	self:HideBlizzardFrames()
 	self:CreateConfig()
-	self:UpdateMovers()
 	self:PlaceAllFrames()
-	self:AutoswitchProfileSetup()
-	if self.db.global.switchtype == "GROUP" then
-		self:AutoswitchProfile("GROUP_ROSTER_UPDATE")
-	end
+	-- Defer movers+ReloadAll to the next frame so they don't share spawn's script budget.
+	local finishLoad = CreateFrame("Frame")
+	finishLoad:SetScript("OnUpdate", function(self)
+		self:SetScript("OnUpdate", nil)
+		LUF:UpdateMovers()
+		LUF.deferFrameSetup = nil
+		LUF:AutoswitchProfileSetup()
+		if LUF.db.global.switchtype == "GROUP" then
+			LUF:AutoswitchProfile("GROUP_ROSTER_UPDATE")
+		end
+	end)
 end
 
 local mediaNeeded = {}
@@ -487,42 +493,55 @@ function LUF:HideBlizzardFrames()
 		active_hiddens.cast = true
 	end
 
-	if( CompactRaidFrameManager ) then
-		if( LUF.db.profile.hidden.raid and not active_hiddens.raid ) then
-			active_hiddens.raid = true
-			local function hideRaid()
-				CompactRaidFrameManager:UnregisterAllEvents()
-				CompactRaidFrameContainer:UnregisterAllEvents()
+	if (CompactRaidFrameManager) then
+		local function hideRaidFrames()
+			CompactRaidFrameContainer:UnregisterAllEvents()
+			CompactRaidFrameContainer:Hide()
+		end
 
-				local function hideRaidFrameProtectedByCombat()
-					CompactRaidFrameManager:Hide()
-					local shown = CompactRaidFrameManager_GetSetting("IsShown")
-					if( shown and shown ~= "0" ) then
-						CompactRaidFrameManager_SetSetting("IsShown", "0")
-					end
-				end
+		local function hideRaidSidebar()
+			CompactRaidFrameManager:UnregisterAllEvents()
 
-				if LUF.InCombatLockdown then
-					LUF:QueuePostCombatAction("hideRaidFrameProtectedByCombat",hideRaidFrameProtectedByCombat)
-				else
-					hideRaidFrameProtectedByCombat()
+			local function hideProtected()
+				CompactRaidFrameManager:Hide()
+
+				local shown = CompactRaidFrameManager_GetSetting("IsShown")
+				if shown and shown ~= "0" then
+					CompactRaidFrameManager_SetSetting("IsShown", "0")
 				end
 			end
-			
-			hooksecurefunc("CompactRaidFrameManager_UpdateShown", function()
-				if LUF.db.profile.hidden and type(LUF.db.profile.hidden) == "table" then
-					if LUF.db.profile.hidden.raid then
-						hideRaid()
-					end
-				else
-					--sometimes LUF.db.profile.hidden is bugged and doesn't contain a table so set it back to default
-					LUF.db.profile.hidden = LUF.defaults.profile.hidden
-				end
-			end)
-			
-			hideRaid()
-			CompactRaidFrameContainer:HookScript("OnShow", hideRaid)
-			CompactRaidFrameManager:HookScript("OnShow", hideRaid)
+
+			if LUF.InCombatLockdown then
+				LUF:QueuePostCombatAction("hideRaidSidebar", hideProtected)
+			else
+				hideProtected()
+			end
+		end
+
+		hooksecurefunc("CompactRaidFrameManager_UpdateShown", function()
+			local hidden = LUF.db.profile.hidden
+			if type(hidden) ~= "table" then
+				LUF.db.profile.hidden = LUF.defaults.profile.hidden
+				return
+			end
+
+			if hidden.raid then
+				hideRaidFrames()
+			end
+
+			if hidden.raidSidebar then
+				hideRaidSidebar()
+			end
+		end)
+
+		if LUF.db.profile.hidden.raidFrames then
+			hideRaidFrames()
+			CompactRaidFrameContainer:HookScript("OnShow", hideRaidFrames)
+		end
+
+		if LUF.db.profile.hidden.raidSidebar then
+			hideRaidSidebar()
+			CompactRaidFrameManager:HookScript("OnShow", hideRaidSidebar)
 		end
 	end
 
@@ -778,13 +797,14 @@ function LUF.ApplySettings(frame)
 	
 	-- Bars
 	for barname,barobj in pairs(frame.modules) do
-		if moduleSettings[barname] then
-			moduleSettings[barname](barobj, config[barname])
+		local barconfig = config[barname]
+		if moduleSettings[barname] and barconfig and barconfig.enabled then
+			moduleSettings[barname](barobj, barconfig)
 		end
 	end
 	
 	-- Portrait
-	if frame.StatusPortrait then
+	if frame.StatusPortrait and config.portrait.enabled then
 		frame.StatusPortrait.showStatus = config.portrait.showStatus
 		frame.StatusPortrait.verbosePortraitIcon = config.portrait.verboseStatus
 		frame.StatusPortrait.type = config.portrait.type
@@ -844,32 +864,48 @@ function LUF.ApplySettings(frame)
 	
 	-- Tags
 	for barname,fstrings in pairs(frame.tags) do
-		for side,fstring in pairs(fstrings) do
-			fstring:ClearAllPoints()
+		-- Skip layout/Tag work for tags on disabled modules
+		if frame.modules[barname] and not config[barname].enabled then
+			for side,fstring in pairs(fstrings) do
+				if fstring._lufTagline then
+					frame:Untag(fstring)
+					fstring._lufTagline = nil
+				end
+			end
+		else
 			local barconfig = config.tags[barname]
-			if frame.modules[barname] then
-				fstring:SetPoint(strupper(side), frame.modules[barname], strupper(side), fstringoffsets[side], barconfig[side].offset or 0)
-			elseif barname == "top" then
-				if side ~= "center" then
-					fstring:SetPoint("BOTTOM"..strupper(side), frame, "TOP"..strupper(side), fstringoffsets[side], barconfig[side].offset or 0)
-				else
-					fstring:SetPoint("BOTTOM", frame, "TOP", fstringoffsets[side], barconfig[side].offset or 0)
-				end
-			else
-				if side ~= "center" then
-					fstring:SetPoint("TOP"..strupper(side), frame, "BOTTOM"..strupper(side), fstringoffsets[side], barconfig[side].offset or 0)
-				else
-					fstring:SetPoint("TOP", frame, "BOTTOM", fstringoffsets[side], barconfig[side].offset or 0)
+			for side,fstring in pairs(fstrings) do
+				local tagline = barconfig[side].tagline
+				if tagline ~= "" or fstring._lufTagline then
+					fstring:ClearAllPoints()
+					if frame.modules[barname] then
+						fstring:SetPoint(strupper(side), frame.modules[barname], strupper(side), fstringoffsets[side], barconfig[side].offset or 0)
+					elseif barname == "top" then
+						if side ~= "center" then
+							fstring:SetPoint("BOTTOM"..strupper(side), frame, "TOP"..strupper(side), fstringoffsets[side], barconfig[side].offset or 0)
+						else
+							fstring:SetPoint("BOTTOM", frame, "TOP", fstringoffsets[side], barconfig[side].offset or 0)
+						end
+					else
+						if side ~= "center" then
+							fstring:SetPoint("TOP"..strupper(side), frame, "BOTTOM"..strupper(side), fstringoffsets[side], barconfig[side].offset or 0)
+						else
+							fstring:SetPoint("TOP", frame, "BOTTOM", fstringoffsets[side], barconfig[side].offset or 0)
+						end
+					end
+					fstring:SetFont(LUF:LoadMedia(SML.MediaType.FONT, barconfig.font), barconfig.size, (barconfig.outline or LUF.db.profile.fontoutline) and "OUTLINE" or "")
+					if barconfig.shadow or LUF.db.profile.fontshadow then
+						fstring:SetShadowColor(0, 0, 0, 1.0)
+						fstring:SetShadowOffset(0.80, -0.80)
+					else
+						fstring:SetShadowColor(0, 0, 0, 0)
+					end
+					if fstring._lufTagline ~= tagline then
+						frame:Tag(fstring, tagline)
+						fstring._lufTagline = tagline ~= "" and tagline or nil
+					end
 				end
 			end
-			fstring:SetFont(LUF:LoadMedia(SML.MediaType.FONT, barconfig.font), barconfig.size, (barconfig.outline or LUF.db.profile.fontoutline) and "OUTLINE" or "")
-			if barconfig.shadow or LUF.db.profile.fontshadow then
-				fstring:SetShadowColor(0, 0, 0, 1.0)
-				fstring:SetShadowOffset(0.80, -0.80)
-			else
-				fstring:SetShadowColor(0, 0, 0, 0)
-			end
-			frame:Tag(fstring, barconfig[side].tagline)
 		end
 	end
 	
@@ -945,7 +981,11 @@ function LUF.ApplySettings(frame)
 		
 		Auras.timer = AuraConfig.timer
 		Auras.spacing = AuraConfig.padding
-		Auras.forceShow = LUF.db.profile.previewauras and not LUF.db.profile.locked
+		-- Keep forceShow off during UpdateAllElements; preview icons are deferred so
+		-- ReloadAll doesn't create maxBuffs/maxDebuffs on every frame in the same script.
+		local wantPreview = LUF.db.profile.previewauras and not LUF.db.profile.locked
+		Auras.forceShow = false
+		Auras._wantPreview = wantPreview
 		Auras.showType = AuraConfig.bordercolor
 		Auras.disableOCC = LUF.db.profile.omnicc
 		Auras.disableBCC = LUF.db.profile.blizzardcc
@@ -958,9 +998,9 @@ function LUF.ApplySettings(frame)
 	
 	-- Combat Text
 	if frame.CombatText then
-		frame.CombatText.feedbackFontHeight = config.combatText.size
-		frame.CombatText.font = LUF:LoadMedia(SML.MediaType.FONT, config.combatText.font)
 		if config.combatText.enabled then
+			frame.CombatText.feedbackFontHeight = config.combatText.size
+			frame.CombatText.font = LUF:LoadMedia(SML.MediaType.FONT, config.combatText.font)
 			frame:EnableElement("CombatText")
 			frame.CombatText:ClearAllPoints()
 			if config.portrait.enabled and config.portrait.alignment ~= "CENTER" then
@@ -1014,9 +1054,9 @@ function LUF.ApplySettings(frame)
 	--Squares
 	if frame.RaidStatusIndicators then
 		local isEnabled
+		local squarecfg = config.squares
 		for name in pairs(LUF.defaults.profile.units.player.squares) do
 			local indicator = frame.RaidStatusIndicators[name]
-			local squarecfg = config.squares
 			if squarecfg[name].enabled then
 				isEnabled = true
 				indicator.type = squarecfg[name].type
@@ -1032,18 +1072,24 @@ function LUF.ApplySettings(frame)
 				else
 					indicator.nameID = {strsplit(";", squarecfg[name].value or "")}
 				end
+				indicator:SetSize(squarecfg[name].size, squarecfg[name].size)
+				if name ~= "leftcenter" and name ~= "rightcenter" then
+					indicator:ClearAllPoints()
+					indicator:SetPoint(strupper(name), frame, strupper(name), squarecfg[name].x, squarecfg[name].y )
+				end
 			else
 				indicator.type = nil
 				indicator:Hide()
 			end
-			indicator:SetSize(squarecfg[name].size, squarecfg[name].size)
-			indicator:ClearAllPoints()
-			if name ~= "leftcenter" and name ~= "rightcenter" then
-				indicator:SetPoint(strupper(name), frame, strupper(name), squarecfg[name].x, squarecfg[name].y )
-			end
 		end
-		frame.RaidStatusIndicators.leftcenter:SetPoint("RIGHT", frame.RaidStatusIndicators.center, "LEFT", config.squares.leftcenter.x, config.squares.leftcenter.y)
-		frame.RaidStatusIndicators.rightcenter:SetPoint("LEFT", frame.RaidStatusIndicators.center, "RIGHT", config.squares.rightcenter.x, config.squares.rightcenter.y)
+		if squarecfg.leftcenter.enabled then
+			frame.RaidStatusIndicators.leftcenter:ClearAllPoints()
+			frame.RaidStatusIndicators.leftcenter:SetPoint("RIGHT", frame.RaidStatusIndicators.center, "LEFT", squarecfg.leftcenter.x, squarecfg.leftcenter.y)
+		end
+		if squarecfg.rightcenter.enabled then
+			frame.RaidStatusIndicators.rightcenter:ClearAllPoints()
+			frame.RaidStatusIndicators.rightcenter:SetPoint("LEFT", frame.RaidStatusIndicators.center, "RIGHT", squarecfg.rightcenter.x, squarecfg.rightcenter.y)
+		end
 		if isEnabled then
 			frame:EnableElement("RaidStatusIndicators")
 		else
@@ -1089,6 +1135,43 @@ function LUF.ApplySettings(frame)
 	end
 
 	frame:UpdateAllElements("RefreshUnit")
+
+	local auras = frame.SimpleAuras
+	if auras and auras._wantPreview then
+		auras._wantPreview = nil
+		LUF:QueuePreviewAuras(frame)
+	end
+end
+
+local previewAuraQueue, previewAuraIndex, previewAuraDriver
+function LUF:QueuePreviewAuras(frame)
+	if not previewAuraQueue then
+		previewAuraQueue = {}
+		previewAuraIndex = 1
+		previewAuraDriver = CreateFrame("Frame")
+		previewAuraDriver:SetScript("OnUpdate", function(self)
+			local updates_per_tick = 4
+			for _ = 1, updates_per_tick do
+				if previewAuraIndex > #previewAuraQueue then
+					break
+				end
+				local unitFrame = previewAuraQueue[previewAuraIndex]
+				previewAuraIndex = previewAuraIndex + 1
+				local auras = unitFrame and unitFrame.SimpleAuras
+				if auras and auras.ForceUpdate and LUF.db.profile.previewauras and not LUF.db.profile.locked then
+					auras.forceShow = true
+					auras:ForceUpdate()
+				end
+			end
+			if previewAuraIndex > #previewAuraQueue then
+				wipe(previewAuraQueue)
+				previewAuraIndex = 1
+				self:Hide()
+			end
+		end)
+	end
+	previewAuraQueue[#previewAuraQueue + 1] = frame
+	previewAuraDriver:Show()
 end
 
 local sortUp = function(a, b) return a.order < b.order end
@@ -1117,8 +1200,8 @@ function LUF.PlaceModules(frame)
 	frame.tags.bottom.right:SetWidth(usableX*config.tags.bottom.right.size/100)
 	
 	for k,v in pairs(frame.modules) do
-		v:ClearAllPoints()
 		if config[k].enabled then
+			v:ClearAllPoints()
 			frame:EnableElement(v.name)
 			if k == "totemBar" then -- Bandaid for oUF totems being broken
 				for _,totem in ipairs(frame.Totems) do
@@ -1500,7 +1583,12 @@ local refreshUnitChange = [[
 
 function LUF:SpawnUnits()
 	oUF:RegisterStyle("LunaUnitFrames", self.InitializeUnit)
-	oUF:RegisterInitCallback(function(frame) LUF.PlaceModules(frame) LUF.ApplySettings(frame) end)
+	-- Cleared after OnLoad UpdateMovers; skips duplicate PlaceModules/ApplySettings on first load.
+	oUF:RegisterInitCallback(function(frame)
+		if LUF.deferFrameSetup then return end
+		LUF.PlaceModules(frame)
+		LUF.ApplySettings(frame)
+	end)
 	
 	--WOTLK/TBC backwards compat
 	if(oUF.isClassic) then
@@ -1514,7 +1602,8 @@ function LUF:SpawnUnits()
 	if(not oUF.isWrath) then
 		self.db.profile.units["boss"] = nil
 	end
-
+	
+	LUF.deferFrameSetup = true
 	for unit, config in pairs(self.db.profile.units) do
 		if self.HeaderFrames[unit] then
 			if unit == "raid" then
@@ -1635,7 +1724,9 @@ local function SetArenaHeader(header, config)
 				frame:SetAttribute("*type2", "togglemenu")
 			end
 		end
-		LUF.PlaceModules(frame)
+		if not LUF.deferFrameSetup then
+			LUF.PlaceModules(frame)
+		end
 		currentAnchor = frame
 		num = num + 1
 		frame = _G[ButtonName .. num]
@@ -1705,7 +1796,9 @@ local function SetHeaderAttributes(header, config)
 		frame:SetWidth(config.width)
 		frame:SetHeight(config.height)
 		frame:SetScale(config.scale)
-		LUF.PlaceModules(frame)
+		if not LUF.deferFrameSetup then
+			LUF.PlaceModules(frame)
+		end
 		num = num + 1
 		frame = _G[ButtonName .. num]
 	end
@@ -1714,12 +1807,15 @@ local function SetHeaderAttributes(header, config)
 		header:Show()
 	end
 	
-	if not LUF.db.profile.locked then
+	if not LUF.db.profile.locked and not LUF.deferFrameSetup then
 		LUF:UpdateMovers()
 	end
 end
 
 local function SetHeaderSettings(header)
+	if not header.isArena and not header:GetAttribute("isEnabled") then
+		return
+	end
 	if header.grpNumber then
 		if LUF.db.profile.units.raid.groupnumbers then
 			header.grpNumber:Show()

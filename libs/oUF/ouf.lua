@@ -229,7 +229,7 @@ end
 
 local function updateRaid(self, event)
 	local unitGUID = UnitGUID(self.unit)
-	if(unitGUID and unitGUID ~= self.unitGUID) then
+	if(unitGUID ~= nil and not issecretvalue(unitGUID) and unitGUID ~= self.unitGUID) then
 		self.unitGUID = unitGUID
 
 		self:UpdateAllElements(event)
@@ -257,6 +257,12 @@ local function initObject(unit, style, styleFunc, header, ...)
 		local objectUnit = object:GetAttribute('oUF-guessUnit') or unit
 		local suffix = object:GetAttribute('unitsuffix')
 
+		-- Handle the case where someone has modified the unitsuffix attribute in
+		-- oUF-initialConfigFunction.
+		if(suffix and not objectUnit:match(suffix)) then
+			objectUnit = objectUnit .. suffix
+		end
+
 		object.__elements = {}
 		object.style = style
 		object = setmetatable(object, frame_metatable)
@@ -265,13 +271,14 @@ local function initObject(unit, style, styleFunc, header, ...)
 		table.insert(objects, object)
 
 		-- We have to force update the frames when PEW fires.
-		object:RegisterEvent('PLAYER_ENTERING_WORLD', object.UpdateAllElements, true)
-
-		-- Handle the case where someone has modified the unitsuffix attribute in
-		-- oUF-initialConfigFunction.
-		if(suffix and not objectUnit:match(suffix)) then
-			objectUnit = objectUnit .. suffix
-		end
+		-- It's also important to evaluate units before running an update
+		-- because sometimes events that are required for unit updates end up
+		-- not firing because of loading screens. For instance, there's a slight
+		-- delay between UNIT_EXITING_VEHICLE and UNIT_EXITED_VEHICLE during
+		-- which a user can go through a loading screen after which the player
+		-- frame will be stuck with the 'vehicle' unit.
+		object:RegisterEvent('PLAYER_ENTERING_WORLD', evalUnitAndUpdate, true)
+	
 
 		if(not isEventlessUnit(objectUnit)) then
 			object:RegisterEvent('UNIT_ENTERED_VEHICLE', evalUnitAndUpdate)
@@ -336,8 +343,8 @@ local function initObject(unit, style, styleFunc, header, ...)
 
 		-- Make Clique kinda happy
 		if(not object.isNamePlate) then
-			_G.ClickCastFrames = ClickCastFrames or {}
-			ClickCastFrames[object] = true
+			_G.ClickCastFrames = _G.ClickCastFrames or {}
+			_G.ClickCastFrames[object] = true
 		end
 	end
 end
@@ -658,8 +665,8 @@ do
 		]])
 		header:SetAttribute('oUF-headerType', isPetHeader and 'pet' or 'group')
 
-		if(Clique) then
-			SecureHandlerSetFrameRef(header, 'clickcast_header', Clique.header)
+		if(_G.Clique) then
+			SecureHandlerSetFrameRef(header, 'clickcast_header', _G.Clique.header)
 		end
 
 		if(header:GetAttribute('showParty')) then

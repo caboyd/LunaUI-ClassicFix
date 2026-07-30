@@ -10212,8 +10212,8 @@ function LUF:CreateConfig()
 				type = "group",
 				order = 27,
 				get = function(info) return LUF.db.profile.hidden[info[#info]] end,
-				set = function(info, value) LUF.db.profile.hidden[info[#info]] = value LUF:HideBlizzardFrames() end,
 				disabled = Lockdown,
+				set = function(info, value) LUF.db.profile.hidden[info[#info]] = value LUF:HideBlizzardFrames() end,
 				args = {
 					ReloadUI = {
 						name = RELOADUI,
@@ -10283,11 +10283,17 @@ function LUF:CreateConfig()
 						type = "toggle",
 						order = 10,
 					},
+					raidManager = {
+						name = L["RaidManager"],
+						desc = string.format(L["Hides the default %s frame"], L["RaidManager"]),
+						type = "toggle",
+						order = 11,
+					},
 					arena = ArenaAndFocusExists and {
 						name = ARENA,
 						desc = string.format(L["Hides the default %s frame"], ARENA),
 						type = "toggle",
-						order = 11,
+						order = 20,
 					} or nil,
 				},
 			},

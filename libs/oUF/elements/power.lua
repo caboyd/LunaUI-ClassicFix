@@ -325,10 +325,6 @@ local function Enable(self)
 		SetPowerUpdateMethod(self, self.effectivePower, true)
 		-- end block
 
-		if(element.colorDisconnected) then
-			self:RegisterEvent('UNIT_CONNECTION', ColorPath)
-		end
-
 		if(element.colorSelection) then
 			self:RegisterEvent('UNIT_FLAGS', ColorPath)
 		end
@@ -340,6 +336,12 @@ local function Enable(self)
 		self:RegisterEvent('UNIT_DISPLAYPOWER', Path)
 		self:RegisterEvent('UNIT_POWER_BAR_HIDE', Path)
 		self:RegisterEvent('UNIT_POWER_BAR_SHOW', Path)
+		self:RegisterEvent('UNIT_CONNECTION', Path)
+
+		if(unit == 'party' or unit == 'raid') then
+			self:RegisterEvent('PARTY_MEMBER_ENABLE', Path)
+			self:RegisterEvent('PARTY_MEMBER_DISABLE', Path)
+		end
 
 		if(element:IsObjectType('StatusBar')) then
 			element.texture = element:GetStatusBarTexture() and element:GetStatusBarTexture():GetTexture() or [[Interface\TargetingFrame\UI-StatusBar]]
@@ -364,7 +366,9 @@ local function Disable(self)
 		self:UnregisterEvent('UNIT_POWER_BAR_SHOW', Path)
 		self:UnregisterEvent('UNIT_POWER_FREQUENT', Path)
 		self:UnregisterEvent('UNIT_POWER_UPDATE', Path)
-		self:UnregisterEvent('UNIT_CONNECTION', ColorPath)
+		self:UnregisterEvent('UNIT_CONNECTION', Path)
+		self:UnregisterEvent('PARTY_MEMBER_ENABLE', Path)
+		self:UnregisterEvent('PARTY_MEMBER_DISABLE', Path)
 		self:UnregisterEvent('UNIT_FACTION', ColorPath)
 		self:UnregisterEvent('UNIT_FLAGS', ColorPath)
 	end

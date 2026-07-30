@@ -79,9 +79,9 @@ end
 
 local colors = {
 	smooth = { 1, 0, 0, 1, 1, 0, 0, 1, 0 },
-	health = oUF:CreateColor(49, 207, 37),
-	disconnected = oUF:CreateColor(0.6, 0.6, 0.6),
-	tapped = oUF:CreateColor(0.6, 0.6, 0.6),
+	health = {49 / 255, 207 / 255, 37 / 255},
+	disconnected = {0.6, 0.6, 0.6},
+	tapped = {0.6, 0.6, 0.6},
 	class = {},
 	dispel = {
 		None    = { _G.DEBUFF_TYPE_NONE_COLOR:GetRGB() },

@@ -17,7 +17,7 @@ CombatText - A frame.
     -- Register with oUF
     self.CombatText = CreateFrame("Frame", nil, self)
     self.CombatText.feedbackFontHeight = 10
-    self.CombatText.font = "Fonts\FRIZQT__.TTF"
+    self.CombatText.font = "Fonts\\FRIZQT__.TTF"
 --]]
 
 local _, ns = ...
@@ -79,10 +79,12 @@ local function Enable(self)
 	local element = self.CombatText
 	if(element) then
 		element.__owner = self
+		element.font = element.font or "Fonts\\FRIZQT__.TTF"
+		element.feedbackFontHeight = element.feedbackFontHeight or 10
 
 		if not element.feedbackText or not element.feedbackText:IsObjectType("FontString") then
 			element.feedbackText = element:CreateFontString(nil, "ARTWORK")
-			element.feedbackText:SetFont("Fonts\\FRIZQT__.TTF", 10)
+			element.feedbackText:SetFont(element.font, element.feedbackFontHeight)
 			element.feedbackText:SetShadowColor(0, 0, 0, 1.0)
 			element.feedbackText:SetShadowOffset(0.80, -0.80)
 			element.feedbackText:SetPoint("CENTER", element, "CENTER")
