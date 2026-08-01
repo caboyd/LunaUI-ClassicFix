@@ -277,13 +277,14 @@ function LUF:OnLoad()
 	self:SpawnUnits()
 	self:HideBlizzardFrames()
 	self:CreateConfig()
-	self:PlaceAllFrames()
-	-- Defer movers+ReloadAll to the next frame so they don't share spawn's script budget.
+	-- Defer movers/reload/place so they don't share spawn's script budget.
+	-- Place after ReloadAll so scales are applied before position math.
 	local finishLoad = CreateFrame("Frame")
 	finishLoad:SetScript("OnUpdate", function(self)
 		self:SetScript("OnUpdate", nil)
 		LUF:UpdateMovers()
 		LUF.deferFrameSetup = nil
+		LUF:PlaceAllFrames()
 		LUF:AutoswitchProfileSetup()
 		if LUF.db.global.switchtype == "GROUP" then
 			LUF:AutoswitchProfile("GROUP_ROSTER_UPDATE")
