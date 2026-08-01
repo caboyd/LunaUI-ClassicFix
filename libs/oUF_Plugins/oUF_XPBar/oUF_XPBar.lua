@@ -102,7 +102,7 @@ local function Update(self, event)
 	maxRep = math.abs(minRep - maxRep)
 
 	if(element.xpBar) then
-		if( UnitLevel(unit) == MAX_PLAYER_LEVEL or (UnitIsUnit(unit, "pet") and UnitLevel(unit) == UnitLevel("player")) ) then
+		if( UnitLevel(unit) == GetMaxPlayerLevel() or (UnitIsUnit(unit, "pet") and UnitLevel(unit) == UnitLevel("player")) ) then
 			element.xpBar:Hide()
 		else
 			element.xpBar:SetMinMaxValues(minXP, maxXP)
