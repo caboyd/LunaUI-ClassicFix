@@ -102,7 +102,7 @@ local function Update(self, event)
 	maxRep = math.abs(minRep - maxRep)
 
 	if(element.xpBar) then
-		if( UnitLevel(unit) == MAX_PLAYER_LEVEL or (UnitIsUnit(unit, "pet") and UnitLevel(unit) == UnitLevel("player")) ) then
+		if( UnitLevel(unit) == GetMaxPlayerLevel() or (UnitIsUnit(unit, "pet") and UnitLevel(unit) == UnitLevel("player")) ) then
 			element.xpBar:Hide()
 		else
 			element.xpBar:SetMinMaxValues(minXP, maxXP)
@@ -220,6 +220,12 @@ local function Enable(self)
 			element.repBar:SetScript("OnLeave", OnLeave)
 		end
 
+		if self.tags and self.tags.xpBar then
+			for _, fs in next, self.tags.xpBar do
+				fs:Show()
+			end
+		end
+
 		return true
 	end
 end
@@ -233,6 +239,13 @@ local function Disable(self)
 
 		if(element.repBar) then
 			element.repBar:Hide()
+		end
+
+		-- XP Bar text doesn't hide with the bar, so we need to hide it manually
+		if self.tags and self.tags.xpBar then
+			for _, fs in next, self.tags.xpBar do
+				fs:Hide()
+			end
 		end
 
 		self:UnregisterEvent("ENABLE_XP_GAIN", Path)
