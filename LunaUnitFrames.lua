@@ -1280,6 +1280,7 @@ function LUF.PlaceModules(frame)
 	if config.portrait.enabled and config.portrait.alignment == "LEFT" then
 		xOffset = xOffset + frame.modules.portrait:GetWidth()
 	end
+	point = "TOPLEFT"
 	attrPoint = point
 
 	--sqrX is reverse indent. 
