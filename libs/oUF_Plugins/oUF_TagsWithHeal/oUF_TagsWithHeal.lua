@@ -1845,6 +1845,7 @@ local function Untag(self, fs)
 	end
 
 	fs.UpdateTag = nil
+	fs:SetText("")
 
 	taggedFS[fs] = nil
 	self.__tags[fs] = nil
