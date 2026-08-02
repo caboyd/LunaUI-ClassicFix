@@ -280,8 +280,12 @@ function LUF:CreateConfig()
 		if strmatch(unit, "^party.*$") then
 			LUF.stateMonitor:SetAttribute(unit.."Enabled", value)
 		end
+		-- Locked: SetupHeader/Reload is enough (show/hide). Unlocked: refresh
+		-- config-mode placeholders for the new enable set, then apply visuals once.
+		if not LUF.db.profile.locked then
+			LUF:UpdateMovers(true)
+		end
 		LUF:Reload(unit)
-		LUF:UpdateMovers()
 		if not value then
 			if unit == "raid" then
 				for unit,tbl in pairs(LUF.db.profile.units) do
@@ -4562,7 +4566,13 @@ function LUF:CreateConfig()
 						order = 1,
 					},
 					descriptiontext = {
-						name = "Luna Unit Frames by "..C_AddOns.GetAddOnMetadata("LunaUnitFrames", "Author").."\nDonate: "..C_AddOns.GetAddOnMetadata("LunaUnitFrames", "X-Donate").."\n".."Version: "..LUF.version,
+						name = function()
+							local text = "Luna Unit Frames by "..C_AddOns.GetAddOnMetadata("LunaUnitFrames", "Author").."\nDonate: "..C_AddOns.GetAddOnMetadata("LunaUnitFrames", "X-Donate").."\n".."Version: "..LUF.version
+							if LUF.loadTimeFrame1Ms and LUF.loadTimeFrame2Ms then
+								text = text.."\n"..string.format(L["Load time: %.1f ms (frame 1: %.1f ms, frame 2: %.1f ms)"], LUF.loadTimeMs or 0, LUF.loadTimeFrame1Ms, LUF.loadTimeFrame2Ms)
+							end
+							return text
+						end,
 						type = "description",
 						width = "full",
 						order = 2,

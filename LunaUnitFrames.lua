@@ -257,6 +257,26 @@ function LUF:ResetColors()
 	self:ReloadAll()
 end
 
+-- Size/scale/enable only (protected). Visual PlaceModules/ApplySettings wait a frame.
+function LUF:ApplySecureUnitLayout()
+	for _, unit in pairs(self.unitList) do
+		if not self.HeaderFrames[unit] then
+			local frame = self.frameIndex[unit]
+			local config = self.db.profile.units[unit]
+			if frame and config then
+				frame:SetWidth(config.width)
+				frame:SetHeight(config.height)
+				frame:SetScale(config.scale)
+				if not config.enabled and frame:IsEnabled() then
+					frame:Disable()
+				elseif config.enabled and not frame:IsEnabled() then
+					frame:Enable()
+				end
+			end
+		end
+	end
+end
+
 -- On /reload in combat, InCombatLockdown() is false for a short login window.
 -- All secure work (spawn/attributes/place) must finish in that window — deferring
 -- it to the next frame is how frames break mid-raid. UnitAffectingCombat must not
@@ -269,18 +289,32 @@ function LUF:CompleteLoad()
 		return
 	end
 	self.InCombatLockdown = nil
+	local frame1Start = debugprofilestop()
 	self:LoadoUFSettings()
 	self:SpawnUnits()
 	self:HideBlizzardFrames()
-	-- Secure: movers + place must stay synchronous so /reload in combat works.
-	-- Place after UpdateMovers/ReloadAll so scales exist for position math.
-	self:UpdateMovers()
+	-- Frame 1 (secure window): spawn, movers, size/scale, place.
+	-- ReloadAll visuals defer to the next frame — not protected, saves script time.
+	self:UpdateMovers(true)
+	self:ApplySecureUnitLayout()
 	self.deferFrameSetup = nil
 	self:PlaceAllFrames()
-	self:AutoswitchProfileSetup()
-	if self.db.global.switchtype == "GROUP" then
-		self:AutoswitchProfile("GROUP_ROSTER_UPDATE")
-	end
+	self.loadTimeFrame1Ms = debugprofilestop() - frame1Start
+
+	local finishLoad = CreateFrame("Frame")
+	finishLoad:SetScript("OnUpdate", function(self)
+		self:SetScript("OnUpdate", nil)
+		local frame2Start = debugprofilestop()
+		LUF:ReloadAll()
+		-- Scales were applied on frame 1 before PlaceAllFrames; ReloadAll reuses
+		-- the same size/scale values, so a second place is unnecessary.
+		LUF:AutoswitchProfileSetup()
+		if LUF.db.global.switchtype == "GROUP" then
+			LUF:AutoswitchProfile("GROUP_ROSTER_UPDATE")
+		end
+		LUF.loadTimeFrame2Ms = debugprofilestop() - frame2Start
+		LUF.loadTimeMs = (LUF.loadTimeFrame1Ms or 0) + (LUF.loadTimeFrame2Ms or 0)
+	end)
 end
 
 function LUF:OnLoad()
@@ -345,9 +379,9 @@ function LUF:ProfilesChanged()
 		return
 	end
 	self:HideBlizzardFrames()
-	self:ReloadAll()
 	self:SetupAllHeaders()
-	self:UpdateMovers()
+	self:UpdateMovers(true)
+	self:ReloadAll()
 	self:PlaceAllFrames()
 end
 
@@ -1606,9 +1640,10 @@ local refreshUnitChange = [[
 
 function LUF:SpawnUnits()
 	oUF:RegisterStyle("LunaUnitFrames", self.InitializeUnit)
-	-- Cleared after OnLoad UpdateMovers; skips duplicate PlaceModules/ApplySettings on first load.
+	-- deferFrameSetup: first-load spawn; skipInitApply: config-mode header child create.
+	-- Visuals come from deferred ReloadAll / UpdateMovers ReloadAll, not the init callback.
 	oUF:RegisterInitCallback(function(frame)
-		if LUF.deferFrameSetup then return end
+		if LUF.deferFrameSetup or LUF.skipInitApply then return end
 		LUF.PlaceModules(frame)
 		LUF.ApplySettings(frame)
 	end)
@@ -1831,10 +1866,8 @@ local function SetHeaderAttributes(header, config)
 		header:Hide()
 		header:Show()
 	end
-	
-	if not LUF.db.profile.locked and not LUF.deferFrameSetup then
-		LUF:UpdateMovers()
-	end
+	-- Do not call UpdateMovers here: SetupHeader("raid") hits this per group (8–9×),
+	-- and each UpdateMovers does EnableMovers + ReloadAll. Callers refresh once.
 end
 
 local function SetHeaderSettings(header)

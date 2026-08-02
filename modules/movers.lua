@@ -142,18 +142,33 @@ local function DisableMovers()
 	end
 end
 
-function LUF:UpdateMovers()
+function LUF:UpdateMovers(skipReload)
 	if InCombatLockdown() then
 		LUF.InCombatLockdown = true
 		LUF:QueuePostCombatAction("UpdateMovers", LUF.UpdateMovers, LUF)
 		return
 	end
+	-- startingIndex create/teardown runs InitializeUnit; skip ApplySettings until ReloadAll.
+	LUF.skipInitApply = true
+	local moversChanged = false
 	if( LUF.db.profile.locked ) then
-		DisableMovers()
+		-- Skip when movers were never enabled (e.g. first load while locked):
+		-- DisableMovers would only re-SetupHeader every header for no benefit.
+		if LUF.moversActive then
+			DisableMovers()
+			LUF.moversActive = nil
+			moversChanged = true
+		end
 	else
 		EnableMovers()
+		LUF.moversActive = true
+		moversChanged = true
 	end
-	self:ReloadAll()
+	LUF.skipInitApply = nil
+	-- Locked + never unlocked: nothing to do; callers already Reload(unit) as needed.
+	if not skipReload and moversChanged then
+		self:ReloadAll()
+	end
 end
 
 function LUF:CorrectPosition(frame)
