@@ -150,19 +150,23 @@ function LUF:UpdateMovers(skipReload)
 	end
 	-- startingIndex create/teardown runs InitializeUnit; skip ApplySettings until ReloadAll.
 	LUF.skipInitApply = true
+	local moversChanged = false
 	if( LUF.db.profile.locked ) then
 		-- Skip when movers were never enabled (e.g. first load while locked):
 		-- DisableMovers would only re-SetupHeader every header for no benefit.
 		if LUF.moversActive then
 			DisableMovers()
 			LUF.moversActive = nil
+			moversChanged = true
 		end
 	else
 		EnableMovers()
 		LUF.moversActive = true
+		moversChanged = true
 	end
 	LUF.skipInitApply = nil
-	if not skipReload then
+	-- Locked + never unlocked: nothing to do; callers already Reload(unit) as needed.
+	if not skipReload and moversChanged then
 		self:ReloadAll()
 	end
 end

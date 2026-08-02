@@ -289,30 +289,31 @@ function LUF:CompleteLoad()
 		return
 	end
 	self.InCombatLockdown = nil
+	local frame1Start = debugprofilestop()
 	self:LoadoUFSettings()
 	self:SpawnUnits()
 	self:HideBlizzardFrames()
 	-- Frame 1 (secure window): spawn, movers, size/scale, place.
-	-- Place after scales so PlaceFrame's GetScale() math matches ProfilesChanged.
 	-- ReloadAll visuals defer to the next frame — not protected, saves script time.
 	self:UpdateMovers(true)
 	self:ApplySecureUnitLayout()
 	self.deferFrameSetup = nil
 	self:PlaceAllFrames()
+	self.loadTimeFrame1Ms = debugprofilestop() - frame1Start
 
 	local finishLoad = CreateFrame("Frame")
 	finishLoad:SetScript("OnUpdate", function(self)
 		self:SetScript("OnUpdate", nil)
+		local frame2Start = debugprofilestop()
 		LUF:ReloadAll()
-		-- Match ProfilesChanged: place after reload scales. Skip if lockdown closed
-		-- the post-/reload window — frame 1 already placed after ApplySecureUnitLayout.
-		if not InCombatLockdown() then
-			LUF:PlaceAllFrames()
-		end
+		-- Scales were applied on frame 1 before PlaceAllFrames; ReloadAll reuses
+		-- the same size/scale values, so a second place is unnecessary.
 		LUF:AutoswitchProfileSetup()
 		if LUF.db.global.switchtype == "GROUP" then
 			LUF:AutoswitchProfile("GROUP_ROSTER_UPDATE")
 		end
+		LUF.loadTimeFrame2Ms = debugprofilestop() - frame2Start
+		LUF.loadTimeMs = (LUF.loadTimeFrame1Ms or 0) + (LUF.loadTimeFrame2Ms or 0)
 	end)
 end
 
@@ -378,9 +379,9 @@ function LUF:ProfilesChanged()
 		return
 	end
 	self:HideBlizzardFrames()
-	self:ReloadAll()
 	self:SetupAllHeaders()
-	self:UpdateMovers()
+	self:UpdateMovers(true)
+	self:ReloadAll()
 	self:PlaceAllFrames()
 end
 
@@ -1865,10 +1866,8 @@ local function SetHeaderAttributes(header, config)
 		header:Hide()
 		header:Show()
 	end
-	
-	if not LUF.db.profile.locked and not LUF.deferFrameSetup then
-		LUF:UpdateMovers()
-	end
+	-- Do not call UpdateMovers here: SetupHeader("raid") hits this per group (8–9×),
+	-- and each UpdateMovers does EnableMovers + ReloadAll. Callers refresh once.
 end
 
 local function SetHeaderSettings(header)
