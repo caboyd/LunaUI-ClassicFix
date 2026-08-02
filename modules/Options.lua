@@ -197,6 +197,8 @@ local UnitToFrame = {
 
 
 function LUF:CreateConfig()
+	if self.configCreated then return end
+	self.configCreated = true
 
 	local function set(info, value)
 		local db = LUF.db.profile.units
@@ -10470,7 +10472,14 @@ SlashCmdList["LUNAUF"] = function(msg)
 		LUF:Print(string.format(L["Cannot find any profiles named \"%s\"."], profile))
 		return
 	end
-	
-	local AceConfigDialog = LibStub("AceConfigDialog-3.0")
+
+	LUF:CreateConfig()
 	AceConfigDialog:Open("LunaUnitFrames")
+end
+
+-- Build options the first time Interface Options is opened, not at login.
+if InterfaceOptionsFrame then
+	InterfaceOptionsFrame:HookScript("OnShow", function()
+		LUF:CreateConfig()
+	end)
 end

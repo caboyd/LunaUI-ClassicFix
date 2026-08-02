@@ -117,6 +117,7 @@ local UnitSpecific = {
 				frame.Totems[i]:SetMinMaxValues(0,1)
 				frame.Totems[i]:SetValue(0)
 				frame.Totems[i].timer = frame.Totems[i]:CreateFontString("LUFTotemCooldown"..i, "OVERLAY")
+				frame.Totems[i].timer:SetFont("Fonts\\FRIZQT__.TTF", 11) -- Prevent "font not set" before ApplySettings
 				frame.Totems[i].timer:SetPoint("CENTER", frame.Totems[i], "CENTER")
 				frame.Totems[i].bg = frame.Totems[i]:CreateTexture(nil, "BACKGROUND")
 				frame.Totems[i].bg:SetAllPoints(frame.Totems[i])
