@@ -143,6 +143,11 @@ local function DisableMovers()
 end
 
 function LUF:UpdateMovers()
+	if InCombatLockdown() then
+		LUF.InCombatLockdown = true
+		LUF:QueuePostCombatAction("UpdateMovers", LUF.UpdateMovers, LUF)
+		return
+	end
 	if( LUF.db.profile.locked ) then
 		DisableMovers()
 	else

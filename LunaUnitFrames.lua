@@ -257,6 +257,32 @@ function LUF:ResetColors()
 	self:ReloadAll()
 end
 
+-- On /reload in combat, InCombatLockdown() is false for a short login window.
+-- All secure work (spawn/attributes/place) must finish in that window — deferring
+-- it to the next frame is how frames break mid-raid. UnitAffectingCombat must not
+-- be used here; it is often already true and would skip the window entirely.
+function LUF:CompleteLoad()
+	if InCombatLockdown() then
+		-- Truly locked (missed the window). Retry after combat; keep Blizzard UI.
+		self.InCombatLockdown = true
+		self:QueuePostCombatAction("CompleteLoad", LUF.CompleteLoad, LUF)
+		return
+	end
+	self.InCombatLockdown = nil
+	self:LoadoUFSettings()
+	self:SpawnUnits()
+	self:HideBlizzardFrames()
+	-- Secure: movers + place must stay synchronous so /reload in combat works.
+	-- Place after UpdateMovers/ReloadAll so scales exist for position math.
+	self:UpdateMovers()
+	self.deferFrameSetup = nil
+	self:PlaceAllFrames()
+	self:AutoswitchProfileSetup()
+	if self.db.global.switchtype == "GROUP" then
+		self:AutoswitchProfile("GROUP_ROSTER_UPDATE")
+	end
+end
+
 function LUF:OnLoad()
 	
 	self:LoadDefaults()
@@ -273,23 +299,7 @@ function LUF:OnLoad()
 	SML.RegisterCallback(self, "LibSharedMedia_Registered", "MediaRegistered")
 	SML.RegisterCallback(self, "LibSharedMedia_SetGlobal", "MediaForced")
 
-	self:LoadoUFSettings()
-	self:SpawnUnits()
-	self:HideBlizzardFrames()
-	self:CreateConfig()
-	-- Defer movers/reload/place so they don't share spawn's script budget.
-	-- Place after ReloadAll so scales are applied before position math.
-	local finishLoad = CreateFrame("Frame")
-	finishLoad:SetScript("OnUpdate", function(self)
-		self:SetScript("OnUpdate", nil)
-		LUF:UpdateMovers()
-		LUF.deferFrameSetup = nil
-		LUF:PlaceAllFrames()
-		LUF:AutoswitchProfileSetup()
-		if LUF.db.global.switchtype == "GROUP" then
-			LUF:AutoswitchProfile("GROUP_ROSTER_UPDATE")
-		end
-	end)
+	self:CompleteLoad()
 end
 
 local mediaNeeded = {}
@@ -306,13 +316,16 @@ end
 function LUF:MediaRegistered(event, mediaType, key)
 	if( mediaNeeded[mediaType] == key ) then
 		mediaNeeded[mediaType] = nil
-		
-		self:ReloadAll()
+		if self.unitsSpawned then
+			self:ReloadAll()
+		end
 	end
 end
 
 function LUF:MediaForced(mediaType)
-	self:ReloadAll()
+	if self.unitsSpawned then
+		self:ReloadAll()
+	end
 end
 
 function LUF:ProfilesChanged()
@@ -326,6 +339,11 @@ function LUF:ProfilesChanged()
 	end
 	
 	self:LoadoUFSettings()
+	if not self.unitsSpawned then return end
+	if InCombatLockdown() then
+		self:QueuePostCombatAction("ProfilesChanged", LUF.ProfilesChanged, LUF)
+		return
+	end
 	self:HideBlizzardFrames()
 	self:ReloadAll()
 	self:SetupAllHeaders()
@@ -468,11 +486,12 @@ end
 --Process functions that can only be done outside combat
 --called at bottom of this file when event == "PLAYER_REGEN_ENABLED"
 local function ProcessPostCombatActionQueue()
-	for _, job in ipairs(postCombatActionQueue) do
+	-- Swap queue first so jobs can re-queue themselves if still locked down.
+	local queue = postCombatActionQueue
+	postCombatActionQueue = {}
+	for _, job in ipairs(queue) do
 		job.fn(unpack(job.args))
 	end
-	--clear queue
-	postCombatActionQueue = {}
 end
 
 local active_hiddens = {
@@ -500,7 +519,7 @@ function LUF:HideBlizzardFrames()
 			CompactRaidFrameContainer:Hide()
 		end
 
-		local function hideRaidSidebar()
+		local function hideRaidManager()
 			CompactRaidFrameManager:UnregisterAllEvents()
 
 			local function hideProtected()
@@ -513,36 +532,38 @@ function LUF:HideBlizzardFrames()
 			end
 
 			if LUF.InCombatLockdown then
-				LUF:QueuePostCombatAction("hideRaidSidebar", hideProtected)
+				LUF:QueuePostCombatAction("hideRaidManager", hideProtected)
 			else
 				hideProtected()
 			end
 		end
 
-		hooksecurefunc("CompactRaidFrameManager_UpdateShown", function()
-			local hidden = LUF.db.profile.hidden
-			if type(hidden) ~= "table" then
-				LUF.db.profile.hidden = LUF.defaults.profile.hidden
-				return
-			end
+		if not active_hiddens.raid and not active_hiddens.raidManager then
+			hooksecurefunc("CompactRaidFrameManager_UpdateShown", function()
+				local hidden = LUF.db.profile.hidden
+				if type(hidden) ~= "table" then
+					LUF.db.profile.hidden = LUF.defaults.profile.hidden
+					return
+				end
 
-			if hidden.raid then
-				hideRaidFrames()
-			end
+				if hidden.raid then
+					hideRaidFrames()
+				end
 
-			if hidden.raidSidebar then
-				hideRaidSidebar()
-			end
-		end)
+				if hidden.raidManager then
+					hideRaidManager()
+				end
+			end)
+		end
 
-		if LUF.db.profile.hidden.raidFrames then
+		if LUF.db.profile.hidden.raid and not active_hiddens.raid then
 			hideRaidFrames()
 			CompactRaidFrameContainer:HookScript("OnShow", hideRaidFrames)
 		end
 
-		if LUF.db.profile.hidden.raidSidebar then
-			hideRaidSidebar()
-			CompactRaidFrameManager:HookScript("OnShow", hideRaidSidebar)
+		if LUF.db.profile.hidden.raidManager and not active_hiddens.raidManager then
+			hideRaidManager()
+			CompactRaidFrameManager:HookScript("OnShow", hideRaidManager)
 		end
 	end
 
@@ -1686,6 +1707,7 @@ function LUF:SpawnUnits()
 	self:SetupAllHeaders()
 	self.frameIndex.target.PostUpdate = LUF.overrides.Target.PostUpdate
 	self.frameIndex.target:HookScript("OnHide", LUF.overrides.Target.PostUpdate)
+	self.unitsSpawned = true
 end
 
 local function SetArenaHeader(header, config)
@@ -1701,8 +1723,9 @@ local function SetArenaHeader(header, config)
 	local ButtonName = header:GetName() .. "UnitButton"
 	local num = 1
 	local frame = _G[ButtonName .. num]
+	local inCombat = InCombatLockdown() or LUF.InCombatLockdown
 	while( frame ) do
-		if not LUF.InCombatLockdown then
+		if not inCombat then
 			if not config.enabled and frame:IsEnabled() then
 				frame:Disable()
 			elseif config.enabled and not frame:IsEnabled() then
@@ -1926,8 +1949,9 @@ end
 function LUF:ReloadSingleUnit(unit)
 	local frame = self.frameIndex[unit]
 	local config = self.db.profile.units[unit]
+	local inCombat = InCombatLockdown() or LUF.InCombatLockdown
 	
-	if not LUF.InCombatLockdown then
+	if not inCombat then
 		frame:SetWidth(config.width)
 		frame:SetHeight(config.height)
 		frame:SetScale(config.scale)
@@ -1935,10 +1959,13 @@ function LUF:ReloadSingleUnit(unit)
 	LUF.PlaceModules(frame, unit)
 	LUF.ApplySettings(frame)
 	
-	if not config.enabled and frame:IsEnabled() then
-		frame:Disable()
-	elseif config.enabled and not frame:IsEnabled() then
-		frame:Enable()
+	-- RegisterUnitWatch/UnregisterUnitWatch are protected.
+	if not inCombat then
+		if not config.enabled and frame:IsEnabled() then
+			frame:Disable()
+		elseif config.enabled and not frame:IsEnabled() then
+			frame:Enable()
+		end
 	end
 end
 
