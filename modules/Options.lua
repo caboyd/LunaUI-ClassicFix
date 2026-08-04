@@ -10294,12 +10294,29 @@ function LUF:CreateConfig()
 						desc = string.format(L["Hides the default %s frame"], RAID),
 						type = "toggle",
 						order = 10,
+						set = function(info, value)
+							LUF.db.profile.hidden.raid = value
+							if not value then
+								LUF.db.profile.hidden.raidManager = false
+							end
+							LUF:HideBlizzardFrames()
+						end,
 					},
 					raidManager = {
 						name = L["RaidManager"],
 						desc = string.format(L["Hides the default %s frame"], L["RaidManager"]),
 						type = "toggle",
 						order = 11,
+						get = function()
+							return LUF.db.profile.hidden.raidManager
+						end,
+						set = function(info, value)
+							LUF.db.profile.hidden.raidManager = value
+							if value then
+								LUF.db.profile.hidden.raid = true
+							end
+							LUF:HideBlizzardFrames()
+						end,
 					},
 					arena = ArenaAndFocusExists and {
 						name = ARENA,
