@@ -26,7 +26,7 @@ function LUF:LoadDefaults()
 			locked = false,
 			previewauras = false,
 			tooltipCombat = true,
-			hidden = {cast = true, buffs = false, party = true, raid = true, raidManager = true, player = true, pet = true, target = true, focus = true, arena = true},
+			hidden = {cast = true, buffs = false, party = true, raid = true, raidManager = false, player = true, pet = true, target = true, focus = true, arena = true},
 			statusbar = "Minimalist",
 			fontshadow = true,
 			auraborderType = "dark",

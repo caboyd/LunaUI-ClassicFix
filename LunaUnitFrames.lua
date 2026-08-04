@@ -547,6 +547,10 @@ function LUF:HideBlizzardFrames()
 		active_hiddens.cast = true
 	end
 
+	if LUF.db.profile.hidden.raidManager then
+		LUF.db.profile.hidden.raid = true
+	end
+
 	if (CompactRaidFrameManager) then
 		local function hideRaidFrames()
 			CompactRaidFrameContainer:UnregisterAllEvents()
