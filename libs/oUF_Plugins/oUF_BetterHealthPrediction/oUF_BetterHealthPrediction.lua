@@ -70,12 +70,13 @@ local isDisableHoTs = false
 
 local function GetMyHeal(unit, guid, timeFrame)
 	local myHeal = (HealComm:GetHealAmount(guid, HealComm.DIRECT_HEALS, timeFrame, myGUID) or 0)
-	--[[
-	We can't enable this because units outside party show as 100hp and prediction will be wrong
+	
+	-- units outside party show as 100hp and prediction is wrong
+	-- but it still indicates that the unit is receiving heals
 	if isBlizzDirectHeals then
 		return UnitGetIncomingHeals(unit, "player") or 0
 	end
-	--]]
+	
 	return myHeal
 end
 
