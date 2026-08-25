@@ -193,6 +193,15 @@ local _ENV = {
 	lastChannelSpellName = function() return oUF.lastChannelSpellName end,
 	lastChannelEndTime = function() return oUF.lastChannelSpellEndTime end,
 	rangeCheck = function(unit) return RC:GetRange(unit) end,
+	blizzDirectHeals = function() return oUF.TagsWithHealBlizzDirectHeals end,
+	GetBlizzDirectHeals = function(unit)
+		if not oUF.TagsWithHealBlizzDirectHeals then
+			return 0, 0, 0
+		end
+		local totalHeal = UnitGetIncomingHeals and (UnitGetIncomingHeals(unit) or 0) or 0
+		local myHeal = UnitGetIncomingHeals and (UnitGetIncomingHeals(unit, "player") or 0) or 0
+		return totalHeal, myHeal, math.max(0, totalHeal - myHeal)
+	end,
 }
 _ENV.ColorGradient = function(...)
 	return _ENV._FRAME:ColorGradient(...)
@@ -388,26 +397,55 @@ local tagStrings = {
 	end]],
 
 	["incheal"] = [[function(unit)
-		local mod = LHC:GetHealModifier(UnitGUID(unit)) or 1
-		local heal = LHC:GetHealAmount(UnitGUID(unit), GetShowHots(), GetTime() + GetHealTimeFrame()) or 0
+		local guid = UnitGUID(unit)
+		local mod = LHC:GetHealModifier(guid) or 1
+		local libHeal = LHC:GetHealAmount(guid, GetShowHots(), GetTime() + GetHealTimeFrame()) or 0
+		local heal = libHeal
+		-- Account for Blizzard incoming heals if they report more direct heals than LibHealComm
+		local blizzTotal, blizzMy, blizzOther = GetBlizzDirectHeals(unit)
+		local libMy = LHC:GetHealAmount(guid, LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame(), UnitGUID("player")) or 0
+		local totalLibDirect = LHC:GetHealAmount(guid, LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame()) or 0
+		local totalCorrected = blizzOther + libMy
+		if totalCorrected > totalLibDirect then
+			heal = libHeal + (totalCorrected - totalLibDirect)
+		end
+	
 		if heal > 0 then
 			return math.floor(heal * mod)
 		end
 	end]],
 
 	["directheal"] = [[function(unit)
-		local mod = LHC:GetHealModifier(UnitGUID(unit)) or 1
-		local heal = LHC:GetHealAmount(UnitGUID(unit), LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame()) or 0
+		local guid = UnitGUID(unit)
+		local mod = LHC:GetHealModifier(guid) or 1
+		local libTotal = LHC:GetHealAmount(guid, LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame()) or 0
+		local libMy = LHC:GetHealAmount(guid, LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame(), UnitGUID("player")) or 0
+		local heal = libTotal
+		
+		local blizzTotal, blizzMy, blizzOther = GetBlizzDirectHeals(unit)
+		local totalCorrected = blizzOther + libMy
+		if totalCorrected > libTotal then
+			heal = totalCorrected
+		end
+		
 		if heal > 0 then
 			return math.floor(heal * mod)
 		end
 	end]],
 
 	["incownheal"] = [[function(unit)
-		local mod = LHC:GetHealModifier(UnitGUID(unit)) or 1
-		local heal = LHC:GetHealAmount(UnitGUID(unit), LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame(), UnitGUID("player")) or 0
-		if heal > 0 then
-			return math.floor(heal * mod)
+		local guid = UnitGUID(unit)
+		local mod = LHC:GetHealModifier(guid) or 1
+		local libMy = LHC:GetHealAmount(guid, LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame(), UnitGUID("player")) or 0
+		local myHeal = libMy
+		
+		local blizzTotal, blizzMy, blizzOther = GetBlizzDirectHeals(unit)
+		if blizzMy > myHeal then
+			myHeal = blizzMy
+		end
+		
+		if myHeal > 0 then
+			return math.floor(myHeal * mod)
 		end
 	end]],
 
@@ -430,52 +468,85 @@ local tagStrings = {
 	end]],
 
 	["incafterheal"] = [[function(unit)
-		local mod = LHC:GetHealModifier(UnitGUID(unit)) or 1
+		local guid = UnitGUID(unit)
+		local blizzTotal, blizzMy, blizzOther = GetBlizzDirectHeals(unit)
 		local preHeal = 0
-		local totalHeal = LHC:GetHealAmount(UnitGUID(unit), LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame()) or 0
-		local myHeal = LHC:GetHealAmount(UnitGUID(unit), LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame(), myGUID) or 0
-		-- We can only scout up to 2 direct heals that would land before ours but thats good enough for most cases
-		local healTime, healFrom, healAmount = LHC:GetNextHealAmount(UnitGUID(unit), LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame())
-		if healFrom and healFrom ~= UnitGUID("player") and myHeal > 0 then
-			preHeal = healAmount
-			healTime, healFrom, healAmount = LHC:GetNextHealAmount(UnitGUID(unit), LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame(), healFrom)
+
+		local healTime, healFrom, healAmount =
+			LHC:GetNextHealAmount(guid, LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame())
+
+		if healFrom and healFrom ~= UnitGUID("player") then
+			preHeal = healAmount or 0
+
+			healTime, healFrom, healAmount =
+				LHC:GetNextHealAmount(guid, LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame(), healFrom)
+
 			if healFrom and healFrom ~= UnitGUID("player") then
-				preHeal = preHeal + healAmount
+				preHeal = preHeal + (healAmount or 0)
 			end
 		end
-		local afterHeal = totalHeal - preHeal - myHeal
+
+		local afterHeal
+
+		if preHeal > 0 then
+			-- LibHealComm knows about some other healer(s), so use
+			-- its ordering information and let Blizzard provide the total.
+			afterHeal = math.max(0, blizzOther - preHeal)
+		else
+			-- No other healer information from LibHealComm.
+			-- Assume all Blizzard "other" healing lands after ours.
+			afterHeal = blizzOther
+		end
+
 		if afterHeal > 0 then
-			return math.floor(afterHeal * mod)
+			return math.floor(afterHeal)
 		end
 	end]],
 
 	["hotheal"] = [[function(unit)
-		local mod = LHC:GetHealModifier(UnitGUID(unit)) or 1
-		local heal = LHC:GetHealAmount(UnitGUID(unit), bit.bor(LHC.HOT_HEALS, LHC.CHANNEL_HEALS), GetTime() + GetHealTimeFrame()) or 0
-		if heal > 0 then
-			return math.floor(heal * mod)
-		end
-	end]],
+		local guid = UnitGUID(unit)
+		local mod = LHC:GetHealModifier(guid) or 1
+		local heal = LHC:GetHealAmount(
+			guid,
+			bit.bor(LHC.HOT_HEALS, LHC.CHANNEL_HEALS),
+			GetTime() + GetHealTimeFrame()
+		) or 0
 
-	["effheal"] = [[function(unit)
-		local mod = LHC:GetHealModifier(UnitGUID(unit)) or 1
-		local heal = LHC:GetHealAmount(UnitGUID(unit), LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame()) or 0
 		heal = heal * mod
-		local healthmissing = UnitHealthMax(unit) - UnitHealth(unit)
-		heal = math.min(healthmissing, heal)
+
 		if heal > 0 then
 			return math.floor(heal)
 		end
 	end]],
 
+	["effheal"] = [[function(unit)
+		local guid = UnitGUID(unit)
+		local mod = LHC:GetHealModifier(guid) or 1
+		local heal = LHC:GetHealAmount(guid, LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame()) or 0
+		local blizzTotal = GetBlizzDirectHeals(unit)
+		heal = math.max(heal * mod, blizzTotal)
+
+		local healthmissing = UnitHealthMax(unit) - UnitHealth(unit)
+		heal = math.min(healthmissing, heal)
+
+		if heal > 0 then
+			return math.floor(heal)
+		end
+	end]],
+
+
 	["overheal"] = [[function(unit)
-		local mod = LHC:GetHealModifier(UnitGUID(unit)) or 1
-		local heal = LHC:GetHealAmount(UnitGUID(unit), LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame()) or 0
-		heal = heal * mod
+		local guid = UnitGUID(unit)
+		local mod = LHC:GetHealModifier(guid) or 1
+		local heal = LHC:GetHealAmount(guid, LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame()) or 0
+		local blizzTotal = GetBlizzDirectHeals(unit)
+		heal = math.max(heal * mod, blizzTotal)
+
 		local healthmissing = UnitHealthMax(unit) - UnitHealth(unit)
 		heal = heal - healthmissing
+
 		if heal > 0 then
-			return math.floor(heal * mod)
+			return math.floor(heal)
 		end
 	end]],
 
@@ -1393,14 +1464,14 @@ local tagEvents = {
 	["druidform"]           = "UNIT_AURA UNIT_DISPLAYPOWER",
 	["guild"]               = "UNIT_NAME_UPDATE",
 	["guildrank"]           = "UNIT_NAME_UPDATE",
-	["incheal"]             = "HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
-	["directheal"] 			= "HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
-	["incownheal"]          = "HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
-	["incpreheal"]          = "HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
-	["incafterheal"]        = "HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
-	["hotheal"]             = "HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
-	["effheal"]             = "HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
-	["overheal"]            = "HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
+	["incheal"]             = "UNIT_HEAL_PREDICTION HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
+	["directheal"] 			= "UNIT_HEAL_PREDICTION HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
+	["incownheal"]          = "UNIT_HEAL_PREDICTION HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
+	["incpreheal"]          = "UNIT_HEAL_PREDICTION HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
+	["incafterheal"]        = "UNIT_HEAL_PREDICTION HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
+	["hotheal"]             = "UNIT_HEAL_PREDICTION HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
+	["effheal"]             = "UNIT_HEAL_PREDICTION HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
+	["overheal"]            = "UNIT_HEAL_PREDICTION HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
 	["buffcount"]           = "UNIT_AURA",
 	["numheals"]            = "HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_GUIDDisappeared",
 	["pvp"]                 = "PLAYER_FLAGS_CHANGED UNIT_FACTION",
@@ -1408,14 +1479,14 @@ local tagEvents = {
 	["smarthealthp"]        = "UNIT_HEALTH_FREQUENT UNIT_MAXHEALTH UNIT_CONNECTION",
 	["ssmarthealth"]        = "UNIT_HEALTH_FREQUENT UNIT_MAXHEALTH UNIT_CONNECTION",
 	["ssmarthealthp"]       = "UNIT_HEALTH_FREQUENT UNIT_MAXHEALTH UNIT_CONNECTION",
-	["healhp"]              = "UNIT_HEALTH_FREQUENT HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
+	["healhp"]              = "UNIT_HEAL_PREDICTION UNIT_HEALTH_FREQUENT UNIT_MAXHEALTH HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
 	["hp"]                  = "UNIT_HEALTH_FREQUENT",
 	["shp"]                 = "UNIT_HEALTH_FREQUENT",
 	["sshp"]                = "UNIT_HEALTH_FREQUENT",
 	["maxhp"]               = "UNIT_MAXHEALTH",
 	["smaxhp"]              = "UNIT_MAXHEALTH",
 	["missinghp"]           = "UNIT_HEALTH_FREQUENT UNIT_MAXHEALTH",
-	["healmishp"]           = "UNIT_HEALTH_FREQUENT UNIT_MAXHEALTH HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
+	["healmishp"]           = "UNIT_HEAL_PREDICTION UNIT_HEALTH_FREQUENT UNIT_MAXHEALTH HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
 	["perhp"]               = "UNIT_HEALTH_FREQUENT UNIT_MAXHEALTH",
 	["perstatus"]           = "UNIT_HEALTH_FREQUENT UNIT_MAXHEALTH UNIT_CONNECTION",
 	["pp"]                  = "UNIT_POWER_FREQUENT UNIT_DISPLAYPOWER",
@@ -1450,12 +1521,12 @@ local tagEvents = {
 	["smartclass"]          = "UNIT_CLASSIFICATION_CHANGED",
 	["reactcolor"]          = "UNIT_CLASSIFICATION_CHANGED",
 	["pvpcolor"]            = "PLAYER_FLAGS_CHANGED UNIT_FACTION",
-	["smart:healmishp"]     = "UNIT_HEALTH_FREQUENT UNIT_MAXHEALTH HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
+	["smart:healmishp"]     = "UNIT_HEAL_PREDICTION UNIT_HEALTH_FREQUENT UNIT_MAXHEALTH HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
 	["smartrace"]           = "UNIT_CLASSIFICATION_CHANGED",
 	["civilian"]            = "UNIT_LEVEL UNIT_FACTION PLAYER_LEVEL_UP",
 	["loyalty"]             = "UNIT_PET UNIT_PET_TRAINING_POINTS",
-	["healerhealth"]        = "PLAYER_UPDATE_RESTING UNIT_CONNECTION UNIT_HEALTH_FREQUENT UNIT_MAXHEALTH HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
-	["namehealerhealth"]    = "PLAYER_UPDATE_RESTING UNIT_CONNECTION UNIT_NAME_UPDATE UNIT_HEALTH_FREQUENT UNIT_MAXHEALTH HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
+	["healerhealth"]        = "PLAYER_UPDATE_RESTING UNIT_CONNECTION UNIT_HEAL_PREDICTION UNIT_HEALTH_FREQUENT UNIT_MAXHEALTH HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
+	["namehealerhealth"]    = "PLAYER_UPDATE_RESTING UNIT_CONNECTION UNIT_NAME_UPDATE UNIT_HEAL_PREDICTION UNIT_HEALTH_FREQUENT UNIT_MAXHEALTH HealComm_HealStarted HealComm_HealUpdated HealComm_HealStopped HealComm_ModifierChanged HealComm_GUIDDisappeared",
 	["healthcolor"]         = "UNIT_HEALTH_FREQUENT UNIT_MAXHEALTH",
 	["color"]               = "PLAYER_LOGIN", -- Dummy
 	["br"]                  = "PLAYER_LOGIN", -- Dummy
