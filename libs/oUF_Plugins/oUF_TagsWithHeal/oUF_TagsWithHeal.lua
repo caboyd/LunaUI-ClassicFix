@@ -120,9 +120,69 @@ local function abbreviateName(text)
 	return string.sub(text, 1, 1) .. ". "
 end
 
---Patch 1.15.1 - CheckInteractDistance is not able to be used on friendly targets in combat
-local function InCombatLockdownRestriction(unit)
-	return InCombatLockdown() and not UnitCanAttack("player", unit)
+local function GetHealTimeFrame() 
+	return oUF.TagsWithHealTimeFrame or 4 
+end
+
+local function GetShowHots() 
+	if oUF.TagsWithHealDisableHots then
+		return LHC.DIRECT_HEALS 
+	else 
+		return LHC.ALL_HEALS end 
+end
+
+local function GetBlizzardDirectHeals(unit)
+	if not oUF.TagsWithHealBlizzDirectHeals then
+		return 0, 0, 0
+	end
+	local totalHeal = UnitGetIncomingHeals and (UnitGetIncomingHeals(unit) or 0) or 0
+	local myHeal = UnitGetIncomingHeals and (UnitGetIncomingHeals(unit, "player") or 0) or 0
+	return totalHeal, myHeal, math.max(0, totalHeal - myHeal)
+end
+
+local function GetCorrectedTotalHeals(unit)
+	local guid = UnitGUID(unit)
+	local heal = LHC:GetHealAmount(guid, GetShowHots(), GetTime() + GetHealTimeFrame()) or 0
+	local blizzTotal, blizzMy, blizzOther = GetBlizzardDirectHeals(unit)
+	local libMy = LHC:GetHealAmount(guid, LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame(), UnitGUID("player")) or 0
+	local totalLibDirect = LHC:GetHealAmount(guid, LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame()) or 0
+	local totalCorrected = blizzOther + libMy
+	if totalCorrected > totalLibDirect then
+		heal = heal + (totalCorrected - totalLibDirect)
+	end
+	if heal == 0 and blizzTotal > 0 then
+		heal = blizzTotal
+	end
+	return heal
+end
+
+local function GetCorrectedTotalHealsWithModifier(unit)
+	local guid = UnitGUID(unit)
+	local mod = LHC:GetHealModifier(guid) or 1
+	local heal = GetCorrectedTotalHeals(unit)
+	return math.floor(heal * mod)
+end
+
+local function GetCorrectedDirectHeals(unit)
+	local guid = UnitGUID(unit)
+	local libHeal = LHC:GetHealAmount(guid, GetShowHots(), GetTime() + GetHealTimeFrame()) or 0
+	local heal = libHeal
+	-- Account for Blizzard incoming heals if they report more direct heals than LibHealComm
+	local blizzTotal, blizzMy, blizzOther = GetBlizzardDirectHeals(unit)
+	local libMy = LHC:GetHealAmount(guid, LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame(), UnitGUID("player")) or 0
+	local totalLibDirect = LHC:GetHealAmount(guid, LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame()) or 0
+	local totalCorrected = blizzOther + libMy
+	if totalCorrected > totalLibDirect then
+		heal = libHeal + (totalCorrected - totalLibDirect)
+	end
+	return heal
+end
+
+local function GetCorrectedDirectHealsWithModifier(unit)
+	local guid = UnitGUID(unit)
+	local mod = LHC:GetHealModifier(guid) or 1
+	local heal = GetCorrectedDirectHeals(unit)
+	return math.floor(heal * mod)
 end
 
 local _ENV = {
@@ -186,22 +246,16 @@ local _ENV = {
 	GHOST = C_Spell.GetSpellName(8326),
 	LHC = LHC,
 	LT = LT,
-	GetHealTimeFrame = function() return oUF.TagsWithHealTimeFrame or 4 end,
-	GetShowHots = function() if oUF.TagsWithHealDisableHots then return LHC.DIRECT_HEALS else return LHC.ALL_HEALS end end,
+	GetHealTimeFrame = function() return GetHealTimeFrame() end,
+	GetShowHots = function() return GetShowHots() end,
 	WA_Utf8Sub = WA_Utf8Sub,
-	InCombatLockdownRestriction = InCombatLockdownRestriction,
 	lastChannelSpellName = function() return oUF.lastChannelSpellName end,
 	lastChannelEndTime = function() return oUF.lastChannelSpellEndTime end,
 	rangeCheck = function(unit) return RC:GetRange(unit) end,
 	blizzDirectHeals = function() return oUF.TagsWithHealBlizzDirectHeals end,
-	GetBlizzDirectHeals = function(unit)
-		if not oUF.TagsWithHealBlizzDirectHeals then
-			return 0, 0, 0
-		end
-		local totalHeal = UnitGetIncomingHeals and (UnitGetIncomingHeals(unit) or 0) or 0
-		local myHeal = UnitGetIncomingHeals and (UnitGetIncomingHeals(unit, "player") or 0) or 0
-		return totalHeal, myHeal, math.max(0, totalHeal - myHeal)
-	end,
+	GetBlizzDirectHeals = function(unit) return GetBlizzardDirectHeals(unit) end,
+	GetCorrectedDirectHealsWithModifier = function(unit) return GetCorrectedDirectHealsWithModifier(unit) end,
+	GetCorrectedTotalHealsWithModifier = function(unit) return GetCorrectedTotalHealsWithModifier(unit) end,
 }
 _ENV.ColorGradient = function(...)
 	return _ENV._FRAME:ColorGradient(...)
@@ -397,39 +451,18 @@ local tagStrings = {
 	end]],
 
 	["incheal"] = [[function(unit)
-		local guid = UnitGUID(unit)
-		local mod = LHC:GetHealModifier(guid) or 1
-		local libHeal = LHC:GetHealAmount(guid, GetShowHots(), GetTime() + GetHealTimeFrame()) or 0
-		local heal = libHeal
-		-- Account for Blizzard incoming heals if they report more direct heals than LibHealComm
-		local blizzTotal, blizzMy, blizzOther = GetBlizzDirectHeals(unit)
-		local libMy = LHC:GetHealAmount(guid, LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame(), UnitGUID("player")) or 0
-		local totalLibDirect = LHC:GetHealAmount(guid, LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame()) or 0
-		local totalCorrected = blizzOther + libMy
-		if totalCorrected > totalLibDirect then
-			heal = libHeal + (totalCorrected - totalLibDirect)
-		end
+		local heal = GetCorrectedTotalHealsWithModifier(unit)
 	
 		if heal > 0 then
-			return math.floor(heal * mod)
+			return math.floor(heal)
 		end
 	end]],
 
 	["directheal"] = [[function(unit)
-		local guid = UnitGUID(unit)
-		local mod = LHC:GetHealModifier(guid) or 1
-		local libTotal = LHC:GetHealAmount(guid, LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame()) or 0
-		local libMy = LHC:GetHealAmount(guid, LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame(), UnitGUID("player")) or 0
-		local heal = libTotal
-		
-		local blizzTotal, blizzMy, blizzOther = GetBlizzDirectHeals(unit)
-		local totalCorrected = blizzOther + libMy
-		if totalCorrected > libTotal then
-			heal = totalCorrected
-		end
+		local heal = GetCorrectedDirectHealsWithModifier(unit)
 		
 		if heal > 0 then
-			return math.floor(heal * mod)
+			return heal
 		end
 	end]],
 
@@ -468,6 +501,7 @@ local tagStrings = {
 	end]],
 
 	["incafterheal"] = [[function(unit)
+		local mod = LHC:GetHealModifier(UnitGUID(unit)) or 1
 		local guid = UnitGUID(unit)
 		local blizzTotal, blizzMy, blizzOther = GetBlizzDirectHeals(unit)
 		local preHeal = 0
@@ -499,7 +533,7 @@ local tagStrings = {
 		end
 
 		if afterHeal > 0 then
-			return math.floor(afterHeal)
+			return math.floor(afterHeal * mod)
 		end
 	end]],
 
@@ -512,22 +546,19 @@ local tagStrings = {
 			GetTime() + GetHealTimeFrame()
 		) or 0
 
-		heal = heal * mod
-
 		if heal > 0 then
-			return math.floor(heal)
+			return math.floor(heal * mod)
 		end
 	end]],
 
 	["effheal"] = [[function(unit)
-		local guid = UnitGUID(unit)
-		local mod = LHC:GetHealModifier(guid) or 1
-		local heal = LHC:GetHealAmount(guid, LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame()) or 0
-		local blizzTotal = GetBlizzDirectHeals(unit)
-		heal = math.max(heal * mod, blizzTotal)
+		local heal = GetCorrectedTotalHealsWithModifier(unit)
+		local maxhp = UnitHealthMax(unit)
 
-		local healthmissing = UnitHealthMax(unit) - UnitHealth(unit)
-		heal = math.min(healthmissing, heal)
+		if maxhp ~= 100 then
+			local healthmissing = maxhp - UnitHealth(unit)
+			heal = math.min(healthmissing, heal)
+		end
 
 		if heal > 0 then
 			return math.floor(heal)
@@ -536,11 +567,7 @@ local tagStrings = {
 
 
 	["overheal"] = [[function(unit)
-		local guid = UnitGUID(unit)
-		local mod = LHC:GetHealModifier(guid) or 1
-		local heal = LHC:GetHealAmount(guid, LHC.DIRECT_HEALS, GetTime() + GetHealTimeFrame()) or 0
-		local blizzTotal = GetBlizzDirectHeals(unit)
-		heal = math.max(heal * mod, blizzTotal)
+		local heal = GetCorrectedTotalHealsWithModifier(unit)
 
 		local healthmissing = UnitHealthMax(unit) - UnitHealth(unit)
 		heal = heal - healthmissing
@@ -682,11 +709,9 @@ local tagStrings = {
 	end]],
 
 	["healhp"] = [[function(unit)
-		local mod = LHC:GetHealModifier(UnitGUID(unit)) or 1
-		local heal = LHC:GetHealAmount(UnitGUID(unit), GetShowHots(), GetTime() + GetHealTimeFrame()) or 0
-		heal = math.floor(heal * mod)
-		local hp
-		hp = UnitHealth(unit)
+		local heal = GetCorrectedTotalHealsWithModifier(unit)
+
+		local hp = UnitHealth(unit)
 		if heal > 0 then
 			return Hex(0,1,0)..(hp+heal).."|r"
 		else
@@ -757,13 +782,10 @@ local tagStrings = {
 	end]],
 
 	["healmishp"] = [[function(unit)
-		local hp,maxhp
-		local mod = LHC:GetHealModifier(UnitGUID(unit)) or 1
-		local heal = LHC:GetHealAmount(UnitGUID(unit), GetShowHots(), GetTime() + GetHealTimeFrame()) or 0
-		heal = math.floor(heal * mod)
-		hp = UnitHealth(unit)
-		maxhp = UnitHealthMax(unit)
-		local result = hp-maxhp+heal
+		local heal = GetCorrectedTotalHealsWithModifier(unit)
+		local hp = UnitHealth(unit)
+		local maxhp = UnitHealthMax(unit)
+		local result = hp - maxhp + heal
 		if result ~= 0 then
 			if heal > 0 then
 				return Hex(0,1,0)..result.."|r"
@@ -1103,6 +1125,7 @@ local tagStrings = {
 		elseif not UnitIsConnected(unit) then
 			return FRIENDS_LIST_OFFLINE
 		end
+		local guid = UnitGUID(unit)
 		local hp,maxhp
 		hp = UnitHealth(unit)
 		maxhp = UnitHealthMax(unit)
@@ -1113,10 +1136,8 @@ local tagStrings = {
 				return DEAD
 			end
 		end
-		local mod = LHC:GetHealModifier(UnitGUID(unit)) or 1
-		local heal = LHC:GetHealAmount(UnitGUID(unit), GetShowHots(), GetTime() + GetHealTimeFrame()) or 0
-		heal = math.floor(heal * mod)
-		local result = hp-maxhp+heal
+		local heal = GetCorrectedTotalHealsWithModifier(unit)
+		local result = hp - maxhp + heal
 		if result == 0 then
 			return
 		else
@@ -1157,6 +1178,7 @@ local tagStrings = {
 		elseif not UnitIsConnected(unit) then
 			return FRIENDS_LIST_OFFLINE
 		end
+		local guid = UnitGUID(unit)
 		local hp,maxhp
 		hp = UnitHealth(unit)
 		maxhp = UnitHealthMax(unit)
@@ -1167,9 +1189,7 @@ local tagStrings = {
 				return DEAD
 			end
 		end
-		local mod = LHC:GetHealModifier(UnitGUID(unit)) or 1
-		local heal = LHC:GetHealAmount(UnitGUID(unit), GetShowHots(), GetTime() + GetHealTimeFrame()) or 0
-		heal = math.floor(heal * mod)
+		local heal = GetCorrectedTotalHealsWithModifier(unit)
 		if UnitIsEnemy("player", unit) then
 			if heal == 0 then
 				return hp.."/"..maxhp
@@ -1177,7 +1197,7 @@ local tagStrings = {
 				return Hex(0,1,0)..hp.."|r/"..maxhp
 			end
 		end
-		local result = hp-maxhp+heal
+		local result = hp - maxhp + heal
 		if result == 0 then
 			if heal == 0 then
 				return
@@ -1199,6 +1219,7 @@ local tagStrings = {
 		elseif not UnitIsConnected(unit) then
 			 return FRIENDS_LIST_OFFLINE
 		end
+		local guid = UnitGUID(unit)
 		local hp,maxhp
 		hp = UnitHealth(unit)
 		maxhp = UnitHealthMax(unit)
@@ -1209,9 +1230,7 @@ local tagStrings = {
 				return DEAD
 			end
 		end
-		local mod = LHC:GetHealModifier(UnitGUID(unit)) or 1
-		local heal = LHC:GetHealAmount(UnitGUID(unit), GetShowHots(), GetTime() + GetHealTimeFrame()) or 0
-		heal = math.floor(heal * mod)
+		local heal = GetCorrectedTotalHealsWithModifier(unit)
 		if UnitIsEnemy("player", unit) then
 			if heal == 0 then
 				return hp.."/"..maxhp
@@ -1219,7 +1238,7 @@ local tagStrings = {
 				return Hex(0,1,0)..hp.."|r/"..maxhp
 			end
 		end
-		local result = hp-maxhp+heal
+		local result = hp - maxhp + heal
 		if result == 0 then
 			if heal == 0 then
 				return UnitName(unit)
