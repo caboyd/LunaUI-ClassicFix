@@ -30,6 +30,7 @@ function LUF:LoadDefaults()
 			statusbar = "Minimalist",
 			fontshadow = true,
 			auraborderType = "dark",
+			blizzDirectHeals = true,
 			inchealTime = 4,
 			omnicc = false,
 			blizzardcc = false,

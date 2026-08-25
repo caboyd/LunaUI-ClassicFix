@@ -242,6 +242,7 @@ function LUF:LoadoUFSettings()
 	
 	self.oUF.TagsWithHealTimeFrame = self.db.profile.inchealTime
 	self.oUF.TagsWithHealDisableHots = self.db.profile.disablehots
+	self.oUF.TagsWithHealBlizzDirectHeals = self.db.profile.blizzDirectHeals
 end
 
 function LUF:ResetColors()
